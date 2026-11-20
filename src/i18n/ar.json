@@ -2,5 +2,7 @@
   "app.name": "صديقك الطبي",
   "home.tagline": "كل أدويتك في مكان واحد، وتذكير بكل جرعة في وقتها.",
   "home.addMedication": "إضافة دواء",
-  "home.empty": "لم تُضِف أي دواء بعد."
+  "home.empty": "لم تُضِف أي دواء بعد.",
+  "lang.switchTo": "English",
+  "lang.switchLabel": "Switch language to English"
 }

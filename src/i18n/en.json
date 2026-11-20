@@ -2,5 +2,7 @@
   "app.name": "Med Friend",
   "home.tagline": "All your medicines in one place, and a reminder for every dose on time.",
   "home.addMedication": "Add medication",
-  "home.empty": "You have not added any medication yet."
+  "home.empty": "You have not added any medication yet.",
+  "lang.switchTo": "العربية",
+  "lang.switchLabel": "تغيير اللغة إلى العربية"
 }

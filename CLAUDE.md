@@ -18,6 +18,7 @@ Outcomes the alpha must show:
 ## Alpha scope (build in this order; stop at the cut line if time runs out)
 Foundations (apply to every screen from day 1, never retrofit):
 - F12 Native Arabic RTL: `<html dir="rtl" lang="ar">`. Arabic is the source language, written natively, not translated. English is a secondary toggle.
+  - Build phase (decided 20 Nov): English is the working and default language so I can review features easily. Arabic is written natively for every feature at the same time and kept in sync in `ar.json`. A language switch (العربية / English) is on screen. Before code freeze, set `DEFAULT_LANG = 'ar'` in `src/i18n/index.tsx` and do one Arabic review pass.
 - F11 Simple mode: large text (min 18px body), one main action per screen, high contrast, big tap targets (min 48px).
 
 Tier A — core loop (must ship):
