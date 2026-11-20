@@ -1,155 +1,137 @@
 # Handoff — current status (read this first)
 
-Last updated: Fri 20 Nov 2026, end of the first VS Code (local) session.
-`CLAUDE.md` is the rulebook. This file is the current state of the work.
+Last updated: **Fri 20 Nov 2026, late evening** (end of the second VS Code session).
+`CLAUDE.md` is the rulebook. This file is the current state of the work. Deadline: live and tested by
+**Wed 25 Nov**; **code freeze Tue 24 Nov evening**.
 
 ## ▶ Start here (new chat)
-The previous chat could not use the Supabase tools (the plugin was installed mid-chat), so work
-continues in a new chat. The owner has already done the setup steps 1–5 in `docs/specs/DB-supabase.md`
-(account, project `medfriend` in Frankfurt, anonymous sign-ins on, rate limit raised, `/mcp` sign-in).
-`claude mcp list` showed `plugin:supabase:supabase ✔ Connected`.
-
-**Uncommitted work is on disk** (Playwright setup, Supabase plan, doc/rule updates). Not committed
-because Git on this PC has no name/email. Ask the owner first: use `sododabukhater` +
-their Gmail (as in their earlier commit) as a **repo-local** `git config`? Then commit it as
-"Add Playwright tests and Supabase plan". Push only when the owner says so.
-
-**Supabase database setup: DONE on 20 Nov (second session), not yet committed.**
-- Project `medfriend`, ref `zotspmzlyopvkqsrgrng` (region shows as eu-west-1 / Ireland, not Frankfurt; fine).
-- Migration `supabase/migrations/20261120180000_init_medications_dose_logs.sql` applied via MCP:
-  `medications` + `dose_logs`, RLS owner-only, grants to `authenticated` only (anon revoked), indexes.
-  `dose_logs` has a composite FK `(medication_id, user_id)` so a log can only point at the user's own medicine,
-  and `unique (medication_id, scheduled_at)` (one row per scheduled dose).
-- Advisors: no errors. Security WARN "Anonymous Access Policies" is expected (anonymous sign-in is the design).
-- `.env` (committed), `src/lib/supabase.ts` (client + `ensureSession()`), `src/lib/useSession.ts`,
-  `src/vite-env.d.ts`. App shows an alert with "Try again" when Supabase is unreachable.
-  `.phone-frame` has `data-session="loading|ready|error"` for tests.
-- `@supabase/supabase-js` 2.119.2 (exact). No `@types/node`: `tests/node-env.d.ts` declares `process`.
-- Tests: `tests/DB-supabase.spec.ts` (silent sign-in, refresh keeps user, second browser = new user,
-  offline message + recovery, RLS cross-user checks). All pass (45/45 over 3 repeats).
-- Each `npm test` run creates ~20 empty anonymous users (rate limit 300/hour ≈ 15 runs/hour).
-
-Do next:
-1. Commit (after git name/email is set) and push when the owner says so; then the owner checks the live link.
-2. **F6 "Add medication": BUILT 20 Nov, not yet committed.** Owner approved A–D (all defaults).
-   4-step wizard + review (`src/screens/AddMedication/`), name suggestions (`src/components/Autocomplete.tsx`,
-   `src/data/drugs.ts`), cards with Delete + confirm (`src/components/MedicationCard.tsx`),
-   Supabase calls in `src/storage/medications.ts`. `t(key, vars)` now fills `{n}` placeholders.
-   Tests `tests/F6.spec.ts`: all pass (39 total + 2× repeat of F6).
-4. **Strength fix (20 Nov):** number + unit (`strength_value`, `strength_unit`). The old `strength` text column
-   is still in the database (owner declined dropping it); the app no longer reads or writes it.
-5. **F2 Today view: BUILT 20 Nov** (`docs/specs/F2.md`). Bottom tabs Today | My medicines (`src/components/TabBar.tsx`),
-   `src/screens/Today/Today.tsx`, dose status rules in `src/lib/doses.ts` (reuse for F1/F8), Amman time helpers in
-   `src/lib/time.ts`, dose log calls in `src/storage/doseLogs.ts`. Taken / Skip / Undo write `dose_logs`.
-   Tests `tests/F2.spec.ts` use Playwright's fake clock. 72 tests pass.
-6. **F1 Reminders: BUILT 20 Nov** (`docs/specs/F1.md`). Banner `src/components/ReminderBanner.tsx` on every
-   signed-in tab; reminder rules in `src/lib/doses.ts` (`activeReminders`, snooze, follow-up); shared state in
-   `src/lib/useDoses.ts` (used by Today and the banner; ticks every second); chime + vibration `src/lib/alert.ts`;
-   Settings tab `src/screens/Settings/Settings.tsx` (Demo speed in localStorage via `src/lib/settings.ts`,
-   "Show the next reminder now", account, Log out, disclaimer). 88 tests pass (2 runs).
-   Tests wait up to 20 s for sign-up/login (`AUTH_TIMEOUT`): Supabase is slow when ~90 tests sign up at once.
-7. **F8 Dose log + adherence %: BUILT 20 Nov** (`docs/specs/F8.md`). Progress tab `src/screens/Progress/Progress.tsx`,
-   counting in `src/lib/adherence.ts` (Taken ÷ decided doses; Skipped = not taken; on time = within 1 h).
-   Demo account reset now adds 30 days of history (`scripts/seed-demo.mjs`). 102 tests pass (2 runs).
-   **Plan from 20 Nov (owner): build everything** (CLAUDE.md "Alpha scope"): design revamp (incl. "Reset all data")
-   → F9 → F3 → F4 → F5 → F10 → F7; Tuesday: `DEFAULT_LANG = 'ar'`, Arabic review, demo reset
-   (`node scripts/seed-demo.mjs`, so the 30-day history ends the day before the demo), code freeze.
-   Owner asked for the "frontend design" skill for the revamp: not installed in this environment (ask the owner).
-
-3. **Email + password login: BUILT 20 Nov** (spec `docs/specs/AUTH.md`). Replaces anonymous sign-in.
-   `src/lib/auth.ts` (actions, error messages, `DEMO_ACCOUNT`), `src/lib/useAuth.ts` (login state, reset-link
-   recovery), `src/screens/Auth/AuthScreens.tsx`. `.phone-frame` now has `data-auth="loading|signedOut|signedIn"`.
-   Demo account `demo@medfriend.jo` / `123456` (owner-created) with 6 medicines (incl. Singulair 23:30 so "Show the next reminder now" works until 23:30); reset with `node scripts/seed-demo.mjs`.
-   Tests: `tests/helpers.ts` signs up a throwaway `@mailinator.com` account per test. 55 pass (2 runs).
-   Commits so far: `ee1aa1a` DB, `d6f115e` F6; auth commit follows. Nothing pushed yet.
-   Open: the "welcome screen" in CLAUDE.md (Start empty / Try demo data) now overlaps with the login
-   screen's demo button; decide with the owner when building it. Anonymous sign-ins can be switched off in
-   Supabase; ~100 empty anonymous users and many throwaway test users can be deleted when the owner asks.
-
-Owner said on 20 Nov: **skip code reviews for now.** Playwright (headless) for every change is still required.
+1. Everything is committed and pushed to `main`; the live link is up to date. Working tree is clean.
+2. **Tier A is done** (F6, F2, F1, F8 + login, Settings, Progress). 102 Playwright tests pass.
+3. **Next step: the design revamp** (see "Plan" below). Before coding it:
+   - The owner asked to use the **"frontend design" skill**. It was NOT installed in the last session.
+     Check the skills list. If it is there, load it. If not, ask the owner: install it (`/plugin` →
+     frontend-design, then a new chat) or proceed without it.
+   - Show the owner a mock-up of the new look and get approval before changing code (CLAUDE.md: plan first).
+4. Then continue the plan one feature at a time: plan → owner approval → build → tests → commit → push →
+   tell the owner exactly what to click.
 
 ## About the owner
-- Industrial engineer / innovation background, **no coding experience**. Explain every step in plain words.
-- Follow the working rules in `CLAUDE.md`: plan first, wait for approval, one feature per commit,
-  type-check + build must pass, then push and tell the owner exactly what to click to test.
+- Industrial engineer / innovation background, **no coding experience**. Explain in plain words, short.
+- Answers questions best with multiple-choice options (AskUserQuestion) with a recommended default.
+  If a question is unclear to them they say "explain": then re-explain without jargon.
+- Owner said on 20 Nov: **skip code reviews for now.** Headless Playwright tests for every change are still required.
+- Owner tests on the GitHub Pages link. They may decline some database actions (they declined: writing users
+  directly into `auth.users`, and dropping the old `strength` column). Ask, don't retry.
 
-## Live links (both update automatically on every push to `main`)
-| Link | Notes |
-|---|---|
-| https://sododabukhater.github.io/MedFriend_MVP/ | **Use this one.** GitHub Pages, built by `.github/workflows/pages.yml`. |
-| https://medfriendmvp.vercel.app | Vercel. Deploys fine, but the owner's network gives `ERR_CONNECTION_RESET` for `*.vercel.app` (not tested on mobile data yet). |
+## Plan (decided by the owner on 20 Nov: build everything)
+Order (each one: short plan → approval → build). Cut from the bottom if behind on Monday evening (F7 first, then F10).
 
-Repo settings already done: GitHub → Settings → Pages → Source = **GitHub Actions**.
+| # | Item | Estimate | Target day | Notes |
+|---|---|---|---|---|
+| 1 | **Design revamp** of all screens + "Reset all data" in Settings | 4–5 h | Sat | Simplest, most user-friendly UI for 35–65; keep F11 rules (≥18px text, ≥48px buttons, high contrast, one main action) and RTL |
+| 2 | **F9** Arabic summary for doctors: printable page + WhatsApp share | 2–3 h | Sat | |
+| 3 | **F3** Prayer and meal anchors ("after Fajr", "with Iftar"), Amman prayer times | ~4 h | Sun | Calculate in-app (no dependency) or ask to add a library |
+| 4 | **F4** Own-pill photo card (photo on the medicine and in the reminder) | ~3 h | Sun | Photos in a private Supabase Storage bucket (owner-only RLS) |
+| 5 | **F5** Arabic voice dose readout | ~2 h | Mon | Browser `speechSynthesis`; show "Voice not available" if no Arabic voice |
+| 6 | **F10** Document vault (lab results / prescriptions, tag by date and type) | 3–4 h | Mon | Supabase Storage |
+| 7 | **F7** Stock count + low-stock refill alert | 2–3 h | Mon/Tue | |
+| — | **Tuesday:** `DEFAULT_LANG = 'ar'` in `src/i18n/index.tsx`, Arabic review pass (REVIEW-AR items), run `node scripts/seed-demo.mjs`, code freeze | | Tue | |
 
-## Branches
-- `main` = live. All work so far is on `main`.
-- `claude/magical-rubin-3lm9ke` = the cloud session's branch, identical to `main`. Can be ignored or deleted.
+Open decision: CLAUDE.md's "welcome screen" (Start empty / Try demo data) overlaps with the login screen's
+"Use the demo account" button. Suggest dropping it; confirm with the owner during the revamp.
 
-## Done
-| Step | Commit message starts with | Spec |
-|---|---|---|
-| F0 Project setup (Vite + React + TS, phone frame, home screen) | `F0:` | `docs/specs/F0-setup.md` |
-| GitHub Pages backup hosting | `Add GitHub Pages` | — |
-| F12 Language switch, English default during build | `F12:` | `docs/specs/F12-language-switch.md` |
+## Done (all on `main`, all pushed)
+| Commit | What | Spec | Tests |
+|---|---|---|---|
+| `705a12a` | F0 setup: Vite + React + TS, phone frame | `docs/specs/F0-setup.md` | |
+| `7050ea6` | GitHub Pages backup hosting | | |
+| `2253376` | F12 language switch (English default during build) | `docs/specs/F12-language-switch.md` | `tests/home.spec.ts` |
+| `ee1aa1a` | Supabase DB (tables, RLS) + Playwright setup | `docs/specs/DB-supabase.md` | `tests/DB-supabase.spec.ts` |
+| `d6f115e` | F6 Add medication (4 steps, name suggestions, delete + confirm) | `docs/specs/F6.md` | `tests/F6.spec.ts` |
+| `e5b87e0` | Email + password login, sign-up, forgot password, demo account | `docs/specs/AUTH.md` | `tests/auth.spec.ts` |
+| `1a385e8` | F6 strength = number + unit (mg, mcg, g, ml, units, %) | `docs/specs/F6.md` | `tests/F6.spec.ts` |
+| `586b5df` | F2 Today view with Taken / Skip / Undo, bottom tabs | `docs/specs/F2.md` | `tests/F2.spec.ts` |
+| `e989e89` | F1 Reminders (banner, snooze, follow-up, chime) + Settings tab with Demo speed | `docs/specs/F1.md` | `tests/F1.spec.ts` |
+| `89dc87b` | Demo account: 23:30 dose so the reminder demo works in the evening | | |
+| `622a0d2` | F8 Progress tab: adherence % 7/30 days, dose log; 30 days of demo history | `docs/specs/F8.md` | `tests/F8.spec.ts` |
+| `d982e7d` | Plan: build all features (F4, F5 added) + UI revamp first | | |
 
-Owner tested F0 on the GitHub Pages link on a laptop: OK. Phone test and F12 test not yet confirmed.
-
-## Key decisions
-1. **English first (20 Nov):** English is the default while building. Arabic is still written for every
-   new string in `src/i18n/ar.json` at the same time. Before the Tuesday code freeze: set
-   `DEFAULT_LANG = 'ar'` in `src/i18n/index.tsx` and do one Arabic review pass.
-2. **Font:** Noto Sans Arabic from Google Fonts (link in `index.html`).
-3. **No ESLint, no router, no UI framework.** Dependencies are only react, react-dom, vite,
-   @vitejs/plugin-react, typescript, @types/react, @types/react-dom, and (dev-only, approved 20 Nov
-   for local testing) @playwright/test, and @supabase/supabase-js (approved with the DB plan). Ask before adding any.
-4. **Two build modes:** `npm run build` (Vercel, base `/`) and `npm run build:pages`
-   (GitHub Pages, base `/MedFriend_MVP/`). Set in `vite.config.ts`. Use `import.meta.env.BASE_URL`
-   for any asset path in code; never hard-code `/`.
-
-5. **Database = Supabase (20 Nov)**, anonymous sign-in, one project for app and tests.
-   Plan: `docs/specs/DB-supabase.md`. Supabase plugin installed at project scope
-   (`.claude/settings.json`). Project created and plugin signed in on 20 Nov; tables created 20 Nov.
-   Tests use the same database; when the owner asks, clear it and seed demo data.
+## How the app works now
+- **Login first.** Email + password (Supabase Auth). "Confirm email" is OFF (sign-up logs in at once).
+  Forgot password uses Supabase's built-in email (only reaches the owner's Supabase team, ~2/hour).
+- **Demo account** (button on the login screen): `demo@medfriend.jo` / `123456`, public on purpose,
+  6 medicines incl. Singulair at 23:30 (so "Show the next reminder now" works until 23:30) and 30 days of history.
+  Reset: `node scripts/seed-demo.mjs`. **Run it Tuesday evening or Wednesday morning** so the history ends
+  the day before the professor's demo (history is fixed; days after the reset count as Missed).
+  Shared account: if someone answers the 23:30 dose, tap Undo on Today to reuse the reminder demo.
+- The owner created two personal accounts in the dashboard (Gmail, Outlook). **Never put them in code or docs.**
+- **4 bottom tabs:** Today | My medicines | Progress | Settings. The app opens on Today.
+  The reminder banner shows on every tab. Log out, account email, Demo speed, "Show the next reminder now"
+  and the disclaimer are in Settings.
+- **Rules:** a dose is "Due now" from its time until 60 min later, then "Missed". Doses before a medicine was
+  added never count. Follow-up and snooze: 15 min. Demo speed (per device): every minute = 1 second.
+  Adherence = Taken ÷ decided doses (Skipped counts as not taken); "on time" = taken within 1 hour.
 
 ## Code map
-- `src/main.tsx`: entry point, wraps the app in `I18nProvider`
-- `src/App.tsx`: home screen (title, tagline, empty state, "Add medication" button that does nothing yet)
-- `src/i18n/index.tsx`: `useI18n()` gives `{ lang, setLang, t }`; language saved in localStorage `medfriend.lang`
-- `src/i18n/en.json`, `src/i18n/ar.json`: all user-facing text (same keys in both)
-- `src/components/LanguageSwitch.tsx`: the "العربية / English" pill
-- `src/index.css`: design tokens (colours, 20px body text, 48px minimum tap size), phone frame. Logical CSS properties only.
+- `src/App.tsx`: login state → auth screens / Add medication wizard / tabs + reminder banner
+- `src/lib/`: `supabase.ts` (client), `auth.ts` (login actions, error messages, `DEMO_ACCOUNT`), `useAuth.ts`,
+  `time.ts` (Asia/Amman helpers, day parts), `doses.ts` (dose status, reminders, snooze), `useDoses.ts`
+  (today's doses shared by Today + banner, ticks every second), `adherence.ts` (F8 counting), `settings.ts`
+  (Demo speed), `alert.ts` (chime + vibration), `format.ts` (amount / strength text)
+- `src/storage/`: `medications.ts`, `doseLogs.ts` (Supabase calls)
+- `src/screens/`: `Auth/`, `AddMedication/`, `Today/`, `Progress/`, `Settings/`
+- `src/components/`: `TabBar`, `ReminderBanner`, `MedicationCard`, `Autocomplete`, `LanguageSwitch`
+- `src/data/drugs.ts`: ~50 medicine names (whole list REVIEW-AR)
+- `src/i18n/en.json`, `ar.json`: all text, same keys; `t(key, { n })` fills `{n}` placeholders
+- `src/index.css`: all styles (logical properties only); sections per feature
+- `supabase/migrations/`: SQL applied to the project (keep in sync with the database)
+- `scripts/seed-demo.mjs`: resets the demo account (logs in as demo; no secret key)
 
-## Feature order
-1. Supabase database setup: done 20 Nov (see "Start here").
-2. F6-lite "Add medication": plan in `docs/specs/F6.md`, waiting for answers A–D. Do not code before approval.
+## Database (Supabase project `medfriend`, ref `zotspmzlyopvkqsrgrng`)
+- Tables `medications` (strength as `strength_value` + `strength_unit`; old `strength` text column still exists,
+  unused, owner declined dropping it) and `dose_logs` (`unique (medication_id, scheduled_at)`; statuses
+  taken / skipped / snoozed / missed). RLS owner-only on both; grants to `authenticated` only.
+- Supabase MCP plugin works in this environment (project scope, `.claude/settings.json`).
+- Anonymous sign-ins are no longer used (can be switched off in the dashboard). Many empty anonymous users and
+  throwaway test users (`medfriend-test-…@mailinator.com`) exist; delete only when the owner asks.
 
-After F6, the agreed order is:
-2. Welcome screen (Start empty / Try with demo data) + Settings (reset all data, disclaimer)
-3. F2 Today view
-4. F1 Reminders with Demo speed
-5. F8 Dose log + adherence %
-Then Tier B on Tuesday morning only if Tier A passes.
+## Testing
+- `npm test` = Playwright, headless, every test on phone (Pixel 7) and laptop. ~2.5 min, 102 tests.
+- Each test signs up its own throwaway `@mailinator.com` account (`tests/helpers.ts`); Supabase refuses
+  example.com / .test addresses. Sign-up/login waits up to 20 s (`AUTH_TIMEOUT`) because Supabase is slow under load.
+- Time-based tests use Playwright's fake clock (`page.clock.install`, `fastForward`) with a fixed date in Nov 2026;
+  `loginWithMeds()` in `tests/helpers.ts` creates an account with back-dated medicines.
+- To show the owner a flow: record a headless video with Playwright (`recordVideo`) and open it for them.
+
+## Live links (update automatically on every push to `main`)
+| Link | Notes |
+|---|---|
+| https://sododabukhater.github.io/MedFriend_MVP/ | **Use this one.** GitHub Pages (`.github/workflows/pages.yml`, ~35 s per deploy). |
+| https://medfriendmvp.vercel.app | Vercel; the owner's network blocks `*.vercel.app`. |
+
+## Key decisions and rules
+1. English is the default while building; Arabic is written for every string at the same time.
+   Before the freeze: `DEFAULT_LANG = 'ar'` and one Arabic review pass.
+2. Font: Noto Sans Arabic (Google Fonts). No ESLint, no router, no UI framework.
+3. Dependencies: react, react-dom, vite, @vitejs/plugin-react, typescript, @types/react(-dom),
+   @playwright/test (dev), @supabase/supabase-js 2.119.2. **Ask before adding any.**
+4. Two builds: `npm run build` (base `/`) and `npm run build:pages` (base `/MedFriend_MVP/`).
+   Use `import.meta.env.BASE_URL` for asset paths.
+5. No medical advice: never suggest doses or strengths; the amount starts at 0.
+6. Git identity is set repo-locally (owner's GitHub name + Gmail). Commit messages end with the Co-Authored-By line.
 
 ## Commands
 ```bash
-npm install          # once, after cloning
 npm run dev          # local preview at http://localhost:5173
 npm run typecheck    # must pass
-npm run build        # must pass
-npm test             # Playwright tests, headless only (starts the dev server itself); must pass
-npm run test:report  # open the HTML report of the last run
+npm run build        # must pass (also: npm run build:pages)
+npm test             # Playwright, headless; must pass
+npm run test:report  # open the HTML report (has step-by-step traces with --trace on)
+node scripts/seed-demo.mjs   # reset the demo account (6 medicines + 30 days of history)
 ```
-Needs Node.js 20.19 or newer (Vite 8). TypeScript is version 7.
 
-## Local development and testing (since 20 Nov: owner now works in VS Code on Windows)
-- Node 26 and npm 11 are installed locally, so `npm run dev` works at http://localhost:5173.
-- Playwright config: `playwright.config.ts`. Tests live in `tests/`. Every test runs twice:
-  as a phone (Pixel 7) and as a laptop (1280×800), in the Asia/Amman time zone.
-- Each test clears localStorage first, so it starts as a first-time visitor.
-- Every addition gets a `tests/Fx.spec.ts` that checks its acceptance criteria (rule in `CLAUDE.md`).
-- Headless only (owner decision, 20 Nov). Headed mode was tried and dropped.
-- Git on this PC has no user name/email configured yet; set it before committing.
-
-## Gotchas found so far
-- The cloud session could push only after the owner connected GitHub to Claude (claude.ai/connect-github).
-- Browsers cache the old version: after a deploy, hard refresh (Ctrl+Shift+R) if a change does not show.
+## Gotchas
+- Some files use CRLF line endings: string replacements in scripts must handle `\r\n` (or use the Edit tool).
+- Browsers cache the old version: after a deploy, hard refresh (Ctrl+Shift+R).
+- Sound in reminders works only after the first tap in the app (browser rule); vibration only on Android.
+- `TZ=Asia/Amman date` does not work in Git Bash here; Amman is UTC+3.
