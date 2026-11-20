@@ -153,5 +153,18 @@
   "settings.trigger.done": "The reminder is shown at the top of the screen.",
   "settings.trigger.none": "No more doses to remind today.",
   "settings.account": "Account",
-  "settings.disclaimer": "Med Friend only records what you enter. It does not give medical advice."
+  "settings.disclaimer": "Med Friend only records what you enter. It does not give medical advice.",
+  "progress.title": "Progress",
+  "progress.overall": "Overall",
+  "progress.last7": "Last 7 days",
+  "progress.last30": "Last 30 days",
+  "progress.taken": "{n} of {total} doses taken",
+  "progress.noData": "Not enough data yet",
+  "progress.noDataShort": "—",
+  "progress.perMed": "Each medicine",
+  "progress.days7": "7 days",
+  "progress.days30": "30 days",
+  "progress.onTime": "{n} of {total} taken on time (within 1 hour)",
+  "progress.log": "Dose log",
+  "progress.showAll": "Show {n} days"
 }

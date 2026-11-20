@@ -80,3 +80,14 @@ export function longDate(instant: Date, lang: 'ar' | 'en'): string {
     month: 'long',
   }).format(instant)
 }
+
+/** A date n days later (negative n: earlier), "YYYY-MM-DD". */
+export function addDays(date: string, n: number): string {
+  const [y, m, d] = date.split('-').map(Number)
+  return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10)
+}
+
+/** "Thursday 19 November" for a "YYYY-MM-DD" date (Western digits in both languages). */
+export function longDateOf(date: string, lang: 'ar' | 'en'): string {
+  return longDate(ammanInstant(date, '12:00'), lang)
+}

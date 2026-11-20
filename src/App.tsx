@@ -14,6 +14,7 @@ import {
   SignUpScreen,
   type AuthScreen,
 } from './screens/Auth/AuthScreens'
+import Progress from './screens/Progress/Progress'
 import Settings from './screens/Settings/Settings'
 import Today from './screens/Today/Today'
 import { deleteMedication, listMedications, type Medication } from './storage/medications'
@@ -100,6 +101,9 @@ export default function App() {
           {meds.status === 'ready' && <Today api={doses} onAdd={startAdding} />}
         </>
       )
+    }
+    if (tab === 'progress') {
+      return meds.status === 'ready' ? <Progress meds={meds.meds} /> : null
     }
     if (tab === 'settings') {
       return <Settings email={auth.user.email ?? ''} onTriggerNext={doses.triggerNext} />

@@ -48,7 +48,10 @@ Do next:
    Settings tab `src/screens/Settings/Settings.tsx` (Demo speed in localStorage via `src/lib/settings.ts`,
    "Show the next reminder now", account, Log out, disclaimer). 88 tests pass (2 runs).
    Tests wait up to 20 s for sign-up/login (`AUTH_TIMEOUT`): Supabase is slow when ~90 tests sign up at once.
-   **Next: F8 Dose log + adherence %**, then "Reset all data", 30 days of demo history, Arabic default + review.
+7. **F8 Dose log + adherence %: BUILT 20 Nov** (`docs/specs/F8.md`). Progress tab `src/screens/Progress/Progress.tsx`,
+   counting in `src/lib/adherence.ts` (Taken ÷ decided doses; Skipped = not taken; on time = within 1 h).
+   Demo account reset now adds 30 days of history (`scripts/seed-demo.mjs`). 102 tests pass (2 runs).
+   **Next:** "Reset all data" (Settings), switch `DEFAULT_LANG` to 'ar' + Arabic review pass, then Tier B if time.
 
 3. **Email + password login: BUILT 20 Nov** (spec `docs/specs/AUTH.md`). Replaces anonymous sign-in.
    `src/lib/auth.ts` (actions, error messages, `DEMO_ACCOUNT`), `src/lib/useAuth.ts` (login state, reset-link

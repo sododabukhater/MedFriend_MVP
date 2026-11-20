@@ -153,5 +153,18 @@
   "settings.trigger.done": "ظهر التذكير في أعلى الشاشة.",
   "settings.trigger.none": "لا توجد جرعات أخرى للتذكير اليوم.",
   "settings.account": "الحساب",
-  "settings.disclaimer": "صديقك الطبي يسجّل فقط ما تُدخله، ولا يقدّم نصائح طبية."
+  "settings.disclaimer": "صديقك الطبي يسجّل فقط ما تُدخله، ولا يقدّم نصائح طبية.",
+  "progress.title": "التقدّم",
+  "progress.overall": "الإجمالي",
+  "progress.last7": "آخر 7 أيام",
+  "progress.last30": "آخر 30 يوماً",
+  "progress.taken": "أُخذت {n} من {total} جرعة",
+  "progress.noData": "لا توجد بيانات كافية بعد",
+  "progress.noDataShort": "—",
+  "progress.perMed": "كل دواء",
+  "progress.days7": "7 أيام",
+  "progress.days30": "30 يوماً",
+  "progress.onTime": "{n} من {total} أُخذت في وقتها (خلال ساعة)",
+  "progress.log": "سجلّ الجرعات",
+  "progress.showAll": "اعرض {n} يوماً"
 }

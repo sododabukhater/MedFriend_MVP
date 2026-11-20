@@ -1,13 +1,14 @@
 import { useI18n } from '../i18n'
 
-export type Tab = 'today' | 'meds' | 'settings'
+export type Tab = 'today' | 'meds' | 'progress' | 'settings'
 
-/** Big bottom tabs: Today | My medicines | Settings. */
+/** Big bottom tabs: Today | My medicines | Progress | Settings. */
 export default function TabBar({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) => void }) {
   const { t } = useI18n()
   const tabs: { id: Tab; label: string; icon: string }[] = [
     { id: 'today', label: t('tab.today'), icon: '☀' },
     { id: 'meds', label: t('home.myMeds'), icon: '💊' },
+    { id: 'progress', label: t('progress.title'), icon: '📊' },
     { id: 'settings', label: t('settings.title'), icon: '⚙' },
   ]
   return (
