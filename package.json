@@ -11,13 +11,17 @@
     "typecheck": "tsc --noEmit",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "build:pages": "tsc --noEmit && vite build --mode github-pages"
+    "build:pages": "tsc --noEmit && vite build --mode github-pages",
+    "test": "playwright test",
+    "test:report": "playwright show-report"
   },
   "dependencies": {
+    "@supabase/supabase-js": "2.119.2",
     "react": "19.3.1",
     "react-dom": "19.3.1"
   },
   "devDependencies": {
+    "@playwright/test": "1.65.1",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "@vitejs/plugin-react": "6.3.0",

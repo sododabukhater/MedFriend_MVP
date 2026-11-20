@@ -1,10 +1,13 @@
 import LanguageSwitch from './components/LanguageSwitch'
 import { useI18n } from './i18n'
+import { useSession } from './lib/useSession'
 
 export default function App() {
   const { t } = useI18n()
+  const { state, retry } = useSession()
   return (
-    <div className="phone-frame">
+    // data-session lets tests wait until the anonymous Supabase session is ready.
+    <div className="phone-frame" data-session={state.status}>
       <main className="screen">
         <div className="top-bar">
           <LanguageSwitch />
@@ -14,6 +17,15 @@ export default function App() {
           <h1 className="app-title">{t('app.name')}</h1>
           <p className="app-tagline">{t('home.tagline')}</p>
         </header>
+
+        {state.status === 'error' && (
+          <div className="alert" role="alert">
+            <p>{t('db.unreachable')}</p>
+            <button type="button" className="btn-secondary" onClick={retry}>
+              {t('db.retry')}
+            </button>
+          </div>
+        )}
 
         <section className="home-body">
           <p className="empty-state">{t('home.empty')}</p>

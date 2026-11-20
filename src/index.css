@@ -167,3 +167,33 @@ body {
   font-size: 1.75rem;
   line-height: 1;
 }
+
+/* Shown when the database cannot be reached (offline, server down). */
+.alert {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-block-end: var(--space);
+  padding: 1rem;
+  border-radius: var(--radius);
+  border: 2px solid #8a1c1c;
+  background: #fdecec;
+  color: #5c0f0f;            /* ~11:1 contrast on the pink background */
+}
+
+.btn-secondary {
+  min-height: var(--tap-min);
+  padding-inline: 1.25rem;
+  border-radius: var(--radius);
+  border: 2px solid currentColor;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-secondary:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}

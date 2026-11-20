@@ -4,5 +4,7 @@
   "home.addMedication": "إضافة دواء",
   "home.empty": "لم تُضِف أي دواء بعد.",
   "lang.switchTo": "English",
-  "lang.switchLabel": "Switch language to English"
+  "lang.switchLabel": "Switch language to English",
+  "db.unreachable": "تعذّر الاتصال بصديقك الطبي. تأكّد من اتصالك بالإنترنت.",
+  "db.retry": "حاول مرة أخرى"
 }

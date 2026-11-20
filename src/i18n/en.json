@@ -4,5 +4,7 @@
   "home.addMedication": "Add medication",
   "home.empty": "You have not added any medication yet.",
   "lang.switchTo": "العربية",
-  "lang.switchLabel": "تغيير اللغة إلى العربية"
+  "lang.switchLabel": "تغيير اللغة إلى العربية",
+  "db.unreachable": "Cannot reach Med Friend online. Check your internet connection.",
+  "db.retry": "Try again"
 }
