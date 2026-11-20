@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 import LanguageSwitch from './components/LanguageSwitch'
 import MedicationCard from './components/MedicationCard'
+import ReminderBanner from './components/ReminderBanner'
 import TabBar, { type Tab } from './components/TabBar'
 import { useI18n, type MessageKey } from './i18n'
-import { logOut } from './lib/auth'
 import { useAuth } from './lib/useAuth'
+import { useDoses } from './lib/useDoses'
 import AddMedication from './screens/AddMedication/AddMedication'
 import {
   ForgotScreen,
@@ -13,6 +14,7 @@ import {
   SignUpScreen,
   type AuthScreen,
 } from './screens/Auth/AuthScreens'
+import Settings from './screens/Settings/Settings'
 import Today from './screens/Today/Today'
 import { deleteMedication, listMedications, type Medication } from './storage/medications'
 
@@ -28,6 +30,8 @@ export default function App() {
   const [notice, setNotice] = useState<MessageKey | null>(null)
   const [error, setError] = useState<MessageKey | null>(null)
   const userId = auth.status === 'signedIn' ? auth.user.id : null
+  // Today's doses and reminders (shared by the Today tab and the reminder banner).
+  const doses = useDoses(meds.status === 'ready' ? meds.meds : null, userId)
 
   const load = useCallback(() => {
     setMeds({ status: 'loading' })
@@ -93,25 +97,22 @@ export default function App() {
               </button>
             </div>
           )}
-          {meds.status === 'ready' && <Today meds={meds.meds} onAdd={startAdding} />}
+          {meds.status === 'ready' && <Today api={doses} onAdd={startAdding} />}
         </>
       )
     }
+    if (tab === 'settings') {
+      return <Settings email={auth.user.email ?? ''} onTriggerNext={doses.triggerNext} />
+    }
     return (
       <main className="screen">
-        <div className="top-bar top-bar--split">
-          <button type="button" className="btn-text" onClick={() => logOut()}>
-            {t('auth.logout')}
-          </button>
+        <div className="top-bar">
           <LanguageSwitch />
         </div>
 
         <header className="app-header">
           <p className="app-title app-title--small">{t('app.name')}</p>
           <h1 className="question">{t('home.myMeds')}</h1>
-          <p className="signed-in-as">
-            {t('auth.signedInAs')} <span dir="ltr">{auth.user.email}</span>
-          </p>
         </header>
 
         {meds.status === 'error' && (
@@ -192,6 +193,11 @@ export default function App() {
     }
     return (
       <>
+        <ReminderBanner
+          reminders={doses.reminders}
+          busyKey={doses.busyKey}
+          onAnswer={(reminder, action) => doses.answer(reminder.dose, action)}
+        />
         {signedInScreen()}
         <TabBar tab={tab} onChange={setTab} />
       </>

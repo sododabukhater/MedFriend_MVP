@@ -136,5 +136,22 @@
   "dose.undo": "Undo",
   "dose.takeLabel": "Taken: {name} at {time}",
   "dose.skipLabel": "Skip: {name} at {time}",
-  "dose.undoLabel": "Undo: {name} at {time}"
+  "dose.undoLabel": "Undo: {name} at {time}",
+  "rem.title": "Time for your medicine",
+  "rem.followUp": "Second reminder: did you take it?",
+  "rem.count": "{n} of {total}",
+  "rem.snoozeMin": "Snooze {n} min",
+  "rem.snoozeSec": "Snooze {n} sec",
+  "status.snoozed": "Snoozed until {time}",
+  "settings.title": "Settings",
+  "settings.demo.title": "Demo tools",
+  "settings.demoSpeed": "Demo speed",
+  "settings.demoSpeed.hint": "For showing the app: every minute in reminders becomes one second (second reminder after 15 s, snooze 15 s, missed after 60 s).",
+  "settings.on": "On",
+  "settings.off": "Off",
+  "settings.trigger": "Show the next reminder now",
+  "settings.trigger.done": "The reminder is shown at the top of the screen.",
+  "settings.trigger.none": "No more doses to remind today.",
+  "settings.account": "Account",
+  "settings.disclaimer": "Med Friend only records what you enter. It does not give medical advice."
 }

@@ -1,34 +1,11 @@
 import { expect, test, type Page } from '@playwright/test'
-import { goToMeds, logInInUI, newApiUser, openLoggedOut, PASSWORD, signUpInUI } from './helpers'
+import { goToMeds, loginWithMeds as loginAt, signUpInUI, type MedRow } from './helpers'
 
 // Acceptance criteria: docs/specs/F2.md
 // Most tests use a fake clock: Wednesday 18 Nov 2026, 13:30 in Amman (10:30 UTC).
 const FAKE_NOW = new Date('2026-11-18T10:30:00Z')
 
-type MedRow = { name: string; times: string[]; createdAt?: string; strength?: [number, string] }
-
-/** A new account with medicines added "in the past", then logged in on the page with the fake clock. */
-async function loginWithMeds(page: Page, meds: MedRow[]) {
-  const user = await newApiUser()
-  const rows = meds.map((m) => ({
-    name: m.name,
-    form: 'tablet',
-    amount: 1,
-    times_per_day: m.times.length,
-    times: m.times,
-    created_at: m.createdAt ?? '2026-11-01T06:00:00Z',
-    strength_value: m.strength?.[0] ?? null,
-    strength_unit: m.strength?.[1] ?? null,
-  }))
-  const { error } = await user.db.from('medications').insert(rows)
-  expect(error).toBeNull()
-
-  await page.clock.install({ time: FAKE_NOW })
-  await openLoggedOut(page)
-  await logInInUI(page, user.session.user.email!, PASSWORD)
-  await expect(page.getByRole('heading', { name: 'Today' })).toBeVisible()
-  return user
-}
+const loginWithMeds = (page: Page, meds: MedRow[]) => loginAt(page, meds, FAKE_NOW)
 
 const dose = (page: Page, label: string) => page.getByRole('listitem', { name: label, exact: true })
 

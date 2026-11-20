@@ -136,5 +136,22 @@
   "dose.undo": "تراجع",
   "dose.takeLabel": "أخذتُ {name} الساعة {time}",
   "dose.skipLabel": "تخطّي {name} الساعة {time}",
-  "dose.undoLabel": "تراجع عن {name} الساعة {time}"
+  "dose.undoLabel": "تراجع عن {name} الساعة {time}",
+  "rem.title": "حان موعد دوائك",
+  "rem.followUp": "تذكير ثانٍ: هل أخذت دواءك؟",
+  "rem.count": "{n} من {total}",
+  "rem.snoozeMin": "ذكّرني بعد {n} دقيقة",
+  "rem.snoozeSec": "ذكّرني بعد {n} ثانية",
+  "status.snoozed": "مؤجَّلة حتى {time}",
+  "settings.title": "الإعدادات",
+  "settings.demo.title": "أدوات العرض التجريبي",
+  "settings.demoSpeed": "السرعة التجريبية",
+  "settings.demoSpeed.hint": "لعرض التطبيق: كل دقيقة في التذكيرات تصبح ثانية واحدة (تذكير ثانٍ بعد 15 ثانية، تأجيل 15 ثانية، فائتة بعد 60 ثانية).",
+  "settings.on": "تشغيل",
+  "settings.off": "إيقاف",
+  "settings.trigger": "اعرض التذكير التالي الآن",
+  "settings.trigger.done": "ظهر التذكير في أعلى الشاشة.",
+  "settings.trigger.none": "لا توجد جرعات أخرى للتذكير اليوم.",
+  "settings.account": "الحساب",
+  "settings.disclaimer": "صديقك الطبي يسجّل فقط ما تُدخله، ولا يقدّم نصائح طبية."
 }

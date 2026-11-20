@@ -1,71 +1,20 @@
-import { useCallback, useEffect, useState } from 'react'
 import LanguageSwitch from '../../components/LanguageSwitch'
 import { useI18n, type MessageKey } from '../../i18n'
-import { dosesForDate, type Dose } from '../../lib/doses'
+import type { Dose } from '../../lib/doses'
 import { amountText, strengthText } from '../../lib/format'
-import { ammanDate, ammanInstant, ammanTime, DAY_PARTS, longDate, nextDate } from '../../lib/time'
-import { doseKey, listDoseLogs, markDose, undoDose, type DoseLog } from '../../storage/doseLogs'
-import type { Medication } from '../../storage/medications'
+import { ammanTime, DAY_PARTS, longDate } from '../../lib/time'
+import type { DoseAction, DosesApi } from '../../lib/useDoses'
 
 // F2: today's doses grouped by time of day, with Taken / Skip / Undo. Spec: docs/specs/F2.md
 
 type Props = {
-  meds: Medication[]
+  api: DosesApi
   onAdd: () => void
 }
 
-/** The current time, updated every 30 seconds so "Due now" turns into "Missed" without a reload. */
-function useNow() {
-  const [now, setNow] = useState(() => new Date())
-  useEffect(() => {
-    const timer = setInterval(() => setNow(new Date()), 30_000)
-    return () => clearInterval(timer)
-  }, [])
-  return now
-}
-
-export default function Today({ meds, onAdd }: Props) {
+export default function Today({ api, onAdd }: Props) {
   const { t, lang } = useI18n()
-  const now = useNow()
-  const date = ammanDate(now)
-  const [logs, setLogs] = useState<DoseLog[] | null>(null)
-  const [loadError, setLoadError] = useState(false)
-  const [saveError, setSaveError] = useState(false)
-  const [busy, setBusy] = useState<string | null>(null)
-
-  const load = useCallback(() => {
-    setLoadError(false)
-    listDoseLogs(ammanInstant(date, '00:00'), ammanInstant(nextDate(date), '00:00')).then(setLogs, (err: unknown) => {
-      console.error('Loading dose log failed', err)
-      setLoadError(true)
-    })
-  }, [date])
-
-  // Load today's answers (again after midnight, when the date changes).
-  useEffect(load, [load])
-
-  async function answer(dose: Dose, action: 'taken' | 'skipped' | 'undo') {
-    const key = doseKey(dose.med.id, dose.scheduledAt)
-    setBusy(key)
-    setSaveError(false)
-    try {
-      const others = (logs ?? []).filter((l) => doseKey(l.medicationId, l.scheduledAt) !== key)
-      if (action === 'undo') {
-        await undoDose(dose.med.id, dose.scheduledAt)
-        setLogs(others)
-      } else {
-        const saved = await markDose(dose.med.id, dose.scheduledAt, action)
-        setLogs([...others, saved])
-      }
-    } catch (err) {
-      console.error('Saving dose failed', err)
-      setSaveError(true)
-    } finally {
-      setBusy(null)
-    }
-  }
-
-  const doses = logs ? dosesForDate(meds, logs, date, now) : []
+  const { now, doses, ready, loadError, saveError, busyKey, answer, reload } = api
   const taken = doses.filter((d) => d.status === 'taken').length
 
   return (
@@ -87,7 +36,7 @@ export default function Today({ meds, onAdd }: Props) {
       {loadError && (
         <div className="alert" role="alert">
           <p>{t('db.loadFailed')}</p>
-          <button type="button" className="btn-secondary" onClick={load}>
+          <button type="button" className="btn-secondary" onClick={reload}>
             {t('db.retry')}
           </button>
         </div>
@@ -98,7 +47,7 @@ export default function Today({ meds, onAdd }: Props) {
         </div>
       )}
 
-      {logs && doses.length === 0 && (
+      {ready && doses.length === 0 && (
         <section className="home-body today-empty">
           <p className="empty-state">{t('today.empty')}</p>
           <button type="button" className="btn-primary" onClick={onAdd}>
@@ -121,9 +70,9 @@ export default function Today({ meds, onAdd }: Props) {
             <ul className="dose-list">
               {inPart.map((dose) => (
                 <DoseRow
-                  key={doseKey(dose.med.id, dose.scheduledAt)}
+                  key={dose.key}
                   dose={dose}
-                  busy={busy === doseKey(dose.med.id, dose.scheduledAt)}
+                  busy={busyKey === dose.key}
                   onAnswer={(action) => answer(dose, action)}
                 />
               ))}
@@ -135,29 +84,22 @@ export default function Today({ meds, onAdd }: Props) {
   )
 }
 
-function DoseRow({
-  dose,
-  busy,
-  onAnswer,
-}: {
-  dose: Dose
-  busy: boolean
-  onAnswer: (action: 'taken' | 'skipped' | 'undo') => void
-}) {
+function DoseRow({ dose, busy, onAnswer }: { dose: Dose; busy: boolean; onAnswer: (action: DoseAction) => void }) {
   const { t } = useI18n()
   const { med, time, status } = dose
   const answered = status === 'taken' || status === 'skipped'
   const strength = strengthText(t, med.strengthValue, med.strengthUnit)
-  const label = `${time} ${med.name}`
   const statusText =
     status === 'taken'
       ? t('status.taken', { time: ammanTime(dose.log!.recordedAt) })
-      : status === 'open'
-        ? ''
-        : t(`status.${status}` as MessageKey)
+      : status === 'snoozed'
+        ? t('status.snoozed', { time: ammanTime(dose.snoozedUntil!) })
+        : status === 'open'
+          ? ''
+          : t(`status.${status}` as MessageKey)
 
   return (
-    <li className={`dose dose--${status}`} aria-label={label} data-status={status}>
+    <li className={`dose dose--${status}`} aria-label={`${time} ${med.name}`} data-status={status}>
       <div className="dose-head">
         <span className="dose-time" dir="ltr">
           {time}

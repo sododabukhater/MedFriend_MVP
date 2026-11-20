@@ -1,13 +1,14 @@
 import { useI18n } from '../i18n'
 
-export type Tab = 'today' | 'meds'
+export type Tab = 'today' | 'meds' | 'settings'
 
-/** Big bottom tabs: Today | My medicines. Settings will be added later. */
+/** Big bottom tabs: Today | My medicines | Settings. */
 export default function TabBar({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) => void }) {
   const { t } = useI18n()
   const tabs: { id: Tab; label: string; icon: string }[] = [
     { id: 'today', label: t('tab.today'), icon: '☀' },
     { id: 'meds', label: t('home.myMeds'), icon: '💊' },
+    { id: 'settings', label: t('settings.title'), icon: '⚙' },
   ]
   return (
     <nav className="tab-bar" aria-label={t('tab.label')}>

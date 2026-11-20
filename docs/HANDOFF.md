@@ -42,7 +42,13 @@ Do next:
    `src/screens/Today/Today.tsx`, dose status rules in `src/lib/doses.ts` (reuse for F1/F8), Amman time helpers in
    `src/lib/time.ts`, dose log calls in `src/storage/doseLogs.ts`. Taken / Skip / Undo write `dose_logs`.
    Tests `tests/F2.spec.ts` use Playwright's fake clock. 72 tests pass.
-   **Next: F1 Reminders** (then F8, Settings, 30 days of demo history; see the plan in the chat of 20 Nov).
+6. **F1 Reminders: BUILT 20 Nov** (`docs/specs/F1.md`). Banner `src/components/ReminderBanner.tsx` on every
+   signed-in tab; reminder rules in `src/lib/doses.ts` (`activeReminders`, snooze, follow-up); shared state in
+   `src/lib/useDoses.ts` (used by Today and the banner; ticks every second); chime + vibration `src/lib/alert.ts`;
+   Settings tab `src/screens/Settings/Settings.tsx` (Demo speed in localStorage via `src/lib/settings.ts`,
+   "Show the next reminder now", account, Log out, disclaimer). 88 tests pass (2 runs).
+   Tests wait up to 20 s for sign-up/login (`AUTH_TIMEOUT`): Supabase is slow when ~90 tests sign up at once.
+   **Next: F8 Dose log + adherence %**, then "Reset all data", 30 days of demo history, Arabic default + review.
 
 3. **Email + password login: BUILT 20 Nov** (spec `docs/specs/AUTH.md`). Replaces anonymous sign-in.
    `src/lib/auth.ts` (actions, error messages, `DEMO_ACCOUNT`), `src/lib/useAuth.ts` (login state, reset-link
