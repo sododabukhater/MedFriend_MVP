@@ -51,7 +51,10 @@ Do next:
 7. **F8 Dose log + adherence %: BUILT 20 Nov** (`docs/specs/F8.md`). Progress tab `src/screens/Progress/Progress.tsx`,
    counting in `src/lib/adherence.ts` (Taken ÷ decided doses; Skipped = not taken; on time = within 1 h).
    Demo account reset now adds 30 days of history (`scripts/seed-demo.mjs`). 102 tests pass (2 runs).
-   **Next:** "Reset all data" (Settings), switch `DEFAULT_LANG` to 'ar' + Arabic review pass, then Tier B if time.
+   **Plan from 20 Nov (owner): build everything** (CLAUDE.md "Alpha scope"): design revamp (incl. "Reset all data")
+   → F9 → F3 → F4 → F5 → F10 → F7; Tuesday: `DEFAULT_LANG = 'ar'`, Arabic review, demo reset
+   (`node scripts/seed-demo.mjs`, so the 30-day history ends the day before the demo), code freeze.
+   Owner asked for the "frontend design" skill for the revamp: not installed in this environment (ask the owner).
 
 3. **Email + password login: BUILT 20 Nov** (spec `docs/specs/AUTH.md`). Replaces anonymous sign-in.
    `src/lib/auth.ts` (actions, error messages, `DEMO_ACCOUNT`), `src/lib/useAuth.ts` (login state, reset-link

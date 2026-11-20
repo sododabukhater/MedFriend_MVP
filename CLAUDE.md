@@ -31,13 +31,16 @@ Tier A — core loop (must ship):
 - F2 "Today" view: doses grouped by time slot (morning / noon / evening / night), status per dose.
 - F8 Dose log (timestamped) + adherence % per medication for 7 and 30 days.
 
-Tier B — Tuesday morning only, only if Tier A passes all tests; in this order:
+Tier A is built (20 Nov). Decided 20 Nov: build ALL remaining features (F4 and F5 included) plus a UI revamp,
+in this order (each still gets a plan approved first; cut from the bottom if time runs out):
+- Design revamp of the whole app: simplest, most user-friendly UI for 35–65 patients (applies F11 / F12); includes "Reset all data" in Settings.
 - F9 One-tap Arabic summary (medication list + adherence): printable page (browser Print → PDF) and a WhatsApp share link with the text summary.
 - F3 Prayer and meal anchors ("after Fajr", "with Iftar"). Prayer times for Amman by default.
-- F10-lite Document vault: upload/photograph a lab result or prescription, tag by date and type, stored in the browser.
+- F4 Own-pill photo card: the patient photographs their own pill / box; the photo shows on the medicine and in the reminder.
+- F5 Arabic voice dose readout: the reminder / dose is read aloud in Arabic (browser speech).
+- F10-lite Document vault: upload/photograph a lab result or prescription, tag by date and type.
 - F7 Stock count with low-stock refill alert.
-
-Deferred (validate with the Kano questionnaire only, do not build): F4 own-pill photo card, F5 Arabic voice readout.
+Cut line: if behind on Monday evening, drop F7 first, then F10.
 
 ## Technical rules
 - Stack: Vite + React + TypeScript, plain CSS (no UI framework unless I approve). Static site only.
