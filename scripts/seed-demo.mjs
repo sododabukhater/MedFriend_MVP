@@ -1,4 +1,4 @@
-// Resets the demo account's medicines to the 5 samples.  Run:  node scripts/seed-demo.mjs
+// Resets the demo account's medicines to the 6 samples.  Run:  node scripts/seed-demo.mjs
 // Uses only the public .env values and logs in as the demo user (normal RLS path, no secret key).
 import { readFileSync } from 'node:fs'
 import { createClient } from '@supabase/supabase-js'
@@ -23,6 +23,9 @@ const samples = [
   ['Lipitor', 20, 'tablet', 1, ['20:00']],
   ['Aspocid', 81, 'tablet', 1, ['13:00']],
   ['Nexium', 40, 'capsule', 1, ['08:00']],
+  // Late dose so "Show the next reminder now" (Settings) has a dose to remind until 23:30.
+  // Once answered, tap Undo on Today to use it again.
+  ['Singulair', 10, 'tablet', 1, ['23:30']],
 ].map(([name, strengthMg, form, amount, times]) => ({
   name, from_list: true, strength_value: strengthMg, strength_unit: 'mg', form, amount, times_per_day: times.length, times,
 }))

@@ -9,7 +9,8 @@ Replaces anonymous sign-in, so the same account sees the same data on every devi
   about 2 emails per hour. Enough to show the flow with the owner's own account.
 - **Demo account button** on the login screen for the professor: `demo@medfriend.jo` / `123456`
   (created by the owner in the dashboard). Public on purpose (in `src/lib/auth.ts`); sample data only.
-  Reset its 5 medicines with `node scripts/seed-demo.mjs`.
+  Reset its 6 medicines with `node scripts/seed-demo.mjs` (one is at 23:30, so the reminder demo works until then;
+  after someone answers it, Undo on Today makes it available again).
 - The owner also created two personal accounts for their own testing. Never put them in code or docs.
 - Anonymous sign-in is no longer used by the app.
 

@@ -53,7 +53,7 @@ Do next:
 3. **Email + password login: BUILT 20 Nov** (spec `docs/specs/AUTH.md`). Replaces anonymous sign-in.
    `src/lib/auth.ts` (actions, error messages, `DEMO_ACCOUNT`), `src/lib/useAuth.ts` (login state, reset-link
    recovery), `src/screens/Auth/AuthScreens.tsx`. `.phone-frame` now has `data-auth="loading|signedOut|signedIn"`.
-   Demo account `demo@medfriend.jo` / `123456` (owner-created) with 5 medicines; reset with `node scripts/seed-demo.mjs`.
+   Demo account `demo@medfriend.jo` / `123456` (owner-created) with 6 medicines (incl. Singulair 23:30 so "Show the next reminder now" works until 23:30); reset with `node scripts/seed-demo.mjs`.
    Tests: `tests/helpers.ts` signs up a throwaway `@mailinator.com` account per test. 55 pass (2 runs).
    Commits so far: `ee1aa1a` DB, `d6f115e` F6; auth commit follows. Nothing pushed yet.
    Open: the "welcome screen" in CLAUDE.md (Start empty / Try demo data) now overlaps with the login
