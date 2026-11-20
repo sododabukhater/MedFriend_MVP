@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import LanguageSwitch from './components/LanguageSwitch'
 import MedicationCard from './components/MedicationCard'
+import TabBar, { type Tab } from './components/TabBar'
 import { useI18n, type MessageKey } from './i18n'
 import { logOut } from './lib/auth'
 import { useAuth } from './lib/useAuth'
@@ -12,6 +13,7 @@ import {
   SignUpScreen,
   type AuthScreen,
 } from './screens/Auth/AuthScreens'
+import Today from './screens/Today/Today'
 import { deleteMedication, listMedications, type Medication } from './storage/medications'
 
 type MedsState = { status: 'loading' } | { status: 'ready'; meds: Medication[] } | { status: 'error' }
@@ -20,7 +22,8 @@ export default function App() {
   const { t } = useI18n()
   const { state: auth, finishRecovery } = useAuth()
   const [authScreen, setAuthScreen] = useState<AuthScreen>('login')
-  const [screen, setScreen] = useState<'home' | 'add'>('home')
+  const [tab, setTab] = useState<Tab>('today')
+  const [adding, setAdding] = useState(false)
   const [meds, setMeds] = useState<MedsState>({ status: 'loading' })
   const [notice, setNotice] = useState<MessageKey | null>(null)
   const [error, setError] = useState<MessageKey | null>(null)
@@ -42,11 +45,12 @@ export default function App() {
     if (userId) load()
   }, [userId, load])
 
-  // Back to a clean start after logout.
+  // Back to a clean start after logout; after login the app opens on Today.
   useEffect(() => {
     if (auth.status === 'signedOut') {
       setAuthScreen('login')
-      setScreen('home')
+      setTab('today')
+      setAdding(false)
       setMeds({ status: 'loading' })
       setError(null)
     }
@@ -71,35 +75,26 @@ export default function App() {
     }
   }
 
-  function content() {
-    if (auth.status === 'loading') return null
-    if (auth.status === 'signedOut') {
-      if (authScreen === 'signup') return <SignUpScreen go={setAuthScreen} />
-      if (authScreen === 'forgot') return <ForgotScreen go={setAuthScreen} />
-      return <LoginScreen go={setAuthScreen} />
-    }
-    if (auth.recovery) {
+  function startAdding() {
+    setNotice(null)
+    setAdding(true)
+  }
+
+  function signedInScreen() {
+    if (auth.status !== 'signedIn') return null
+    if (tab === 'today') {
       return (
-        <NewPasswordScreen
-          onDone={() => {
-            finishRecovery()
-            setNotice('auth.reset.done')
-          }}
-        />
-      )
-    }
-    if (screen === 'add') {
-      return (
-        <AddMedication
-          onCancel={() => setScreen('home')}
-          onSaved={(med) => {
-            if (meds.status === 'ready') setMeds({ status: 'ready', meds: [...meds.meds, med] })
-            else load()
-            setNotice('home.saved')
-            setError(null)
-            setScreen('home')
-          }}
-        />
+        <>
+          {meds.status === 'error' && (
+            <div className="alert alert--top" role="alert">
+              <p>{t('db.loadFailed')}</p>
+              <button type="button" className="btn-secondary" onClick={load}>
+                {t('db.retry')}
+              </button>
+            </div>
+          )}
+          {meds.status === 'ready' && <Today meds={meds.meds} onAdd={startAdding} />}
+        </>
       )
     }
     return (
@@ -112,8 +107,8 @@ export default function App() {
         </div>
 
         <header className="app-header">
-          <h1 className="app-title">{t('app.name')}</h1>
-          <p className="app-tagline">{t('home.tagline')}</p>
+          <p className="app-title app-title--small">{t('app.name')}</p>
+          <h1 className="question">{t('home.myMeds')}</h1>
           <p className="signed-in-as">
             {t('auth.signedInAs')} <span dir="ltr">{auth.user.email}</span>
           </p>
@@ -138,7 +133,6 @@ export default function App() {
 
         {meds.status === 'ready' && meds.meds.length > 0 ? (
           <section className="med-section">
-            <h2 className="section-title">{t('home.myMeds')}</h2>
             <ul className="med-list">
               {meds.meds.map((med) => (
                 <MedicationCard key={med.id} med={med} onDelete={handleDelete} />
@@ -152,14 +146,7 @@ export default function App() {
         )}
 
         <footer className="primary-action">
-          <button
-            type="button"
-            className="btn-primary"
-            onClick={() => {
-              setNotice(null)
-              setScreen('add')
-            }}
-          >
+          <button type="button" className="btn-primary" onClick={startAdding}>
             <span aria-hidden="true" className="btn-icon">
               +
             </span>
@@ -167,6 +154,47 @@ export default function App() {
           </button>
         </footer>
       </main>
+    )
+  }
+
+  function content() {
+    if (auth.status === 'loading') return null
+    if (auth.status === 'signedOut') {
+      if (authScreen === 'signup') return <SignUpScreen go={setAuthScreen} />
+      if (authScreen === 'forgot') return <ForgotScreen go={setAuthScreen} />
+      return <LoginScreen go={setAuthScreen} />
+    }
+    if (auth.recovery) {
+      return (
+        <NewPasswordScreen
+          onDone={() => {
+            finishRecovery()
+            setNotice('auth.reset.done')
+            setTab('meds')
+          }}
+        />
+      )
+    }
+    if (adding) {
+      return (
+        <AddMedication
+          onCancel={() => setAdding(false)}
+          onSaved={(med) => {
+            if (meds.status === 'ready') setMeds({ status: 'ready', meds: [...meds.meds, med] })
+            else load()
+            setNotice('home.saved')
+            setError(null)
+            setAdding(false)
+            setTab('meds') // shows the new card with "Medication saved"
+          }}
+        />
+      )
+    }
+    return (
+      <>
+        {signedInScreen()}
+        <TabBar tab={tab} onChange={setTab} />
+      </>
     )
   }
 

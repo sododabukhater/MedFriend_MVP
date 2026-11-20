@@ -19,7 +19,7 @@ export async function openLoggedOut(page: Page) {
   await expect(page.locator('.phone-frame')).toHaveAttribute('data-auth', 'signedOut')
 }
 
-/** Creates a brand-new account through the sign-up screen; ends on the (empty) home screen. */
+/** Creates a brand-new account through the sign-up screen; ends on the (empty) Today screen. */
 export async function signUpInUI(page: Page, email = newEmail(), password = PASSWORD) {
   await openLoggedOut(page)
   await page.getByRole('button', { name: 'Create an account' }).click()
@@ -28,8 +28,14 @@ export async function signUpInUI(page: Page, email = newEmail(), password = PASS
   await page.getByLabel('Type the password again').fill(password)
   await page.getByRole('button', { name: 'Create account' }).click()
   await expect(page.locator('.phone-frame')).toHaveAttribute('data-auth', 'signedIn')
-  await expect(page.getByText('You have not added any medication yet.')).toBeVisible()
+  await expect(page.getByText('No doses today.', { exact: false })).toBeVisible()
   return { email, password }
+}
+
+/** Opens the "My medicines" tab (medicine list, Log out). */
+export async function goToMeds(page: Page) {
+  await page.getByRole('navigation').getByRole('button', { name: 'My medicines' }).click()
+  await expect(page.getByRole('heading', { name: 'My medicines' })).toBeVisible()
 }
 
 export async function logInInUI(page: Page, email: string, password: string) {

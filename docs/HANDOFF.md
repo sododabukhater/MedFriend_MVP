@@ -36,6 +36,14 @@ Do next:
    `src/data/drugs.ts`), cards with Delete + confirm (`src/components/MedicationCard.tsx`),
    Supabase calls in `src/storage/medications.ts`. `t(key, vars)` now fills `{n}` placeholders.
    Tests `tests/F6.spec.ts`: all pass (39 total + 2× repeat of F6).
+4. **Strength fix (20 Nov):** number + unit (`strength_value`, `strength_unit`). The old `strength` text column
+   is still in the database (owner declined dropping it); the app no longer reads or writes it.
+5. **F2 Today view: BUILT 20 Nov** (`docs/specs/F2.md`). Bottom tabs Today | My medicines (`src/components/TabBar.tsx`),
+   `src/screens/Today/Today.tsx`, dose status rules in `src/lib/doses.ts` (reuse for F1/F8), Amman time helpers in
+   `src/lib/time.ts`, dose log calls in `src/storage/doseLogs.ts`. Taken / Skip / Undo write `dose_logs`.
+   Tests `tests/F2.spec.ts` use Playwright's fake clock. 72 tests pass.
+   **Next: F1 Reminders** (then F8, Settings, 30 days of demo history; see the plan in the chat of 20 Nov).
+
 3. **Email + password login: BUILT 20 Nov** (spec `docs/specs/AUTH.md`). Replaces anonymous sign-in.
    `src/lib/auth.ts` (actions, error messages, `DEMO_ACCOUNT`), `src/lib/useAuth.ts` (login state, reset-link
    recovery), `src/screens/Auth/AuthScreens.tsx`. `.phone-frame` now has `data-auth="loading|signedOut|signedIn"`.

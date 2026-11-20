@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { logInInUI, newApiUser, newEmail, openLoggedOut, PASSWORD, signUpInUI, SUPABASE_URL } from './helpers'
+import { goToMeds, logInInUI, newApiUser, newEmail, openLoggedOut, PASSWORD, signUpInUI, SUPABASE_URL } from './helpers'
 
 // Acceptance criteria: docs/specs/AUTH.md
 
@@ -17,9 +17,12 @@ test('1. First visit shows the login screen, with sign-up, forgot password and d
 
 test('2. Sign up logs in at once; a refresh stays logged in', async ({ page }) => {
   const { email } = await signUpInUI(page)
+  await expect(page.getByRole('heading', { name: 'Today' })).toBeVisible()
+  await goToMeds(page)
   await expect(page.getByText(`Logged in as ${email}`)).toBeVisible()
   await page.reload()
   await expect(page.locator(frame)).toHaveAttribute('data-auth', 'signedIn')
+  await goToMeds(page)
   await expect(page.getByText(`Logged in as ${email}`)).toBeVisible()
 })
 
@@ -47,6 +50,7 @@ test('3. Sign up checks the email and password before sending', async ({ page })
 
 test('4. Signing up again with the same email says the account exists', async ({ page }) => {
   const { email } = await signUpInUI(page)
+  await goToMeds(page)
   await page.getByRole('button', { name: 'Log out' }).click()
   await page.getByRole('button', { name: 'Create an account' }).click()
   await page.getByLabel('Email').fill(email)
@@ -67,6 +71,7 @@ test('5. Log out, then log in again: the medicines are still there; a wrong pass
   await expect(page.getByRole('alert')).toHaveText('Wrong email or password.')
 
   await logInInUI(page, email, password)
+  await goToMeds(page)
   await expect(page.getByRole('listitem', { name: 'Concor' })).toBeVisible()
 })
 
@@ -78,6 +83,7 @@ test('6. The same account on another device sees the same medicines', async ({ p
   const other = await laptop.newPage()
   await openLoggedOut(other)
   await logInInUI(other, email, password)
+  await goToMeds(other)
   await expect(other.getByRole('listitem', { name: 'Lipitor' })).toBeVisible()
   await laptop.close()
 })
@@ -132,6 +138,7 @@ test('8. The reset link asks for a new password, which then works for login', as
 test('9. "Use the demo account" logs in to the shared demo data', async ({ page }) => {
   await openLoggedOut(page)
   await page.getByRole('button', { name: 'Use the demo account' }).click()
+  await goToMeds(page)
   await expect(page.getByText('Logged in as demo@medfriend.jo')).toBeVisible()
   // Read only: this test never changes the demo data.
   await expect(page.locator('.med-card').first()).toBeVisible()

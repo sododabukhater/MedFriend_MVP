@@ -1,10 +1,12 @@
 import { expect, test, type Page } from '@playwright/test'
-import { signUpInUI } from './helpers'
+import { goToMeds, signUpInUI } from './helpers'
 
 // Acceptance criteria: docs/specs/F6.md. Each test signs up a brand-new, empty account.
 
 async function openHome(page: Page) {
   await signUpInUI(page)
+  await goToMeds(page)
+  await expect(page.getByText('You have not added any medication yet.')).toBeVisible()
 }
 
 const next = (page: Page) => page.getByRole('button', { name: 'Next' })
@@ -139,6 +141,7 @@ test('8 + 9. Three medicines all show, and are still there after a refresh', asy
   await addMed(page, { name: 'Lantus', form: 'Injection', more: 10, perDay: 'Once a day' })
 
   await page.reload()
+  await goToMeds(page) // the app opens on Today after a refresh
   await expect(page.locator('.phone-frame')).toHaveAttribute('data-auth', 'signedIn')
   await expect(page.locator('.med-card')).toHaveCount(3)
   await expect(card(page, 'Concor')).toContainText('1 tablet')
@@ -169,10 +172,11 @@ test('10. Cancel at any step returns home without saving', async ({ page }) => {
       await next(page).click()
     }
     await page.getByRole('button', { name: 'Cancel' }).click()
-    await expect(page.getByRole('heading', { name: 'Med Friend' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'My medicines' })).toBeVisible()
     await expect(page.getByText('You have not added any medication yet.')).toBeVisible()
   }
   await page.reload()
+  await goToMeds(page) // the app opens on Today after a refresh
   await expect(page.getByText('You have not added any medication yet.')).toBeVisible()
 })
 
@@ -272,6 +276,7 @@ test('Delete asks first; "Keep it" keeps the medicine, "Yes, delete" removes it 
   await expect(page.getByText('You have not added any medication yet.')).toBeVisible()
 
   await page.reload()
+  await goToMeds(page) // the app opens on Today after a refresh
   await expect(page.getByText('You have not added any medication yet.')).toBeVisible()
 })
 
