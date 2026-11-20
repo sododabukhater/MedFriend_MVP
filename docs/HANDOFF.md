@@ -9,8 +9,8 @@ Last updated: **Fri 20 Nov 2026, late evening** (end of the second VS Code sessi
 2. **Tier A is done** (F6, F2, F1, F8 + login, Settings, Progress). 102 Playwright tests pass.
 3. **Next step: the design revamp** (see "Plan" below). Before coding it:
    - The owner asked to use the **"frontend design" skill**. It was NOT installed in the last session.
-     Check the skills list. If it is there, load it. If not, ask the owner: install it (`/plugin` →
-     frontend-design, then a new chat) or proceed without it.
+     On 20 Nov (third session) the owner chose to **install it first** (`/plugin` → frontend-design, new chat).
+     Check the skills list: if it is there, load it. If it is still missing, tell the owner and ask again.
    - Show the owner a mock-up of the new look and get approval before changing code (CLAUDE.md: plan first).
 4. Then continue the plan one feature at a time: plan → owner approval → build → tests → commit → push →
    tell the owner exactly what to click.
@@ -37,8 +37,8 @@ Order (each one: short plan → approval → build). Cut from the bottom if behi
 | 7 | **F7** Stock count + low-stock refill alert | 2–3 h | Mon/Tue | |
 | — | **Tuesday:** `DEFAULT_LANG = 'ar'` in `src/i18n/index.tsx`, Arabic review pass (REVIEW-AR items), run `node scripts/seed-demo.mjs`, code freeze | | Tue | |
 
-Open decision: CLAUDE.md's "welcome screen" (Start empty / Try demo data) overlaps with the login screen's
-"Use the demo account" button. Suggest dropping it; confirm with the owner during the revamp.
+Decided 20 Nov (owner): **drop the welcome screen** (Start empty / Try demo data). The login screen's
+"Use the demo account" button covers it. Update CLAUDE.md's "First visit" line during the revamp.
 
 ## Done (all on `main`, all pushed)
 | Commit | What | Spec | Tests |
