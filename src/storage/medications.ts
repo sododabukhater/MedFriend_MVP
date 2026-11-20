@@ -5,11 +5,18 @@ import { supabase } from '../lib/supabase'
 export const FORMS = ['tablet', 'capsule', 'syrup', 'injection', 'inhaler', 'drops', 'cream', 'other'] as const
 export type Form = (typeof FORMS)[number]
 
+/** Strength units (fixed list; the database refuses anything else). */
+export const STRENGTH_UNITS = ['mg', 'mcg', 'g', 'ml', 'unit', 'percent'] as const
+export type StrengthUnit = (typeof STRENGTH_UNITS)[number]
+export const MAX_STRENGTH = 99999
+
 export type Medication = {
   id: string
   name: string
   fromList: boolean
-  strength: string | null
+  /** Both set or both null (optional). */
+  strengthValue: number | null
+  strengthUnit: StrengthUnit | null
   form: Form
   amount: number
   timesPerDay: number
@@ -23,7 +30,8 @@ type Row = {
   id: string
   name: string
   from_list: boolean
-  strength: string | null
+  strength_value: number | string | null
+  strength_unit: StrengthUnit | null
   form: Form
   amount: number | string
   times_per_day: number
@@ -36,7 +44,8 @@ function fromRow(r: Row): Medication {
     id: r.id,
     name: r.name,
     fromList: r.from_list,
-    strength: r.strength,
+    strengthValue: r.strength_value === null ? null : Number(r.strength_value),
+    strengthUnit: r.strength_unit,
     form: r.form,
     amount: Number(r.amount),
     timesPerDay: r.times_per_day,
@@ -48,7 +57,7 @@ function fromRow(r: Row): Medication {
 export async function listMedications(): Promise<Medication[]> {
   const { data, error } = await supabase
     .from('medications')
-    .select('*')
+    .select('id, name, from_list, strength_value, strength_unit, form, amount, times_per_day, times, created_at')
     .order('created_at', { ascending: true })
   if (error) throw error
   return (data as Row[]).map(fromRow)
@@ -60,13 +69,14 @@ export async function addMedication(med: NewMedication): Promise<Medication> {
     .insert({
       name: med.name.trim(),
       from_list: med.fromList,
-      strength: med.strength?.trim() || null,
+      strength_value: med.strengthUnit ? med.strengthValue : null,
+      strength_unit: med.strengthValue ? med.strengthUnit : null,
       form: med.form,
       amount: med.amount,
       times_per_day: med.timesPerDay,
       times: [...med.times].sort(),
     })
-    .select()
+    .select('id, name, from_list, strength_value, strength_unit, form, amount, times_per_day, times, created_at')
     .single()
   if (error) throw error
   return fromRow(data as Row)
@@ -90,4 +100,19 @@ export function amountStep(form: Form): number {
   if (form === 'tablet') return 0.5
   if (form === 'syrup') return 2.5
   return 1
+}
+
+/**
+ * Cleans what the patient types in the strength box: Arabic digits become 0-9, "٫" or "," becomes ".",
+ * anything else is dropped, at most one decimal point and 2 decimals. Returns "" for empty.
+ */
+export function cleanStrengthInput(text: string): string {
+  const western = text
+    .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x0660))
+    .replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 0x06f0))
+    .replace(/[٫,]/g, '.')
+    .replace(/[^0-9.]/g, '')
+  const [whole, ...rest] = western.split('.')
+  const cleaned = rest.length ? `${whole}.${rest.join('').slice(0, 2)}` : whole
+  return cleaned.slice(0, 8)
 }

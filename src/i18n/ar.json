@@ -29,7 +29,7 @@
   "add.name.hint": "اكتب الاسم كما هو على العلبة. اختر من الاقتراحات أو أبقِ ما كتبت.",
   "add.name.label": "اسم الدواء",
   "add.name.suggestions": "اقتراحات",
-  "add.strength.label": "التركيز (اختياري)، مثل 500 ملغ",
+  "add.strength.label": "التركيز (اختياري)",
   "add.form.q": "ما شكل الدواء؟",
   "form.tablet": "حبوب",
   "form.capsule": "كبسولات",
@@ -105,5 +105,16 @@
   "auth.err.tooMany": "محاولات كثيرة. انتظر بضع دقائق ثم حاول مرة أخرى.",
   "auth.err.notConfirmed": "أكّد بريدك الإلكتروني أولاً (تفقّد بريدك الوارد).",
   "auth.err.samePassword": "اختر كلمة مرور مختلفة عن القديمة.",
-  "auth.err.generic": "حدث خطأ ما. حاول مرة أخرى."
+  "auth.err.generic": "حدث خطأ ما. حاول مرة أخرى.",
+  "add.strength.hint": "اكتب الرقم المكتوب على العلبة، ثم اختر الوحدة.",
+  "add.strength.number": "رقم التركيز",
+  "add.strength.unit": "وحدة التركيز",
+  "add.strength.needUnit": "اختر الوحدة، أو امسح الرقم.",
+  "add.strength.needNumber": "اكتب الرقم، أو اضغط على الوحدة مرة أخرى لإلغائها.",
+  "strength.mg": "ملغ",
+  "strength.mcg": "مكغ",
+  "strength.g": "غ",
+  "strength.ml": "مل",
+  "strength.unit": "وحدة",
+  "strength.percent": "%"
 }

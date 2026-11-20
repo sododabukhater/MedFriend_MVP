@@ -180,11 +180,13 @@ test('Back keeps the answers; the review screen shows everything', async ({ page
   await openHome(page)
   await page.getByRole('button', { name: 'Add medication' }).click()
   await page.getByRole('combobox', { name: 'Medicine name' }).fill('Crestor')
-  await page.getByLabel('Strength (optional), e.g. 500 mg').fill('10 mg')
+  await page.getByRole('textbox', { name: 'Strength number' }).fill('10')
+  await page.getByRole('button', { name: 'mg', exact: true }).click()
   await next(page).click()
   await page.getByRole('button', { name: 'Back' }).click()
   await expect(page.getByRole('combobox', { name: 'Medicine name' })).toHaveValue('Crestor')
-  await expect(page.getByLabel('Strength (optional), e.g. 500 mg')).toHaveValue('10 mg')
+  await expect(page.getByRole('textbox', { name: 'Strength number' })).toHaveValue('10')
+  await expect(page.getByRole('button', { name: 'mg', exact: true })).toHaveAttribute('aria-pressed', 'true')
   await next(page).click()
   await page.getByRole('button', { name: 'Tablet', exact: true }).click()
   await next(page).click()
@@ -200,6 +202,59 @@ test('Back keeps the answers; the review screen shows everything', async ({ page
   }
   await page.getByRole('button', { name: 'Save medication' }).click()
   await expect(card(page, 'Crestor')).toContainText('10 mg')
+})
+
+test('Strength takes only a clean number plus a unit from the list (both or neither)', async ({ page }) => {
+  await openHome(page)
+  await page.getByRole('button', { name: 'Add medication' }).click()
+  await page.getByRole('combobox', { name: 'Medicine name' }).fill('Glucophage')
+  const number = page.getByRole('textbox', { name: 'Strength number' })
+  const mg = page.getByRole('button', { name: 'mg', exact: true })
+
+  // Rubbish is dropped as you type: letters, spaces, a second decimal point.
+  await number.fill('abc 8x5.0.5 mg')
+  await expect(number).toHaveValue('85.05')
+  // Arabic digits and the Arabic decimal sign become 0-9 and "."
+  await number.fill('٥٠٠٫٥')
+  await expect(number).toHaveValue('500.5')
+
+  // A number without a unit: Next stays off and says why.
+  await number.fill('500')
+  await expect(next(page)).toBeDisabled()
+  await expect(page.getByText('Choose a unit, or clear the number.')).toBeVisible()
+
+  // A unit without a number (or 0): Next stays off.
+  await number.fill('')
+  await mg.click()
+  await expect(next(page)).toBeDisabled()
+  await expect(page.getByText('Type the number, or tap the unit again to clear it.')).toBeVisible()
+  await number.fill('0')
+  await expect(next(page)).toBeDisabled()
+
+  // Tapping the chosen unit again clears it: no strength at all is fine (it is optional).
+  await number.fill('')
+  await mg.click()
+  await expect(mg).toHaveAttribute('aria-pressed', 'false')
+  await expect(next(page)).toBeEnabled()
+
+  // Number + unit: fine, and saved as such.
+  await number.fill('500')
+  await mg.click()
+  await expect(next(page)).toBeEnabled()
+  await next(page).click()
+  await page.getByRole('button', { name: 'Tablet', exact: true }).click()
+  await next(page).click()
+  await page.getByRole('button', { name: 'More' }).click()
+  await page.getByRole('button', { name: 'More' }).click()
+  await next(page).click()
+  await page.getByRole('button', { name: 'Twice a day' }).click()
+  await next(page).click()
+  await page.getByRole('button', { name: 'Save medication' }).click()
+  await expect(card(page, 'Glucophage')).toContainText('500 mg')
+
+  // The unit follows the language.
+  await page.getByRole('button', { name: 'تغيير اللغة إلى العربية' }).click()
+  await expect(card(page, 'Glucophage')).toContainText('500 ملغ')
 })
 
 test('Delete asks first; "Keep it" keeps the medicine, "Yes, delete" removes it for good', async ({ page }) => {

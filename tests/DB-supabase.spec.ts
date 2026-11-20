@@ -61,3 +61,22 @@ test('RLS: one account cannot see or change another account\'s rows', async ({},
     await a.db.from('medications').delete().eq('id', med.id)
   }
 })
+
+test('The database refuses a strength that is not a number + a unit from the list', async ({}, testInfo) => {
+  test.skip(testInfo.project.name !== 'phone', 'runs once')
+  const { db } = await newApiUser()
+  const base = { name: 'Strength check', form: 'tablet', amount: 1, times_per_day: 1, times: ['08:00'] }
+
+  for (const bad of [
+    { strength_value: 500, strength_unit: 'kg' }, // unit not in the list
+    { strength_value: 500 }, // number without unit
+    { strength_unit: 'mg' }, // unit without number
+    { strength_value: 0, strength_unit: 'mg' }, // not more than 0
+  ]) {
+    const { error } = await db.from('medications').insert({ ...base, ...bad })
+    expect(error, JSON.stringify(bad)).not.toBeNull()
+  }
+  const ok = await db.from('medications').insert({ ...base, strength_value: 2.5, strength_unit: 'ml' }).select('id').single()
+  expect(ok.error).toBeNull()
+  await db.from('medications').delete().eq('id', ok.data!.id)
+})

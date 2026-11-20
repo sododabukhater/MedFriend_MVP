@@ -18,13 +18,13 @@ const { error } = await db.auth.signInWithPassword({ email: 'demo@medfriend.jo',
 if (error) throw error
 
 const samples = [
-  ['Glucophage', '500 mg', 'tablet', 1, ['08:00', '20:00']],
-  ['Concor', '5 mg', 'tablet', 1, ['08:00']],
-  ['Lipitor', '20 mg', 'tablet', 1, ['20:00']],
-  ['Aspocid', '81 mg', 'tablet', 1, ['13:00']],
-  ['Nexium', '40 mg', 'capsule', 1, ['08:00']],
-].map(([name, strength, form, amount, times]) => ({
-  name, from_list: true, strength, form, amount, times_per_day: times.length, times,
+  ['Glucophage', 500, 'tablet', 1, ['08:00', '20:00']],
+  ['Concor', 5, 'tablet', 1, ['08:00']],
+  ['Lipitor', 20, 'tablet', 1, ['20:00']],
+  ['Aspocid', 81, 'tablet', 1, ['13:00']],
+  ['Nexium', 40, 'capsule', 1, ['08:00']],
+].map(([name, strengthMg, form, amount, times]) => ({
+  name, from_list: true, strength_value: strengthMg, strength_unit: 'mg', form, amount, times_per_day: times.length, times,
 }))
 
 const { data: { user } } = await db.auth.getUser()

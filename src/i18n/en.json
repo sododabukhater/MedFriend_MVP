@@ -29,7 +29,7 @@
   "add.name.hint": "Type the name on the box. Pick a suggestion or keep what you typed.",
   "add.name.label": "Medicine name",
   "add.name.suggestions": "Suggestions",
-  "add.strength.label": "Strength (optional), e.g. 500 mg",
+  "add.strength.label": "Strength (optional)",
   "add.form.q": "What form is it?",
   "form.tablet": "Tablet",
   "form.capsule": "Capsule",
@@ -105,5 +105,16 @@
   "auth.err.tooMany": "Too many tries. Please wait a few minutes and try again.",
   "auth.err.notConfirmed": "Please confirm your email first (check your inbox).",
   "auth.err.samePassword": "Choose a password different from the old one.",
-  "auth.err.generic": "Something went wrong. Please try again."
+  "auth.err.generic": "Something went wrong. Please try again.",
+  "add.strength.hint": "Type the number on the box, then choose the unit.",
+  "add.strength.number": "Strength number",
+  "add.strength.unit": "Strength unit",
+  "add.strength.needUnit": "Choose a unit, or clear the number.",
+  "add.strength.needNumber": "Type the number, or tap the unit again to clear it.",
+  "strength.mg": "mg",
+  "strength.mcg": "mcg",
+  "strength.g": "g",
+  "strength.ml": "ml",
+  "strength.unit": "units",
+  "strength.percent": "%"
 }

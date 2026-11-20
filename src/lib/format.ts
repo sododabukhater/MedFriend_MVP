@@ -1,5 +1,5 @@
 import type { MessageKey } from '../i18n'
-import type { Form } from '../storage/medications'
+import type { Form, StrengthUnit } from '../storage/medications'
 
 type T = (key: MessageKey, vars?: Record<string, string | number>) => string
 
@@ -11,4 +11,10 @@ export function amountText(t: T, form: Form, amount: number): string {
 
 export function perDayText(t: T, timesPerDay: number): string {
   return t(`perDay.${timesPerDay}` as MessageKey)
+}
+
+/** "500 mg" / "500 ملغ". Empty when no strength was entered. */
+export function strengthText(t: T, value: number | null, unit: StrengthUnit | null): string {
+  if (value === null || unit === null) return ''
+  return unit === 'percent' ? `${value}%` : `${value} ${t(`strength.${unit}` as MessageKey)}`
 }

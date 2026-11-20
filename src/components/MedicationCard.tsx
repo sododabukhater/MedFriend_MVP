@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useI18n, type MessageKey } from '../i18n'
-import { amountText, perDayText } from '../lib/format'
+import { amountText, perDayText, strengthText } from '../lib/format'
 import type { Medication } from '../storage/medications'
 
 type Props = {
@@ -28,7 +28,9 @@ export default function MedicationCard({ med, onDelete }: Props) {
       <div className="med-card-head">
         <h3 className="med-name">
           {med.name}
-          {med.strength && <span className="med-strength"> {med.strength}</span>}
+          {med.strengthValue !== null && (
+            <span className="med-strength"> {strengthText(t, med.strengthValue, med.strengthUnit)}</span>
+          )}
         </h3>
         {!confirming && (
           <button

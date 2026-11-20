@@ -2,14 +2,18 @@ import { useState } from 'react'
 import Autocomplete from '../../components/Autocomplete'
 import LanguageSwitch from '../../components/LanguageSwitch'
 import { useI18n, type MessageKey } from '../../i18n'
-import { amountText, perDayText } from '../../lib/format'
+import { amountText, perDayText, strengthText } from '../../lib/format'
 import {
   addMedication,
   amountStep,
+  cleanStrengthInput,
   FORMS,
+  MAX_STRENGTH,
+  STRENGTH_UNITS,
   SUGGESTED_TIMES,
   type Form,
   type Medication,
+  type StrengthUnit,
 } from '../../storage/medications'
 
 // F6-lite: 4 steps, one question per screen, then a review screen. Spec: docs/specs/F6.md
@@ -27,7 +31,9 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
   const [step, setStep] = useState<Step>(1)
   const [name, setName] = useState('')
   const [fromList, setFromList] = useState(false)
-  const [strength, setStrength] = useState('')
+  // Strength is optional: a number (typed) + a unit (chosen). Both or neither.
+  const [strengthInput, setStrengthInput] = useState('')
+  const [strengthUnit, setStrengthUnit] = useState<StrengthUnit | null>(null)
   const [form, setForm] = useState<Form | null>(null)
   // Starts at 0 on purpose: the app never suggests a dose.
   const [amount, setAmount] = useState(0)
@@ -35,8 +41,18 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(false)
 
+  const parsed = Number(strengthInput)
+  const strengthValue =
+    strengthInput !== '' && Number.isFinite(parsed) && parsed > 0 && parsed <= MAX_STRENGTH ? parsed : null
+  const strengthProblem: MessageKey | null =
+    strengthInput !== '' && !strengthUnit
+      ? 'add.strength.needUnit'
+      : strengthUnit && strengthValue === null
+        ? 'add.strength.needNumber'
+        : null
+
   const answered: Record<Step, boolean> = {
-    1: name.trim().length > 0,
+    1: name.trim().length > 0 && strengthProblem === null,
     2: form !== null,
     3: amount > 0,
     4: times.length > 0 && times.every((time) => /^\d{2}:\d{2}$/.test(time)),
@@ -57,7 +73,8 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
       const med = await addMedication({
         name,
         fromList,
-        strength: strength || null,
+        strengthValue,
+        strengthUnit: strengthValue === null ? null : strengthUnit,
         form,
         amount,
         timesPerDay: times.length,
@@ -105,18 +122,39 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
                 setFromList(picked)
               }}
             />
-            <label className="field-label" htmlFor="strength">
-              {t('add.strength.label')}
-            </label>
-            <input
-              id="strength"
-              className="text-input"
-              type="text"
-              maxLength={100}
-              autoComplete="off"
-              value={strength}
-              onChange={(e) => setStrength(e.target.value)}
-            />
+            <fieldset className="strength">
+              <legend className="field-label">{t('add.strength.label')}</legend>
+              <p className="hint">{t('add.strength.hint')}</p>
+              <input
+                className="text-input strength-number"
+                type="text"
+                inputMode="decimal"
+                dir="ltr"
+                autoComplete="off"
+                aria-label={t('add.strength.number')}
+                value={strengthInput}
+                onChange={(e) => setStrengthInput(cleanStrengthInput(e.target.value))}
+              />
+              <div className="unit-row" role="group" aria-label={t('add.strength.unit')}>
+                {STRENGTH_UNITS.map((u) => (
+                  <button
+                    key={u}
+                    type="button"
+                    className="unit-chip"
+                    aria-pressed={strengthUnit === u}
+                    // Tapping the chosen unit again clears it.
+                    onClick={() => setStrengthUnit(strengthUnit === u ? null : u)}
+                  >
+                    {t(`strength.${u}` as MessageKey)}
+                  </button>
+                ))}
+              </div>
+              {strengthProblem && (
+                <p className="field-problem" role="status">
+                  {t(strengthProblem)}
+                </p>
+              )}
+            </fieldset>
           </>
         )}
 
@@ -214,10 +252,10 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
             <dl className="review">
               <dt>{t('add.review.name')}</dt>
               <dd>{name.trim()}</dd>
-              {strength.trim() && (
+              {strengthValue !== null && (
                 <>
                   <dt>{t('add.review.strength')}</dt>
-                  <dd>{strength.trim()}</dd>
+                  <dd>{strengthText(t, strengthValue, strengthUnit)}</dd>
                 </>
               )}
               <dt>{t('add.review.form')}</dt>
