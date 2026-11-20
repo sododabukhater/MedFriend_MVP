@@ -1,7 +1,46 @@
 # Handoff — current status (read this first)
 
-Last updated: Fri 20 Nov 2026, end of the cloud session.
+Last updated: Fri 20 Nov 2026, end of the first VS Code (local) session.
 `CLAUDE.md` is the rulebook. This file is the current state of the work.
+
+## ▶ Start here (new chat)
+The previous chat could not use the Supabase tools (the plugin was installed mid-chat), so work
+continues in a new chat. The owner has already done the setup steps 1–5 in `docs/specs/DB-supabase.md`
+(account, project `medfriend` in Frankfurt, anonymous sign-ins on, rate limit raised, `/mcp` sign-in).
+`claude mcp list` showed `plugin:supabase:supabase ✔ Connected`.
+
+**Uncommitted work is on disk** (Playwright setup, Supabase plan, doc/rule updates). Not committed
+because Git on this PC has no name/email. Ask the owner first: use `sododabukhater` +
+their Gmail (as in their earlier commit) as a **repo-local** `git config`? Then commit it as
+"Add Playwright tests and Supabase plan". Push only when the owner says so.
+
+**Supabase database setup: DONE on 20 Nov (second session), not yet committed.**
+- Project `medfriend`, ref `zotspmzlyopvkqsrgrng` (region shows as eu-west-1 / Ireland, not Frankfurt; fine).
+- Migration `supabase/migrations/20261120180000_init_medications_dose_logs.sql` applied via MCP:
+  `medications` + `dose_logs`, RLS owner-only, grants to `authenticated` only (anon revoked), indexes.
+  `dose_logs` has a composite FK `(medication_id, user_id)` so a log can only point at the user's own medicine,
+  and `unique (medication_id, scheduled_at)` (one row per scheduled dose).
+- Advisors: no errors. Security WARN "Anonymous Access Policies" is expected (anonymous sign-in is the design).
+- `.env` (committed), `src/lib/supabase.ts` (client + `ensureSession()`), `src/lib/useSession.ts`,
+  `src/vite-env.d.ts`. App shows an alert with "Try again" when Supabase is unreachable.
+  `.phone-frame` has `data-session="loading|ready|error"` for tests.
+- `@supabase/supabase-js` 2.119.2 (exact). No `@types/node`: `tests/node-env.d.ts` declares `process`.
+- Tests: `tests/DB-supabase.spec.ts` (silent sign-in, refresh keeps user, second browser = new user,
+  offline message + recovery, RLS cross-user checks). All pass (45/45 over 3 repeats).
+- Each `npm test` run creates ~20 empty anonymous users (rate limit 300/hour ≈ 15 runs/hour).
+
+Do next:
+1. Commit (after git name/email is set) and push when the owner says so; then the owner checks the live link.
+2. **F6 "Add medication": BUILT 20 Nov, not yet committed.** Owner approved A–D (all defaults).
+   4-step wizard + review (`src/screens/AddMedication/`), name suggestions (`src/components/Autocomplete.tsx`,
+   `src/data/drugs.ts`), cards with Delete + confirm (`src/components/MedicationCard.tsx`),
+   Supabase calls in `src/storage/medications.ts`. `t(key, vars)` now fills `{n}` placeholders.
+   Tests `tests/F6.spec.ts`: all pass (39 total + 2× repeat of F6).
+3. **Owner asked (20 Nov, late): switch from anonymous sign-in to email + password**, with sign-up, login
+   and forgot-password pages and dummy users for development, so data stays the same across devices.
+   Plan proposed to the owner; waiting for approval before coding.
+
+Owner said on 20 Nov: **skip code reviews for now.** Playwright (headless) for every change is still required.
 
 ## About the owner
 - Industrial engineer / innovation background, **no coding experience**. Explain every step in plain words.
@@ -35,10 +74,16 @@ Owner tested F0 on the GitHub Pages link on a laptop: OK. Phone test and F12 tes
    `DEFAULT_LANG = 'ar'` in `src/i18n/index.tsx` and do one Arabic review pass.
 2. **Font:** Noto Sans Arabic from Google Fonts (link in `index.html`).
 3. **No ESLint, no router, no UI framework.** Dependencies are only react, react-dom, vite,
-   @vitejs/plugin-react, typescript, @types/react, @types/react-dom. Ask before adding any.
+   @vitejs/plugin-react, typescript, @types/react, @types/react-dom, and (dev-only, approved 20 Nov
+   for local testing) @playwright/test, and @supabase/supabase-js (approved with the DB plan). Ask before adding any.
 4. **Two build modes:** `npm run build` (Vercel, base `/`) and `npm run build:pages`
    (GitHub Pages, base `/MedFriend_MVP/`). Set in `vite.config.ts`. Use `import.meta.env.BASE_URL`
    for any asset path in code; never hard-code `/`.
+
+5. **Database = Supabase (20 Nov)**, anonymous sign-in, one project for app and tests.
+   Plan: `docs/specs/DB-supabase.md`. Supabase plugin installed at project scope
+   (`.claude/settings.json`). Project created and plugin signed in on 20 Nov; tables created 20 Nov.
+   Tests use the same database; when the owner asks, clear it and seed demo data.
 
 ## Code map
 - `src/main.tsx`: entry point, wraps the app in `I18nProvider`
@@ -48,9 +93,9 @@ Owner tested F0 on the GitHub Pages link on a laptop: OK. Phone test and F12 tes
 - `src/components/LanguageSwitch.tsx`: the "العربية / English" pill
 - `src/index.css`: design tokens (colours, 20px body text, 48px minimum tap size), phone frame. Logical CSS properties only.
 
-## Next step: F6-lite "Add medication" (plan written, NOT yet approved)
-Full plan: `docs/specs/F6.md`. Waiting for the owner's answers to open decisions A–D in that file.
-Do not start coding until the owner approves.
+## Feature order
+1. Supabase database setup: done 20 Nov (see "Start here").
+2. F6-lite "Add medication": plan in `docs/specs/F6.md`, waiting for answers A–D. Do not code before approval.
 
 After F6, the agreed order is:
 2. Welcome screen (Start empty / Try with demo data) + Settings (reset all data, disclaimer)
@@ -65,8 +110,19 @@ npm install          # once, after cloning
 npm run dev          # local preview at http://localhost:5173
 npm run typecheck    # must pass
 npm run build        # must pass
+npm test             # Playwright tests, headless only (starts the dev server itself); must pass
+npm run test:report  # open the HTML report of the last run
 ```
 Needs Node.js 20.19 or newer (Vite 8). TypeScript is version 7.
+
+## Local development and testing (since 20 Nov: owner now works in VS Code on Windows)
+- Node 26 and npm 11 are installed locally, so `npm run dev` works at http://localhost:5173.
+- Playwright config: `playwright.config.ts`. Tests live in `tests/`. Every test runs twice:
+  as a phone (Pixel 7) and as a laptop (1280×800), in the Asia/Amman time zone.
+- Each test clears localStorage first, so it starts as a first-time visitor.
+- Every addition gets a `tests/Fx.spec.ts` that checks its acceptance criteria (rule in `CLAUDE.md`).
+- Headless only (owner decision, 20 Nov). Headed mode was tried and dropped.
+- Git on this PC has no user name/email configured yet; set it before committing.
 
 ## Gotchas found so far
 - The cloud session could push only after the owner connected GitHub to Claude (claude.ai/connect-github).

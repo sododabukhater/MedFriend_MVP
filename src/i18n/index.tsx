@@ -39,7 +39,8 @@ export function initialLang(): Lang {
 type I18n = {
   lang: Lang
   setLang: (lang: Lang) => void
-  t: (key: MessageKey) => string
+  /** Text for the current language; `{name}` placeholders are filled from `vars`. */
+  t: (key: MessageKey, vars?: Record<string, string | number>) => string
 }
 
 const I18nContext = createContext<I18n | null>(null)
@@ -58,7 +59,11 @@ export function I18nProvider({ initial, children }: { initial: Lang; children: R
   }, [])
 
   const t = useCallback(
-    (key: MessageKey) => messages[lang][key] ?? messages.en[key] ?? key,
+    (key: MessageKey, vars?: Record<string, string | number>) => {
+      const text = messages[lang][key] ?? messages.en[key] ?? key
+      if (!vars) return text
+      return text.replace(/\{(\w+)\}/g, (m, name: string) => (name in vars ? String(vars[name]) : m))
+    },
     [lang],
   )
 
