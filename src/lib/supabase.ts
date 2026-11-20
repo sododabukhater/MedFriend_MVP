@@ -7,29 +7,6 @@ if (!url || !key) {
   throw new Error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_PUBLISHABLE_KEY in .env')
 }
 
-// The session is kept in this browser's localStorage, so each browser is its own user.
+// The login session is kept in this browser's localStorage, so a refresh stays logged in.
+// The same account on another device sees the same data.
 export const supabase = createClient(url, key)
-
-let pending: Promise<string> | null = null
-
-/**
- * Makes sure this browser has a Supabase user and returns its id.
- * First visit: signs in anonymously (no screen, no click). Later visits: reuses the saved session.
- * Shared promise, so React StrictMode's double start does not create two users.
- */
-export function ensureSession(): Promise<string> {
-  if (!pending) {
-    pending = (async () => {
-      const { data } = await supabase.auth.getSession()
-      if (data.session) return data.session.user.id
-      const { data: signIn, error } = await supabase.auth.signInAnonymously()
-      if (error || !signIn.user) throw error ?? new Error('Anonymous sign-in returned no user')
-      return signIn.user.id
-    })()
-    // Allow "Try again" after a failure (for example when offline).
-    pending.catch(() => {
-      pending = null
-    })
-  }
-  return pending
-}

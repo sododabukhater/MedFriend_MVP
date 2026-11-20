@@ -1,5 +1,8 @@
 # DB — Supabase database (plan, 20 Nov 2026)
 
+> **Update 20 Nov (later):** sign-in changed from anonymous to email + password. See `docs/specs/AUTH.md`.
+> Tables and RLS are unchanged. Sections below about anonymous users are history.
+
 ## Decisions (owner, 20 Nov)
 - **Database: Supabase** (Postgres), replacing "local-first / localStorage only".
 - **Sign-in: anonymous.** No sign-in screen. On first visit each browser silently gets its own

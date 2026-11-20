@@ -1,11 +1,10 @@
 import { expect, test, type Page } from '@playwright/test'
+import { signUpInUI } from './helpers'
 
-// Acceptance criteria: docs/specs/F6.md. Each test is a fresh browser = a new, empty anonymous user.
+// Acceptance criteria: docs/specs/F6.md. Each test signs up a brand-new, empty account.
 
 async function openHome(page: Page) {
-  await page.goto('/')
-  await expect(page.locator('.phone-frame')).toHaveAttribute('data-session', 'ready')
-  await expect(page.getByText('You have not added any medication yet.')).toBeVisible()
+  await signUpInUI(page)
 }
 
 const next = (page: Page) => page.getByRole('button', { name: 'Next' })
@@ -140,7 +139,7 @@ test('8 + 9. Three medicines all show, and are still there after a refresh', asy
   await addMed(page, { name: 'Lantus', form: 'Injection', more: 10, perDay: 'Once a day' })
 
   await page.reload()
-  await expect(page.locator('.phone-frame')).toHaveAttribute('data-session', 'ready')
+  await expect(page.locator('.phone-frame')).toHaveAttribute('data-auth', 'signedIn')
   await expect(page.locator('.med-card')).toHaveCount(3)
   await expect(card(page, 'Concor')).toContainText('1 tablet')
   await expect(card(page, 'Ventolin')).toContainText('2 puffs · 4 times a day')

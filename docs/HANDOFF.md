@@ -36,9 +36,15 @@ Do next:
    `src/data/drugs.ts`), cards with Delete + confirm (`src/components/MedicationCard.tsx`),
    Supabase calls in `src/storage/medications.ts`. `t(key, vars)` now fills `{n}` placeholders.
    Tests `tests/F6.spec.ts`: all pass (39 total + 2× repeat of F6).
-3. **Owner asked (20 Nov, late): switch from anonymous sign-in to email + password**, with sign-up, login
-   and forgot-password pages and dummy users for development, so data stays the same across devices.
-   Plan proposed to the owner; waiting for approval before coding.
+3. **Email + password login: BUILT 20 Nov** (spec `docs/specs/AUTH.md`). Replaces anonymous sign-in.
+   `src/lib/auth.ts` (actions, error messages, `DEMO_ACCOUNT`), `src/lib/useAuth.ts` (login state, reset-link
+   recovery), `src/screens/Auth/AuthScreens.tsx`. `.phone-frame` now has `data-auth="loading|signedOut|signedIn"`.
+   Demo account `demo@medfriend.jo` / `123456` (owner-created) with 5 medicines; reset with `node scripts/seed-demo.mjs`.
+   Tests: `tests/helpers.ts` signs up a throwaway `@mailinator.com` account per test. 55 pass (2 runs).
+   Commits so far: `ee1aa1a` DB, `d6f115e` F6; auth commit follows. Nothing pushed yet.
+   Open: the "welcome screen" in CLAUDE.md (Start empty / Try demo data) now overlaps with the login
+   screen's demo button; decide with the owner when building it. Anonymous sign-ins can be switched off in
+   Supabase; ~100 empty anonymous users and many throwaway test users can be deleted when the owner asks.
 
 Owner said on 20 Nov: **skip code reviews for now.** Playwright (headless) for every change is still required.
 
