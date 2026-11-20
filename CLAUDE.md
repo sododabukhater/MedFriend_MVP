@@ -39,6 +39,7 @@ Deferred (validate with the Kano questionnaire only, do not build): F4 own-pill 
 ## Technical rules
 - Stack: Vite + React + TypeScript, plain CSS (no UI framework unless I approve). Static site only.
 - Hosting: Vercel, connected to this GitHub repo. Every push to main updates the live link; other branches get preview links.
+- Backup hosting: GitHub Pages (https://sododabukhater.github.io/MedFriend_MVP/), published by `.github/workflows/pages.yml` on every push to main. Build with `npm run build:pages` (sets the `/MedFriend_MVP/` base path).
 - I work in Claude Code on the web (cloud). I have no local Node.js, so I test only through the Vercel links.
 - Local-first: all data stays in the visitor's browser (localStorage; IndexedDB only for document images). No backend, no accounts, no analytics, no cookies.
 - First visit: show a short welcome screen with two buttons: "ابدأ" (start empty) and "جرّب ببيانات تجريبية" (load demo data: 4–5 medications and 30 days of past dose history, clearly labelled as demo). Settings has "Reset all data".
