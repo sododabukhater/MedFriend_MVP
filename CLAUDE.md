@@ -1,5 +1,7 @@
 # Med Friend — Alpha MVP (web app)
 
+> Current status, decisions and next step: read `docs/HANDOFF.md` first.
+
 ## Product
 Med Friend (صديقك الطبي) is a medication-adherence app launching in Jordan.
 Alpha customer: a self-managing chronic / polypharmacy patient, 35–65, comfortable with a smartphone.
