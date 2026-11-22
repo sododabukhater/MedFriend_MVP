@@ -1,11 +1,11 @@
 # Handoff — current status (read this first)
 
-Last updated: **Sun 22 Nov 2026, night** (eighth session: code review of all of `src` (owner asked), all 10 findings
-fixed; the 10th became **Change times**, `docs/specs/TIMES.md`). **All planned features are built.** `CLAUDE.md` is the rulebook.
+Last updated: **Mon 23 Nov 2026, just after midnight** (end of eighth session: code review of all of `src` (owner
+asked), all 10 findings fixed; the 10th became **Change times**, `docs/specs/TIMES.md`). **All planned features are built.** `CLAUDE.md` is the rulebook.
 This file is the current state of the work. Deadline: live and tested by **Wed 25 Nov**; **code freeze Tue 24 Nov evening**.
 
 ## ▶ Start here (new chat)
-1. Everything is committed and pushed to `main` (last commit: Change times, see Done table);
+1. Everything is committed and pushed to `main` (last feature commit `b2fe451` Change times, then this handoff);
    the live link is up to date; working tree clean.
 2. **Done:** Tier A (F6, F2, F1, F8 + login, Settings, Progress), **design revamp** (+ Reset all data),
    **F9** doctor summary (+ "My details" profile, A4 print with logo), **F3** prayer and meal anchors
@@ -17,20 +17,36 @@ This file is the current state of the work. Deadline: live and tested by **Wed 2
    full boxes (− / +) and how many are left in the box in use (max one box; total shown); counted down from taken
    doses; Low at 7 days or less → yellow card on Today, Low badge on the card, yellow line in the reminder panel;
    "I got a new box" / "Correct the count" (asks the total) on the card.
-   **240 Playwright tests (237 + 3 skipped by design)**, all passing on 22 Nov night (~5–6 min). `retries: 1` in
+   **Change times** (`docs/specs/TIMES.md`): see point 2b.
+   **250 Playwright tests (247 incl. retries-passed + 3 skipped by design)**: last full run 22 Nov night = 244 passed,
+   3 flaky (F5 voice tests, passed on retry), 3 skipped (~5.5 min). `retries: 1` in
    `playwright.config.ts` (owner approved 22 Nov), so Supabase network timeouts show as "flaky", not failed.
-   **Code review 22 Nov (owner asked):** 10 findings; 9 fixed (see Done table). The 10th (meal-time change re-timed past doses) led to
-   **Change times** (owner: "changing any time must not affect the history"): "Change times" link on each medicine card;
-   new medicine or meal times start **tomorrow** (owner chose); past days keep their times (`medications.past_schedules`,
-   account `meal_times_past`). `tests/TIMES.spec.ts`.
+2b. **Code review 22 Nov (owner asked; owner had said 20 Nov to skip reviews, so only on request):** 10 findings.
+   9 fixed in `7af52a3`: stock line hidden until earlier doses load (retry every 5 s); "Set the box size" keeps a
+   typed "left"; dose logs read page by page (Supabase 1000-row limit); two quick answers both kept (functional state
+   updates in `useDoses`); Add medication refuses two doses at the same time; Demo-speed "on time"; the new follow-up
+   is the one read aloud; Settings birth year uses the Amman year.
+   The 10th (a meal-time change re-timed past doses → old answers showed as Missed) led to **Change times** (`b2fe451`),
+   owner rule: *"changing any time must not affect the history; doctors change timings often."*
+   - "Change times" link on each medicine card → `src/screens/ChangeTimes/` (same picker as Add medication step 4,
+     now the shared `src/components/TimesPicker.tsx`). "Save new times" is off until something changes.
+   - New medicine **or meal** times start **tomorrow** (owner chose); today and earlier days keep their times.
+     Card shows new times + "New times start tomorrow." until then. Several changes in one day: today keeps the first.
+   - Data: `medications.past_schedules jsonb` (`[{until, times, anchors}]`, owner approved the column) and account
+     metadata `meal_times_past` (`[{until, meals}]`). `doseTimesOn` (anchors.ts) picks the schedule + meals per date.
+   - Not built (offered, owner did not answer yet): "Change amount" (dose / strength) the same way, ~1–2 h.
+     Today, changing name / strength / form / amount still means delete + add again, which erases history.
 3. **Open questions for the owner:**
    - **F5 Edge check** of the last two fixes (name in English, strength number in Arabic) — owner said "sounds great"
      after the first; the number fix (`c5d679b`) is not yet confirmed by ear.
    - **Demo reset** done 22 Nov evening with the owner's OK (sample documents + fresh history). Run it again
      Tuesday evening / Wednesday morning as planned.
    - F10 and F7: owner said "fine" (22 Nov).
+   - Change times: owner has not clicked through it yet; offered a walkthrough video (not made yet).
+   - "Change amount" offered (see 2b), no answer yet.
    - Offered, not chosen: a dot on the "My medicines" tab for low stock; a cap on "Correct the count".
-4. **Next step: Tuesday tasks below** (all features done). Before that: owner feedback / fixes only, each with
+4. **Next step:** ask the owner about the Change times video / "Change amount"; then the **Tuesday tasks below**
+   (they could start Monday to give the owner more time for the Arabic review). Before that: owner feedback / fixes only, each with
    headless tests, commit, push and "what to click".
 5. New tables need `grant select, insert, update, delete … to authenticated` (forgot it once for F10).
 6. **Tuesday:** `DEFAULT_LANG = 'ar'` in `src/i18n/index.tsx`, Arabic review pass (all REVIEW-AR lists in the specs
