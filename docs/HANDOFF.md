@@ -1,55 +1,44 @@
 # Handoff — current status (read this first)
 
-Last updated: **Sun 22 Nov 2026** (design revamp built).
+Last updated: **Sun 22 Nov 2026, ~12:30** (end of the fourth session: design revamp, F9, F3 built).
 `CLAUDE.md` is the rulebook. This file is the current state of the work. Deadline: live and tested by
 **Wed 25 Nov**; **code freeze Tue 24 Nov evening**.
 
 ## ▶ Start here (new chat)
-1. Everything is committed and pushed to `main`; the live link is up to date. Working tree is clean.
-2. **Tier A is done** (F6, F2, F1, F8 + login, Settings, Progress) **and the design revamp is done**
-   (approved and built 22 Nov, incl. "Reset all data") **F9 is done** (doctor summary + "My details" profile) **and F3 is done** (prayer and meal anchors).
-   145 Playwright tests pass (2 run-once DB checks skipped on laptop). Note: the Bash tool halves backslashes in inline scripts; edit regexes with the Edit tool.
-3. **Next step: F4** (own-pill photo card). Explain it to the owner first, then plan, approval, build.
-   - **Behind schedule** (revamp was planned for Sat, done Sun). If behind on Monday evening, cut F7 then F10.
-4. Then continue the plan one feature at a time: plan → owner approval → build → tests → commit → push →
-   tell the owner exactly what to click.
+1. Everything is committed and pushed to `main` (last commit `6c25c91`); the live link is up to date; working tree clean.
+2. **Done:** Tier A (F6, F2, F1, F8 + login, Settings, Progress), **design revamp** (+ Reset all data),
+   **F9** doctor summary (+ "My details" profile, A4 print with logo), **F3** prayer and meal anchors
+   (+ "Prayer and Ramadan times" switch, off by default). **145 Playwright tests pass** (3 skipped by design).
+3. **Next step: F4 — own-pill photo card.** Explain it to the owner in plain words first (as was done for F9 and F3:
+   what the patient sees, what it does not do, time, then 2–3 multiple-choice decisions with a recommended option),
+   then write `docs/specs/F4.md`, get approval, build, test, commit, push, tell the owner what to click,
+   and offer a walkthrough video (see "Showing the owner").
+   - F4 needs a private Supabase Storage bucket (owner-only RLS) → a database/storage change: **ask before applying**.
+4. Then F5 (voice), F10 (documents), F7 (stock). Cut line: if behind on **Monday evening**, drop F7 first, then F10.
+5. **Tuesday:** `DEFAULT_LANG = 'ar'` in `src/i18n/index.tsx`, Arabic review pass (all REVIEW-AR lists in the specs),
+   run `node scripts/seed-demo.mjs` (Tuesday evening or Wednesday morning), code freeze.
 
-## Design revamp (done 22 Nov) — spec `docs/specs/DESIGN.md`
-- Part-of-day colours are the only bold element; white boxes, dark text, one green (`#0A6B52`). Font Readex Pro.
-- Today: top card (due / snoozed / next dose), "x of y taken" segments, one box per part of the day; tap a row to
-  answer it. Reminder: bottom panel over a dimmed screen (it blocks the app until answered).
-- My medicines: list with time chips + fixed "Add a medicine". Progress: 7/30-day switch, day bars, per-medicine %,
-  log behind "See every dose". Settings: language switch, demo tools, account, Reset all data (not on the demo account).
-- New components: `ScreenHeader`, `Icons` (line icons); new screen `src/screens/Medicines/`.
-  `ReminderBanner` is now the bottom panel. All styles in `src/index.css` (tokens at the top).
-- New Arabic strings to check are listed under REVIEW-AR in `docs/specs/DESIGN.md`.
-- Tests: the app frame is now fixed height (screen scrolls inside). Tests on the real clock start at 03:00 Amman
-  (`installEarlyClock`), because the reminder panel covers the screen whenever a dose is due.
+## Plan (decided by the owner on 20 Nov: build everything)
+| # | Item | Estimate | Status / target | Notes |
+|---|---|---|---|---|
+| 1 | Design revamp + "Reset all data" | 4–5 h | ✅ Sun | `docs/specs/DESIGN.md` |
+| 2 | F9 Summary for my doctor: print / PDF + WhatsApp | 2–3 h | ✅ Sun | `docs/specs/F9.md`; print redesigned after owner feedback |
+| 3 | F3 Prayer and meal anchors, Amman prayer times | ~5 h | ✅ Sun | `docs/specs/F3.md` |
+| 4 | **F4** Own-pill photo card (photo on the medicine and in the reminder) | ~3 h | **next** (Sun/Mon) | Private Supabase Storage bucket, owner-only RLS |
+| 5 | F5 Arabic voice dose readout | ~2 h | Mon | Browser `speechSynthesis`; "Voice not available" if no Arabic voice |
+| 6 | F10 Document vault (lab results / prescriptions, tag by date and type) | 3–4 h | Mon | Supabase Storage |
+| 7 | F7 Stock count + low-stock refill alert | 2–3 h | Mon/Tue | First to cut |
+| — | Tuesday: Arabic default + review pass, demo reset, freeze | | Tue | |
 
 ## About the owner
 - Industrial engineer / innovation background, **no coding experience**. Explain in plain words, short.
-- Answers questions best with multiple-choice options (AskUserQuestion) with a recommended default.
-  If a question is unclear to them they say "explain": then re-explain without jargon.
-- Owner said on 20 Nov: **skip code reviews for now.** Headless Playwright tests for every change are still required.
-- Owner tests on the GitHub Pages link. They may decline some database actions (they declined: writing users
-  directly into `auth.users`, and dropping the old `strength` column). Ask, don't retry.
-
-## Plan (decided by the owner on 20 Nov: build everything)
-Order (each one: short plan → approval → build). Cut from the bottom if behind on Monday evening (F7 first, then F10).
-
-| # | Item | Estimate | Target day | Notes |
-|---|---|---|---|---|
-| 1 | ✅ **Design revamp** of all screens + "Reset all data" in Settings | 4–5 h | Sat | Simplest, most user-friendly UI for 35–65; keep F11 rules (≥18px text, ≥48px buttons, high contrast, one main action) and RTL |
-| 2 | ✅ **F9** Arabic summary for doctors: printable page + WhatsApp share | 2–3 h | Sat | |
-| 3 | ✅ **F3** Prayer and meal anchors ("after Fajr", "with Iftar"), Amman prayer times | ~4 h | Sun | Calculate in-app (no dependency) or ask to add a library |
-| 4 | **F4** Own-pill photo card (photo on the medicine and in the reminder) | ~3 h | Sun | Photos in a private Supabase Storage bucket (owner-only RLS) |
-| 5 | **F5** Arabic voice dose readout | ~2 h | Mon | Browser `speechSynthesis`; show "Voice not available" if no Arabic voice |
-| 6 | **F10** Document vault (lab results / prescriptions, tag by date and type) | 3–4 h | Mon | Supabase Storage |
-| 7 | **F7** Stock count + low-stock refill alert | 2–3 h | Mon/Tue | |
-| — | **Tuesday:** `DEFAULT_LANG = 'ar'` in `src/i18n/index.tsx`, Arabic review pass (REVIEW-AR items), run `node scripts/seed-demo.mjs`, code freeze | | Tue | |
-
-Decided 20 Nov (owner): **drop the welcome screen** (Start empty / Try demo data). The login screen's
-"Use the demo account" button covers it. Update CLAUDE.md's "First visit" line during the revamp.
+- Answers best with multiple-choice questions (AskUserQuestion) with a recommended default. "explain" = re-explain simply.
+- Likes to **see** results: test in their Chrome (Claude in Chrome extension, when connected) or **a headless
+  walkthrough video** with captions. Offer the video after each feature.
+- Skip code reviews (owner, 20 Nov). Headless Playwright tests for every change are still required.
+- Owner tests on the GitHub Pages link. They may decline database actions (declined before: writing users into
+  `auth.users`, dropping the old `strength` column). Always ask before a database / storage change; don't retry.
+- Owner's personal accounts (Gmail, Outlook) exist in Supabase: **never put them in code or docs.**
 
 ## Done (all on `main`, all pushed)
 | Commit | What | Spec | Tests |
@@ -60,79 +49,99 @@ Decided 20 Nov (owner): **drop the welcome screen** (Start empty / Try demo data
 | `ee1aa1a` | Supabase DB (tables, RLS) + Playwright setup | `docs/specs/DB-supabase.md` | `tests/DB-supabase.spec.ts` |
 | `d6f115e` | F6 Add medication (4 steps, name suggestions, delete + confirm) | `docs/specs/F6.md` | `tests/F6.spec.ts` |
 | `e5b87e0` | Email + password login, sign-up, forgot password, demo account | `docs/specs/AUTH.md` | `tests/auth.spec.ts` |
-| `1a385e8` | F6 strength = number + unit (mg, mcg, g, ml, units, %) | `docs/specs/F6.md` | `tests/F6.spec.ts` |
-| `586b5df` | F2 Today view with Taken / Skip / Undo, bottom tabs | `docs/specs/F2.md` | `tests/F2.spec.ts` |
-| `e989e89` | F1 Reminders (banner, snooze, follow-up, chime) + Settings tab with Demo speed | `docs/specs/F1.md` | `tests/F1.spec.ts` |
-| `89dc87b` | Demo account: 23:30 dose so the reminder demo works in the evening | | |
-| `622a0d2` | F8 Progress tab: adherence % 7/30 days, dose log; 30 days of demo history | `docs/specs/F8.md` | `tests/F8.spec.ts` |
-| `d982e7d` | Plan: build all features (F4, F5 added) + UI revamp first | | |
+| `1a385e8` | F6 strength = number + unit | `docs/specs/F6.md` | `tests/F6.spec.ts` |
+| `586b5df` | F2 Today view | `docs/specs/F2.md` | `tests/F2.spec.ts` |
+| `e989e89` | F1 Reminders + Settings with Demo speed | `docs/specs/F1.md` | `tests/F1.spec.ts` |
+| `622a0d2` | F8 Progress: adherence % 7/30 days, dose log | `docs/specs/F8.md` | `tests/F8.spec.ts` |
 | `569647d` | Design revamp of all screens + Reset all data | `docs/specs/DESIGN.md` | `tests/DESIGN.spec.ts` |
-| `cc62452` | F9 Summary for my doctor (print / WhatsApp) + My details (name, year of birth) | `docs/specs/F9.md` | `tests/F9.spec.ts` |
-| (this commit) | F3 Prayer and meal anchors + "Prayer and Ramadan times" switch (off by default) + meal times | `docs/specs/F3.md` | `tests/F3.spec.ts` |
+| `cc62452` | F9 Summary for my doctor + My details (name, year of birth) | `docs/specs/F9.md` | `tests/F9.spec.ts` |
+| `c1701b0` | Refresh account details at app start (name saved on another device shows) | `docs/specs/F9.md` | `tests/F9.spec.ts` 1b |
+| `afad07c` | F9 print redesign: A4 document, Med Friend logo top right | `docs/specs/F9.md` | `tests/F9.spec.ts` 4 |
+| `6c25c91` | F3 Prayer and meal anchors + prayer switch (off by default) + meal times | `docs/specs/F3.md` | `tests/F3.spec.ts` |
 
 ## How the app works now
-- **Login first.** Email + password (Supabase Auth). "Confirm email" is OFF (sign-up logs in at once).
-  Forgot password uses Supabase's built-in email (only reaches the owner's Supabase team, ~2/hour).
-- **Demo account** (button on the login screen): `demo@medfriend.jo` / `123456`, public on purpose,
-  6 medicines incl. Singulair at 23:30 (so "Show the next reminder now" works until 23:30) and 30 days of history.
-  Reset: `node scripts/seed-demo.mjs`. **Run it Tuesday evening or Wednesday morning** so the history ends
-  the day before the professor's demo (history is fixed; days after the reset count as Missed).
-  Shared account: if someone answers the 23:30 dose, tap Undo on Today to reuse the reminder demo.
-- The owner created two personal accounts in the dashboard (Gmail, Outlook). **Never put them in code or docs.**
-- **4 bottom tabs:** Today | My medicines | Progress | Settings. The app opens on Today.
-  The reminder panel shows over every tab. Language, Demo speed, "Show the next reminder now", Log out, Reset all data
-  and the disclaimer are in Settings.
-- **Rules:** a dose is "Due now" from its time until 60 min later, then "Missed". Doses before a medicine was
-  added never count. Follow-up and snooze: 15 min. Demo speed (per device): every minute = 1 second.
-  Adherence = Taken ÷ decided doses (Skipped counts as not taken); "on time" = taken within 1 hour.
+- **Login first** (email + password, Supabase Auth; "Confirm email" OFF). No welcome screen (owner, 20 Nov);
+  the login screen's **Use the demo account** button opens the shared demo data.
+- **Demo account:** `demo@medfriend.jo` / `123456` (public on purpose). 6 medicines incl. Singulair at 23:30
+  (so "Show the next reminder now" works until 23:30), 30 days of history, name "مريض تجريبي (Demo patient)",
+  born 1968, **prayer times ON**, default meal times. Reset with `node scripts/seed-demo.mjs` (also gives Nexium
+  "before breakfast" = 07:30). **Run it Tuesday evening / Wednesday morning**: the history is fixed, so days after the
+  last reset count as Missed (on 22 Nov the 7-day figure is low for this reason). "Reset all data" is not offered on
+  the demo account. If someone answers a demo dose, tap the row → Undo.
+- **4 tabs:** Today | My medicines | Progress | Settings. Opens on Today.
+  - **Today:** top card = dose due now / snoozed / next (part-of-day colour); "x of y taken"; one box per part of day;
+    tap a row → I took it / Skip / Undo. Anchored doses show their moment ("After Fajr").
+  - **Reminder:** bottom panel over a dimmed screen; blocks the app until answered (I took it / Remind me in 15 minutes /
+    Skip this dose); names the moment for anchored doses.
+  - **My medicines:** list with coloured time chips ("08:00" or "After Fajr"); fixed "Add a medicine".
+  - **Progress:** 7 / 30 days switch, sentence with %, day bars, per-medicine %, "Summary for my doctor", "See every dose".
+  - **Summary for my doctor (F9):** document with logo top right; asks for the name on the page if none saved;
+    "Print or save as PDF" (one A4 page, own margins, no browser header) and "Send on WhatsApp" (`wa.me` text).
+  - **Settings:** My details (name, year of birth) · My day (Prayer and Ramadan times switch, today's Amman prayer
+    times when on, My meal times) · Language · For the demo (Demo speed, Show the next reminder now) · Account
+    (Log out, Reset all data) · disclaimer.
+- **Rules:** "Due now" from the dose time until +60 min, then "Missed". Doses before a medicine was added never count.
+  Follow-up / snooze 15 min. Demo speed (per device): 1 minute = 1 second. Adherence = Taken ÷ decided doses.
+- **F3 anchors:** after a prayer = prayer time + 15 min; before / with / after a meal = −30 / 0 / +30 min; Suhoor =
+  Fajr − 45 min; Iftar = Maghrib. Prayer times calculated in-app (Jordan Ministry of Awqaf: Fajr/Isha 18°,
+  Maghrib = sunset + 5 min), matched the official timetable to the minute. Known limit: changing a meal time also moves
+  past anchored doses, so an old answer may show as Missed.
+- **Account metadata** (Supabase Auth `user_metadata`, no tables): `full_name`, `birth_year`, `prayer_times`, `meal_times`.
 
 ## Code map
-- `src/App.tsx`: login state → auth screens / Add medication wizard / tabs + reminder banner
-- `src/lib/`: `supabase.ts` (client), `auth.ts` (login actions, error messages, `DEMO_ACCOUNT`), `useAuth.ts`,
-  `time.ts` (Asia/Amman helpers, day parts), `doses.ts` (dose status, reminders, snooze), `useDoses.ts`
-  (today's doses shared by Today + banner, ticks every second), `adherence.ts` (F8 counting), `settings.ts`
-  (Demo speed), `alert.ts` (chime + vibration), `format.ts` (amount / strength text)
-- `src/storage/`: `medications.ts`, `doseLogs.ts` (Supabase calls)
-- `src/screens/`: `Auth/`, `AddMedication/`, `Today/`, `Progress/`, `Settings/`
-- `src/components/`: `TabBar`, `ReminderBanner`, `MedicationCard`, `Autocomplete`, `LanguageSwitch`
-- `src/data/drugs.ts`: ~50 medicine names (whole list REVIEW-AR)
-- `src/i18n/en.json`, `ar.json`: all text, same keys; `t(key, { n })` fills `{n}` placeholders
-- `src/index.css`: all styles (logical properties only); sections per feature
-- `supabase/migrations/`: SQL applied to the project (keep in sync with the database)
-- `scripts/seed-demo.mjs`: resets the demo account (logs in as demo; no secret key)
+- `src/App.tsx`: login state → auth screens / Add medication / Summary / tabs + reminder panel; `PrefsProvider`.
+- `src/lib/`: `supabase.ts`, `auth.ts` (`DEMO_ACCOUNT`), `useAuth.ts` (refreshes account details at start),
+  `time.ts` (Amman helpers, day parts), `doses.ts`, `useDoses.ts`, `adherence.ts`, `useHistory.ts` (30-day history for
+  Progress + Summary), `settings.ts` (Demo speed), `alert.ts`, `format.ts`, `profile.ts` (My details),
+  `summary.ts` (F9 data + WhatsApp text), `prayer.ts` (F3 prayer times), `anchors.ts` (F3 anchors, meal / prayer prefs),
+  `prefs.tsx` (prefs context).
+- `src/storage/`: `medications.ts` (incl. `anchors`, `deleteAllMedications`), `doseLogs.ts`.
+- `src/screens/`: `Auth/`, `AddMedication/`, `Today/`, `Medicines/`, `Progress/`, `Summary/`, `Settings/`.
+- `src/components/`: `TabBar`, `ReminderBanner` (bottom panel), `MedicationCard`, `Autocomplete`, `LanguageSwitch`,
+  `ScreenHeader`, `Icons`, `Logo` (brand mark), `ProfileForm`, `DoseTimeRow` (F3 picker), `DaySettings` (F3 settings).
+- `src/i18n/en.json`, `ar.json`: all text, same keys. `src/index.css`: all styles, tokens at the top, print styles in F9.
+- `public/icon.svg`: the Med Friend logo (from the owner's deck "Med Friend - 17 Screens", slide S-P-01).
+- `supabase/migrations/`: SQL applied to the project. `scripts/seed-demo.mjs`: demo reset.
 
 ## Database (Supabase project `medfriend`, ref `zotspmzlyopvkqsrgrng`)
-- Tables `medications` (strength as `strength_value` + `strength_unit`; old `strength` text column still exists,
-  unused, owner declined dropping it) and `dose_logs` (`unique (medication_id, scheduled_at)`; statuses
-  taken / skipped / snoozed / missed). RLS owner-only on both; grants to `authenticated` only.
-- Supabase MCP plugin works in this environment (project scope, `.claude/settings.json`).
-- Anonymous sign-ins are no longer used (can be switched off in the dashboard). Many empty anonymous users and
-  throwaway test users (`medfriend-test-…@mailinator.com`) exist; delete only when the owner asks.
+- `medications` (strength_value + strength_unit; unused old `strength` column kept; **`anchors text[]`** added 22 Nov,
+  one per dose, '' = clock time, check on allowed codes) and `dose_logs` (`unique (medication_id, scheduled_at)`;
+  delete cascades from medications). RLS owner-only on both.
+- Supabase MCP plugin works here (`apply_migration`, `execute_sql`). Many throwaway test users
+  (`medfriend-test-…@mailinator.com`) exist; delete only when the owner asks.
 
 ## Testing
-- `npm test` = Playwright, headless, every test on phone (Pixel 7) and laptop. ~2.5 min, 102 tests.
-- Each test signs up its own throwaway `@mailinator.com` account (`tests/helpers.ts`); Supabase refuses
-  example.com / .test addresses. Sign-up/login waits up to 20 s (`AUTH_TIMEOUT`) because Supabase is slow under load.
-- Time-based tests use Playwright's fake clock (`page.clock.install`, `fastForward`) with a fixed date in Nov 2026;
-  `loginWithMeds()` in `tests/helpers.ts` creates an account with back-dated medicines.
-- To show the owner a flow: record a headless video with Playwright (`recordVideo`) and open it for them.
+- `npm test` = Playwright, headless, phone (Pixel 7) + laptop. ~2.7 min, 145 pass, 3 skipped (run-once checks).
+- Each test creates its own `@mailinator.com` account. Time-based tests use a fake clock (Nov 2026);
+  `loginWithMeds()` (supports `anchors`) and `installEarlyClock()` (03:00 Amman, so no reminder panel gets in the way)
+  in `tests/helpers.ts`. Tests can import pure files from `src/lib` (e.g. `tests/F3.spec.ts` imports `prayer.ts`).
+- Spec files: `DESIGN`, `F1`, `F2`, `F3`, `F6`, `F8`, `F9`, `auth`, `home`, `DB-supabase`.
+
+## Showing the owner
+- **Video:** write a temporary `tests/zz-video.spec.ts` (viewport 412×860, `video: { mode: 'on' }`, a caption overlay
+  injected with `page.evaluate`, `page.video().saveAs(...)` into the scratchpad), run with `--project=laptop`, delete the
+  spec, open the `.webm` with `cmd //c start "" <path>`. Use a throwaway account (`loginWithMeds`), never the demo.
+- **PDF check:** `page.pdf({ format: 'A4', preferCSSPageSize: true })` in a temporary spec; open with `start`.
+- **Chrome:** if the owner connects Claude in Chrome (`/chrome`), test on the live link in a new tab; don't press
+  Print (blocks the extension). On the shared demo account, undo anything you change.
 
 ## Live links (update automatically on every push to `main`)
 | Link | Notes |
 |---|---|
-| https://sododabukhater.github.io/MedFriend_MVP/ | **Use this one.** GitHub Pages (`.github/workflows/pages.yml`, ~35 s per deploy). |
+| https://sododabukhater.github.io/MedFriend_MVP/ | **Use this one.** GitHub Pages (~35–60 s per deploy). |
 | https://medfriendmvp.vercel.app | Vercel; the owner's network blocks `*.vercel.app`. |
 
 ## Key decisions and rules
-1. English is the default while building; Arabic is written for every string at the same time.
-   Before the freeze: `DEFAULT_LANG = 'ar'` and one Arabic review pass.
-2. Font: Readex Pro (Google Fonts, since the 22 Nov revamp). No ESLint, no router, no UI framework.
-3. Dependencies: react, react-dom, vite, @vitejs/plugin-react, typescript, @types/react(-dom),
+1. English default while building; Arabic written for every string. Before freeze: `DEFAULT_LANG = 'ar'` + review.
+   JSON can't hold `// REVIEW-AR`, so uncertain Arabic is listed under "REVIEW-AR" in each spec
+   (`DESIGN.md`, `F9.md`, `F3.md`, `F6.md`) and `src/data/drugs.ts`.
+2. Font Readex Pro. Colours: page `#EEF3F0`, action green `#0A6B52`, brand teal `#1A6B5A` (logo), day-part tints.
+   No ESLint, no router, no UI framework. Logical CSS properties only (the summary logo uses `order` to stay top right).
+3. Dependencies unchanged: react, react-dom, vite, @vitejs/plugin-react, typescript, @types/react(-dom),
    @playwright/test (dev), @supabase/supabase-js 2.119.2. **Ask before adding any.**
-4. Two builds: `npm run build` (base `/`) and `npm run build:pages` (base `/MedFriend_MVP/`).
-   Use `import.meta.env.BASE_URL` for asset paths.
-5. No medical advice: never suggest doses or strengths; the amount starts at 0.
-6. Git identity is set repo-locally (owner's GitHub name + Gmail). Commit messages end with the Co-Authored-By line.
+4. Two builds: `npm run build` and `npm run build:pages` (base `/MedFriend_MVP/`).
+5. No medical advice: never suggest doses, strengths or anchors.
+6. Commit messages end with the Co-Authored-By line. One feature per commit.
 
 ## Commands
 ```bash
@@ -140,12 +149,15 @@ npm run dev          # local preview at http://localhost:5173
 npm run typecheck    # must pass
 npm run build        # must pass (also: npm run build:pages)
 npm test             # Playwright, headless; must pass
-npm run test:report  # open the HTML report (has step-by-step traces with --trace on)
-node scripts/seed-demo.mjs   # reset the demo account (6 medicines + 30 days of history)
+node scripts/seed-demo.mjs   # reset the demo account (Tuesday evening / Wednesday morning)
 ```
 
 ## Gotchas
-- Some files use CRLF line endings: string replacements in scripts must handle `\r\n` (or use the Edit tool).
+- **The Bash tool halves backslashes** in inline scripts / heredocs (`\d` → `d`, `\\s` → `s`). For code with regexes,
+  use the Edit / Write tools (or `String.raw` in a script file written with Write).
+- Some files use CRLF line endings; script replacements must handle `\r\n` (or use the Edit tool).
+- No Python on this machine; for image work use Node + the project's Playwright (`require(path to node_modules/@playwright/test)`).
 - Browsers cache the old version: after a deploy, hard refresh (Ctrl+Shift+R).
-- Sound in reminders works only after the first tap in the app (browser rule); vibration only on Android.
-- `TZ=Asia/Amman date` does not work in Git Bash here; Amman is UTC+3.
+- A browser tab logged in before account details changed keeps an old copy until the app reloads (fixed at start-up).
+- Sound in reminders works only after the first tap (browser rule); vibration only on Android.
+- `TZ=Asia/Amman date` does not work in Git Bash; Amman is UTC+3 all year.
