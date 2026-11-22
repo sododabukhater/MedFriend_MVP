@@ -31,8 +31,11 @@ test('1. At the dose time the reminder appears by itself, with chime/vibration a
 
   await page.clock.fastForward('00:15')
   await expect(banner(page)).toBeVisible()
-  await expect(banner(page)).toContainText('Time for your medicine')
-  await expect(banner(page)).toContainText('13:00 · Aspocid 81 mg · 1 tablet')
+  await expect(banner(page)).toContainText('Time for your noon medicine')
+  for (const text of ['13:00', 'Aspocid 81 mg', '1 tablet']) await expect(banner(page)).toContainText(text)
+  // Shown as a panel tinted with the colour of its part of the day.
+  await expect(banner(page)).toHaveClass(/tint--noon/)
+  await expect(banner(page).getByRole('button', { name: 'I took it' })).toBeFocused()
   await expect(page).toHaveTitle('(1) Med Friend')
   expect(await vibrations(page)).toBe(1)
 })
@@ -43,7 +46,7 @@ test('2. Taken / Skip in the reminder are saved and close it', async ({ page }) 
     { name: 'Concor', times: ['13:00'] },
   ])
   await page.clock.fastForward('00:15')
-  await banner(page).getByRole('button', { name: '✓ Taken' }).click()
+  await banner(page).getByRole('button', { name: 'I took it' }).click()
   await expect(dose(page, '13:00 Aspocid')).toContainText('Taken at 13:00')
 
   await banner(page).getByRole('button', { name: 'Skip' }).click()
@@ -59,7 +62,7 @@ test('2. Taken / Skip in the reminder are saved and close it', async ({ page }) 
 test('3. Snooze hides the reminder; it comes back after 15 minutes', async ({ page }) => {
   await start(page, [{ name: 'Aspocid', times: ['13:00'] }])
   await page.clock.fastForward('00:15')
-  await banner(page).getByRole('button', { name: 'Snooze 15 min' }).click()
+  await banner(page).getByRole('button', { name: 'Remind me in 15 minutes' }).click()
   await expect(banner(page)).toHaveCount(0)
   await expect(dose(page, '13:00 Aspocid')).toContainText('Snoozed until 13:15')
 
@@ -95,7 +98,7 @@ test('5. Several doses due at once are shown one at a time ("1 of 2")', async ({
   await expect(banner(page)).toContainText('Aspocid')
   await expect(page).toHaveTitle('(2) Med Friend')
 
-  await banner(page).getByRole('button', { name: '✓ Taken' }).click()
+  await banner(page).getByRole('button', { name: 'I took it' }).click()
   await expect(banner(page)).toContainText('Glucophage')
   await expect(banner(page)).not.toContainText('1 of')
 })
@@ -116,23 +119,23 @@ test('6. Settings: Demo speed is remembered; "Show the next reminder now" runs t
 
   // The next dose without an answer (Lipitor 20:00) is reminded at once.
   await page.getByRole('button', { name: 'Show the next reminder now' }).click()
-  await expect(banner(page)).toContainText('20:00 · Lipitor')
-  await expect(page.getByRole('status')).toHaveText('The reminder is shown at the top of the screen.')
-  await expect(banner(page).getByRole('button', { name: 'Snooze 15 sec' })).toBeVisible()
+  await expect(banner(page)).toContainText(/20:00\s*Lipitor/)
+  await expect(page.getByRole('status')).toHaveText('The reminder is on the screen.')
+  await expect(banner(page).getByRole('button', { name: 'Remind me in 15 seconds' })).toBeVisible()
 
   // Demo speed: second reminder after 15 seconds.
   await page.clock.fastForward('00:16')
   await expect(banner(page)).toHaveAttribute('data-stage', 'followUp')
-  await banner(page).getByRole('button', { name: '✓ Taken' }).click()
+  await banner(page).getByRole('button', { name: 'I took it' }).click()
   await expect(banner(page)).toHaveCount(0)
 
   // Next: Nexium. Snooze 15 s, then it comes back; no answer for 60 s → Missed.
   await page.getByRole('button', { name: 'Show the next reminder now' }).click()
-  await expect(banner(page)).toContainText('22:00 · Nexium')
-  await banner(page).getByRole('button', { name: 'Snooze 15 sec' }).click()
+  await expect(banner(page)).toContainText(/22:00\s*Nexium/)
+  await banner(page).getByRole('button', { name: 'Remind me in 15 seconds' }).click()
   await expect(banner(page)).toHaveCount(0)
   await page.clock.fastForward('00:16')
-  await expect(banner(page)).toContainText('22:00 · Nexium')
+  await expect(banner(page)).toContainText(/22:00\s*Nexium/)
   await page.clock.fastForward('00:50')
   await expect(banner(page)).toHaveCount(0)
 
@@ -177,11 +180,16 @@ test('8. Reminder and Settings work in Arabic; text ≥ 18px and buttons ≥ 48p
   ])
   await page.getByRole('button', { name: 'تغيير اللغة إلى العربية' }).click()
   await page.clock.fastForward('00:15')
-  await expect(banner(page)).toContainText('حان موعد دوائك')
+  await expect(banner(page)).toContainText('حان موعد دواء الظهر')
   await expect(banner(page)).toContainText('1 من 2')
   await expect(banner(page).getByRole('button', { name: 'ذكّرني بعد 15 دقيقة' })).toBeVisible()
   await checkSizes()
 
+  // The panel covers the screen until both doses are answered.
+  await banner(page).getByRole('button', { name: 'أخذتها' }).click()
+  await expect(banner(page)).not.toContainText('1 من 2')
+  await banner(page).getByRole('button', { name: 'أخذتها' }).click()
+  await expect(banner(page)).toHaveCount(0)
   await page.getByRole('navigation').getByRole('button', { name: 'الإعدادات' }).click()
   await expect(page.getByRole('heading', { name: 'الإعدادات' })).toBeVisible()
   await expect(page.getByRole('switch', { name: 'السرعة التجريبية' })).toBeVisible()

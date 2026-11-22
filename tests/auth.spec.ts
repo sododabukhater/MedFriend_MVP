@@ -169,7 +169,7 @@ test('11. Login screens work in Arabic', async ({ page }) => {
 })
 
 async function addOneMedicine(page: import('@playwright/test').Page, name: string) {
-  await page.getByRole('button', { name: 'Add medication' }).click()
+  await page.getByRole('button', { name: 'Add a medicine' }).click()
   await page.getByRole('combobox', { name: 'Medicine name' }).fill(name)
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByRole('button', { name: 'Tablet', exact: true }).click()

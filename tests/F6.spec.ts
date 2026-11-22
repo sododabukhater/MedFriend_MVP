@@ -15,7 +15,7 @@ type Med = { name: string; form: string; more: number; perDay: string }
 
 /** Goes through all 4 steps and saves. */
 async function addMed(page: Page, med: Med) {
-  await page.getByRole('button', { name: 'Add medication' }).click()
+  await page.getByRole('button', { name: 'Add a medicine' }).click()
   await page.getByRole('combobox', { name: 'Medicine name' }).fill(med.name)
   await next(page).click()
   await page.getByRole('button', { name: med.form, exact: true }).click()
@@ -32,7 +32,7 @@ const card = (page: Page, name: string) => page.getByRole('listitem', { name })
 
 test('1. "Add medication" opens step 1 with a large text box', async ({ page }) => {
   await openHome(page)
-  await page.getByRole('button', { name: 'Add medication' }).click()
+  await page.getByRole('button', { name: 'Add a medicine' }).click()
   await expect(page.getByText('Step 1 of 4')).toBeVisible()
   await expect(page.getByRole('heading', { name: "What is the medicine's name?" })).toBeVisible()
   const box = page.getByRole('combobox', { name: 'Medicine name' })
@@ -42,7 +42,7 @@ test('1. "Add medication" opens step 1 with a large text box', async ({ page }) 
 
 test('2. Typing "glu" or "جلو" suggests Glucophage; tapping fills the box', async ({ page }) => {
   await openHome(page)
-  await page.getByRole('button', { name: 'Add medication' }).click()
+  await page.getByRole('button', { name: 'Add a medicine' }).click()
   const box = page.getByRole('combobox', { name: 'Medicine name' })
 
   await box.fill('glu')
@@ -67,13 +67,13 @@ test('3 + 7. A name not in the list can be used; saving shows the message and th
   await addMed(page, { name: 'Test medicine', form: 'Capsule', more: 2, perDay: 'Twice a day' })
   const c = card(page, 'Test medicine')
   await expect(c).toBeVisible()
-  await expect(c).toContainText('Capsule · 2 capsules · Twice a day')
-  await expect(c).toContainText('08:00 · 20:00')
+  await expect(c).toContainText('2 capsules, twice a day')
+  await expect(c.locator('.chip')).toHaveText(['08:00', '20:00'])
 })
 
 test('4. Next is disabled until each step is answered', async ({ page }) => {
   await openHome(page)
-  await page.getByRole('button', { name: 'Add medication' }).click()
+  await page.getByRole('button', { name: 'Add a medicine' }).click()
 
   await expect(next(page)).toBeDisabled()
   await page.getByRole('combobox', { name: 'Medicine name' }).fill('   ')
@@ -99,7 +99,7 @@ test('4. Next is disabled until each step is answered', async ({ page }) => {
 
 test('5. Choosing Syrup changes the unit to ml', async ({ page }) => {
   await openHome(page)
-  await page.getByRole('button', { name: 'Add medication' }).click()
+  await page.getByRole('button', { name: 'Add a medicine' }).click()
   await page.getByRole('combobox', { name: 'Medicine name' }).fill('Cough syrup')
   await next(page).click()
   await page.getByRole('button', { name: 'Syrup' }).click()
@@ -112,7 +112,7 @@ test('5. Choosing Syrup changes the unit to ml', async ({ page }) => {
 
 test('6. Choosing 3 times shows 08:00, 14:00, 20:00, each editable', async ({ page }) => {
   await openHome(page)
-  await page.getByRole('button', { name: 'Add medication' }).click()
+  await page.getByRole('button', { name: 'Add a medicine' }).click()
   await page.getByRole('combobox', { name: 'Medicine name' }).fill('Glucophage')
   await next(page).click()
   await page.getByRole('button', { name: 'Tablet', exact: true }).click()
@@ -131,7 +131,7 @@ test('6. Choosing 3 times shows 08:00, 14:00, 20:00, each editable', async ({ pa
   await expect(page.getByRole('heading', { name: 'Check and save' })).toBeVisible()
   await expect(page.locator('.review')).toContainText('08:00 · 13:30 · 20:00')
   await page.getByRole('button', { name: 'Save medication' }).click()
-  await expect(card(page, 'Glucophage')).toContainText('08:00 · 13:30 · 20:00')
+  await expect(card(page, 'Glucophage').locator('.chip')).toHaveText(['08:00', '13:30', '20:00'])
 })
 
 test('8 + 9. Three medicines all show, and are still there after a refresh', async ({ page }) => {
@@ -145,8 +145,8 @@ test('8 + 9. Three medicines all show, and are still there after a refresh', asy
   await expect(page.locator('.phone-frame')).toHaveAttribute('data-auth', 'signedIn')
   await expect(page.locator('.med-card')).toHaveCount(3)
   await expect(card(page, 'Concor')).toContainText('1 tablet')
-  await expect(card(page, 'Ventolin')).toContainText('2 puffs · 4 times a day')
-  await expect(card(page, 'Ventolin')).toContainText('08:00 · 13:00 · 18:00 · 22:00')
+  await expect(card(page, 'Ventolin')).toContainText('2 puffs, 4 times a day')
+  await expect(card(page, 'Ventolin').locator('.chip')).toHaveText(['08:00', '13:00', '18:00', '22:00'])
   await expect(card(page, 'Lantus')).toContainText('10 units')
 })
 
@@ -154,7 +154,7 @@ test('10. Cancel at any step returns home without saving', async ({ page }) => {
   await openHome(page)
   // Steps reached before pressing Cancel: 1, 2, 3, 4 and the review screen.
   for (let reach = 1; reach <= 5; reach++) {
-    await page.getByRole('button', { name: 'Add medication' }).click()
+    await page.getByRole('button', { name: 'Add a medicine' }).click()
     if (reach > 1) {
       await page.getByRole('combobox', { name: 'Medicine name' }).fill('Not saved')
       await next(page).click()
@@ -182,7 +182,7 @@ test('10. Cancel at any step returns home without saving', async ({ page }) => {
 
 test('Back keeps the answers; the review screen shows everything', async ({ page }) => {
   await openHome(page)
-  await page.getByRole('button', { name: 'Add medication' }).click()
+  await page.getByRole('button', { name: 'Add a medicine' }).click()
   await page.getByRole('combobox', { name: 'Medicine name' }).fill('Crestor')
   await page.getByRole('textbox', { name: 'Strength number' }).fill('10')
   await page.getByRole('button', { name: 'mg', exact: true }).click()
@@ -210,7 +210,7 @@ test('Back keeps the answers; the review screen shows everything', async ({ page
 
 test('Strength takes only a clean number plus a unit from the list (both or neither)', async ({ page }) => {
   await openHome(page)
-  await page.getByRole('button', { name: 'Add medication' }).click()
+  await page.getByRole('button', { name: 'Add a medicine' }).click()
   await page.getByRole('combobox', { name: 'Medicine name' }).fill('Glucophage')
   const number = page.getByRole('textbox', { name: 'Strength number' })
   const mg = page.getByRole('button', { name: 'mg', exact: true })
@@ -282,7 +282,7 @@ test('Delete asks first; "Keep it" keeps the medicine, "Yes, delete" removes it 
 
 test('Saving offline shows a clear message and keeps the answers', async ({ page }) => {
   await openHome(page)
-  await page.getByRole('button', { name: 'Add medication' }).click()
+  await page.getByRole('button', { name: 'Add a medicine' }).click()
   await page.getByRole('combobox', { name: 'Medicine name' }).fill('Offline test')
   await next(page).click()
   await page.getByRole('button', { name: 'Other' }).click()
@@ -349,6 +349,6 @@ test('11. Works in Arabic; text ≥ 18px and buttons ≥ 48px on every step', as
   await page.getByRole('button', { name: 'حفظ الدواء' }).click()
 
   await expect(page.getByRole('status')).toHaveText('تم حفظ الدواء')
-  await expect(card(page, 'جلوكوفاج')).toContainText('حبوب · 1 حبة · مرتين يومياً')
+  await expect(card(page, 'جلوكوفاج')).toContainText('1 حبة، مرتين يومياً')
   await checkSizes()
 })

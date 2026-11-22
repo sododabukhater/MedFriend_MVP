@@ -1,15 +1,17 @@
+import type { ReactNode } from 'react'
 import { useI18n } from '../i18n'
+import { BarsIcon, GearIcon, PillIcon, SunIcon } from './Icons'
 
 export type Tab = 'today' | 'meds' | 'progress' | 'settings'
 
 /** Big bottom tabs: Today | My medicines | Progress | Settings. */
 export default function TabBar({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) => void }) {
   const { t } = useI18n()
-  const tabs: { id: Tab; label: string; icon: string }[] = [
-    { id: 'today', label: t('tab.today'), icon: '☀' },
-    { id: 'meds', label: t('home.myMeds'), icon: '💊' },
-    { id: 'progress', label: t('progress.title'), icon: '📊' },
-    { id: 'settings', label: t('settings.title'), icon: '⚙' },
+  const tabs: { id: Tab; label: string; icon: ReactNode }[] = [
+    { id: 'today', label: t('tab.today'), icon: <SunIcon size={26} /> },
+    { id: 'meds', label: t('home.myMeds'), icon: <PillIcon size={26} /> },
+    { id: 'progress', label: t('progress.title'), icon: <BarsIcon size={26} /> },
+    { id: 'settings', label: t('settings.title'), icon: <GearIcon size={26} /> },
   ]
   return (
     <nav className="tab-bar" aria-label={t('tab.label')}>
@@ -21,10 +23,8 @@ export default function TabBar({ tab, onChange }: { tab: Tab; onChange: (tab: Ta
           aria-current={tab === id ? 'page' : undefined}
           onClick={() => onChange(id)}
         >
-          <span aria-hidden="true" className="tab-icon">
-            {icon}
-          </span>
-          {label}
+          {icon}
+          <span className="tab-label">{label}</span>
         </button>
       ))}
     </nav>

@@ -8,6 +8,9 @@ const FAKE_NOW = new Date('2026-11-18T10:30:00Z')
 const loginWithMeds = (page: Page, meds: MedRow[]) => loginAt(page, meds, FAKE_NOW)
 
 const dose = (page: Page, label: string) => page.getByRole('listitem', { name: label, exact: true })
+/** Tapping a dose row opens its buttons (Taken / Skip, or Undo). */
+const openDose = (page: Page, label: string) => dose(page, label).getByRole('button').first().click()
+const reminder = (page: Page) => page.getByRole('alertdialog')
 
 test('1. After login the app opens on Today with today\'s date (Amman)', async ({ page }) => {
   await loginWithMeds(page, [{ name: 'Concor', times: ['08:00'] }])
@@ -58,31 +61,35 @@ test('5 + 6. Taken / Skip are saved (also after a refresh); Undo removes them; t
     { name: 'Aspocid', times: ['13:00'] },
   ])
   const summary = page.getByTestId('summary')
-  await expect(summary).toHaveText('0 of 3 doses taken')
+  await expect(summary).toHaveText('0 of 3 taken')
 
-  await page.getByRole('button', { name: 'Taken: Aspocid at 13:00' }).click()
+  // The 13:00 dose is due: its reminder panel covers the screen until it is answered.
+  await reminder(page).getByRole('button', { name: 'I took it' }).click()
   await expect(dose(page, '13:00 Aspocid')).toContainText('Taken at 13:30')
+  await openDose(page, '08:00 Glucophage')
   await page.getByRole('button', { name: 'Skip: Glucophage at 08:00' }).click()
   await expect(dose(page, '08:00 Glucophage')).toContainText('Skipped')
   // A dose can also be taken before its time.
-  await page.getByRole('button', { name: 'Taken: Glucophage at 20:00' }).click()
-  await expect(summary).toHaveText('2 of 3 doses taken')
+  await openDose(page, '20:00 Glucophage')
+  await page.getByRole('button', { name: 'I took it: Glucophage at 20:00' }).click()
+  await expect(summary).toHaveText('2 of 3 taken')
 
   await page.reload()
   await expect(dose(page, '13:00 Aspocid')).toHaveAttribute('data-status', 'taken')
   await expect(dose(page, '08:00 Glucophage')).toHaveAttribute('data-status', 'skipped')
-  await expect(summary).toHaveText('2 of 3 doses taken')
+  await expect(summary).toHaveText('2 of 3 taken')
 
+  await openDose(page, '13:00 Aspocid')
   await page.getByRole('button', { name: 'Undo: Aspocid at 13:00' }).click()
   await expect(dose(page, '13:00 Aspocid')).toHaveAttribute('data-status', 'due')
   await page.reload()
   await expect(dose(page, '13:00 Aspocid')).toHaveAttribute('data-status', 'due')
-  await expect(summary).toHaveText('1 of 3 doses taken')
+  await expect(summary).toHaveText('1 of 3 taken')
 })
 
 test('A new medicine shows on Today right away; empty Today offers Add medication', async ({ page }) => {
-  await signUpInUI(page) // real clock
-  await page.getByRole('button', { name: 'Add medication' }).click()
+  await signUpInUI(page) // 03:00 today
+  await page.getByRole('button', { name: 'Add a medicine' }).click()
   await page.getByRole('combobox', { name: 'Medicine name' }).fill('Ventolin')
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByRole('button', { name: 'Inhaler' }).click()
@@ -96,7 +103,7 @@ test('A new medicine shows on Today right away; empty Today offers Add medicatio
 
   await page.getByRole('navigation').getByRole('button', { name: 'Today' }).click()
   await expect(page.locator('.dose')).toHaveCount(4)
-  await expect(page.getByTestId('summary')).toHaveText('0 of 4 doses taken')
+  await expect(page.getByTestId('summary')).toHaveText('0 of 4 taken')
 
   // Deleting it empties Today again.
   await goToMeds(page)
@@ -109,21 +116,23 @@ test('A new medicine shows on Today right away; empty Today offers Add medicatio
 test('Saving a dose offline shows a clear message', async ({ page }) => {
   await loginWithMeds(page, [{ name: 'Aspocid', times: ['13:00'] }])
   await page.route('**/rest/v1/dose_logs**', (route) => route.abort())
-  await page.getByRole('button', { name: 'Taken: Aspocid at 13:00' }).click()
-  await expect(page.getByRole('alert')).toContainText('Could not save')
+  await reminder(page).getByRole('button', { name: 'I took it' }).click()
+  await expect(reminder(page).getByRole('alert')).toContainText('Could not save')
   await expect(dose(page, '13:00 Aspocid')).toHaveAttribute('data-status', 'due')
 })
 
 test('7. Today works in Arabic; text ≥ 18px and buttons ≥ 48px', async ({ page }) => {
   await loginWithMeds(page, [{ name: 'جلوكوفاج', times: ['08:00', '13:00'], strength: [500, 'mg'] }])
-  await page.getByRole('button', { name: 'تغيير اللغة إلى العربية' }).click()
+  // The 13:00 reminder panel covers the language button: choose Arabic (saved per device) and reload.
+  await page.evaluate(() => localStorage.setItem('medfriend.lang', 'ar'))
+  await page.reload()
   await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
   await expect(page.getByRole('heading', { name: 'اليوم' })).toBeVisible()
   await expect(page.getByText('الأربعاء، 18 تشرين الثاني')).toBeVisible()
   await expect(page.locator('.day-part-title')).toHaveText(['الصباح', 'الظهر'])
   await expect(dose(page, '08:00 جلوكوفاج')).toContainText('500 ملغ')
   await expect(dose(page, '08:00 جلوكوفاج')).toContainText('فاتت')
-  await page.getByRole('button', { name: 'أخذتُ جلوكوفاج الساعة 13:00' }).click()
+  await reminder(page).getByRole('button', { name: 'أخذتها' }).click()
   await expect(dose(page, '13:00 جلوكوفاج')).toContainText('أُخذت الساعة 13:30')
   await expect(page.getByTestId('summary')).toHaveText('الجرعات المأخوذة: 1 من 2')
 

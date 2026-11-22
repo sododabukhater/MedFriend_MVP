@@ -116,3 +116,10 @@ export function cleanStrengthInput(text: string): string {
   const cleaned = rest.length ? `${whole}.${rest.join('').slice(0, 2)}` : whole
   return cleaned.slice(0, 8)
 }
+
+/** "Reset all data": deletes every medicine of this account; their dose logs go with them (on delete cascade). */
+export async function deleteAllMedications(): Promise<void> {
+  // RLS limits this to the logged-in user's rows; the filter is required by the API and matches every row.
+  const { error } = await supabase.from('medications').delete().not('id', 'is', null)
+  if (error) throw error
+}

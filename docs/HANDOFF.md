@@ -1,50 +1,29 @@
 # Handoff — current status (read this first)
 
-Last updated: **Sun 22 Nov 2026** (end of the third VS Code session).
+Last updated: **Sun 22 Nov 2026** (design revamp built).
 `CLAUDE.md` is the rulebook. This file is the current state of the work. Deadline: live and tested by
 **Wed 25 Nov**; **code freeze Tue 24 Nov evening**.
 
 ## ▶ Start here (new chat)
 1. Everything is committed and pushed to `main`; the live link is up to date. Working tree is clean.
-2. **Tier A is done** (F6, F2, F1, F8 + login, Settings, Progress). 102 Playwright tests pass.
-3. **Next step: the design revamp. The mock-up is done and WAITING FOR THE OWNER'S APPROVAL.**
-   - Load the skill `frontend-design:frontend-design` (it is now installed) before building.
-   - Mock-up (6 phone screens, a claude.ai design canvas, private to the owner):
-     https://claude.ai/artifact/XwDLEQAjvRqnRnXAg7pwcj. Source copy in `docs/design-mockup/*.dc.html`
-     (reference only; not part of the app build).
-   - Ask the owner: approve, or what to change. Only after approval change app code (see "Design revamp" below).
-   - **Behind schedule** (it is Sun 22 Nov; the revamp was planned for Sat). Keep the revamp to ~4 h; if needed,
-     propose cutting F7 and F10 early (CLAUDE.md cut line).
+2. **Tier A is done** (F6, F2, F1, F8 + login, Settings, Progress) **and the design revamp is done**
+   (approved and built 22 Nov, incl. "Reset all data"). 118 Playwright tests pass (2 run-once DB checks skipped on laptop).
+3. **Next step: F9** (Arabic summary: printable page + WhatsApp share). Write a short plan, get the owner's approval, build.
+   - **Behind schedule** (revamp was planned for Sat, done Sun). If behind on Monday evening, cut F7 then F10.
 4. Then continue the plan one feature at a time: plan → owner approval → build → tests → commit → push →
    tell the owner exactly what to click.
 
-## Design revamp (mock-up shown 20–22 Nov, not yet approved)
-Design idea: the day's four parts each get one soft colour; that colour is the only bold element (it also
-prepares F3 prayer/meal anchors). Everything else is quiet: white, dark text, one green for actions.
-- **Colours:** page `#EEF3F0`, cards `#FFFFFF`, text `#10231D`, muted text `#4A5A53`, action green `#0A6B52`
-  (white text on it), lines `#E1E8E4`, "Missed" text `#9B1C1C`, focus ring keep `#F2A900`.
-  Day parts (background / text): morning `#FCEFCF`/`#5C4108`, noon `#DCEEF8`/`#123F5C`,
-  evening `#F8DFD2`/`#6B2E14`, night `#E2E1F3`/`#2A2860`.
-- **Font:** Readex Pro (Google Fonts, Arabic + Latin, weights 400/500/600/700) replaces Noto Sans Arabic.
-  Big tabular numbers for dose times (56–64px).
-- **Today:** top card = the dose due now (or next), tinted with its day-part colour: big time, name + strength,
-  amount, one big "I took it" button, small "Remind me later" / "Skip" under it. Then "4 of 7 taken" with a
-  7-segment bar. Then one white box per day part (coloured header with icon) holding compact rows:
-  time | name + amount | status ("✓ 08:12" green, "Missed" red, "Later"). No repeated Taken/Skip on every row:
-  tapping a row opens Taken / Skip / Undo for that dose (tests must be updated for this).
-- **Reminder:** a bottom panel over a dimmed screen (replaces the top banner), tinted by day part:
-  big time, medicine, "I took it", "Remind me in 15 minutes", "Skip this dose" (text link).
-- **My medicines:** one white list; each medicine: name + strength, "1 tablet, twice a day", time chips in
-  day-part colours. One big "Add a medicine" button fixed above the tab bar.
-- **Progress:** switch "Last 7 days / Last 30 days"; sentence "You took 40 of 48 doses this week" + 7 day bars
-  (Sat…Today); per-medicine rows with % and a thin bar; dose log behind a "See every dose" button.
-- **Settings:** Language switch (العربية / English); "For the demo": Demo speed switch + "Show the next reminder
-  now"; Account: email, Log out, **Reset all data** (red outline, needs a confirm step; deletes the user's
-  medications and dose logs); disclaimer line at the bottom.
-- **Tab bar:** line icons (sun, pill, bars, gear) instead of emoji. Language pill stays in screen headers.
-- **Login:** not drawn; same font, colours and buttons.
-- Avoid: ALL-CAPS labels (today's "MORNING"), coloured side borders on cards, emoji icons, middle-dot strings.
-- Arabic copy used in the mock-up follows `ar.json` wording (أخذتها، تخطّي، فاتت، ذكّرني بعد 15 دقيقة).
+## Design revamp (done 22 Nov) — spec `docs/specs/DESIGN.md`
+- Part-of-day colours are the only bold element; white boxes, dark text, one green (`#0A6B52`). Font Readex Pro.
+- Today: top card (due / snoozed / next dose), "x of y taken" segments, one box per part of the day; tap a row to
+  answer it. Reminder: bottom panel over a dimmed screen (it blocks the app until answered).
+- My medicines: list with time chips + fixed "Add a medicine". Progress: 7/30-day switch, day bars, per-medicine %,
+  log behind "See every dose". Settings: language switch, demo tools, account, Reset all data (not on the demo account).
+- New components: `ScreenHeader`, `Icons` (line icons); new screen `src/screens/Medicines/`.
+  `ReminderBanner` is now the bottom panel. All styles in `src/index.css` (tokens at the top).
+- New Arabic strings to check are listed under REVIEW-AR in `docs/specs/DESIGN.md`.
+- Tests: the app frame is now fixed height (screen scrolls inside). Tests on the real clock start at 03:00 Amman
+  (`installEarlyClock`), because the reminder panel covers the screen whenever a dose is due.
 
 ## About the owner
 - Industrial engineer / innovation background, **no coding experience**. Explain in plain words, short.
@@ -59,7 +38,7 @@ Order (each one: short plan → approval → build). Cut from the bottom if behi
 
 | # | Item | Estimate | Target day | Notes |
 |---|---|---|---|---|
-| 1 | **Design revamp** of all screens + "Reset all data" in Settings | 4–5 h | Sat | Simplest, most user-friendly UI for 35–65; keep F11 rules (≥18px text, ≥48px buttons, high contrast, one main action) and RTL |
+| 1 | ✅ **Design revamp** of all screens + "Reset all data" in Settings | 4–5 h | Sat | Simplest, most user-friendly UI for 35–65; keep F11 rules (≥18px text, ≥48px buttons, high contrast, one main action) and RTL |
 | 2 | **F9** Arabic summary for doctors: printable page + WhatsApp share | 2–3 h | Sat | |
 | 3 | **F3** Prayer and meal anchors ("after Fajr", "with Iftar"), Amman prayer times | ~4 h | Sun | Calculate in-app (no dependency) or ask to add a library |
 | 4 | **F4** Own-pill photo card (photo on the medicine and in the reminder) | ~3 h | Sun | Photos in a private Supabase Storage bucket (owner-only RLS) |
@@ -86,6 +65,7 @@ Decided 20 Nov (owner): **drop the welcome screen** (Start empty / Try demo data
 | `89dc87b` | Demo account: 23:30 dose so the reminder demo works in the evening | | |
 | `622a0d2` | F8 Progress tab: adherence % 7/30 days, dose log; 30 days of demo history | `docs/specs/F8.md` | `tests/F8.spec.ts` |
 | `d982e7d` | Plan: build all features (F4, F5 added) + UI revamp first | | |
+| (this commit) | Design revamp of all screens + Reset all data | `docs/specs/DESIGN.md` | `tests/DESIGN.spec.ts` |
 
 ## How the app works now
 - **Login first.** Email + password (Supabase Auth). "Confirm email" is OFF (sign-up logs in at once).
@@ -97,7 +77,7 @@ Decided 20 Nov (owner): **drop the welcome screen** (Start empty / Try demo data
   Shared account: if someone answers the 23:30 dose, tap Undo on Today to reuse the reminder demo.
 - The owner created two personal accounts in the dashboard (Gmail, Outlook). **Never put them in code or docs.**
 - **4 bottom tabs:** Today | My medicines | Progress | Settings. The app opens on Today.
-  The reminder banner shows on every tab. Log out, account email, Demo speed, "Show the next reminder now"
+  The reminder panel shows over every tab. Language, Demo speed, "Show the next reminder now", Log out, Reset all data
   and the disclaimer are in Settings.
 - **Rules:** a dose is "Due now" from its time until 60 min later, then "Missed". Doses before a medicine was
   added never count. Follow-up and snooze: 15 min. Demo speed (per device): every minute = 1 second.
@@ -143,7 +123,7 @@ Decided 20 Nov (owner): **drop the welcome screen** (Start empty / Try demo data
 ## Key decisions and rules
 1. English is the default while building; Arabic is written for every string at the same time.
    Before the freeze: `DEFAULT_LANG = 'ar'` and one Arabic review pass.
-2. Font: Noto Sans Arabic (Google Fonts). No ESLint, no router, no UI framework.
+2. Font: Readex Pro (Google Fonts, since the 22 Nov revamp). No ESLint, no router, no UI framework.
 3. Dependencies: react, react-dom, vite, @vitejs/plugin-react, typescript, @types/react(-dom),
    @playwright/test (dev), @supabase/supabase-js 2.119.2. **Ask before adding any.**
 4. Two builds: `npm run build` (base `/`) and `npm run build:pages` (base `/MedFriend_MVP/`).

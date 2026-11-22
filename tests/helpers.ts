@@ -15,8 +15,22 @@ export function newEmail(): string {
   return `medfriend-test-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@mailinator.com`
 }
 
+const clocked = new WeakSet<Page>()
+
+/**
+ * Fake clock at 03:00 today (Amman), still running. Tests that use the real time would otherwise
+ * meet a reminder panel (it covers the screen) whenever a dose happens to be due while they run.
+ */
+export async function installEarlyClock(page: Page) {
+  if (clocked.has(page)) return
+  clocked.add(page)
+  const ammanToday = new Date(Date.now() + 3 * 3600_000).toISOString().slice(0, 10)
+  await page.clock.install({ time: new Date(`${ammanToday}T00:00:00Z`) }) // 03:00 in Amman (UTC+3)
+}
+
 /** Opens the app logged out and waits for the login screen. */
 export async function openLoggedOut(page: Page) {
+  await installEarlyClock(page)
   await page.goto('/')
   await expect(page.locator('.phone-frame')).toHaveAttribute('data-auth', 'signedOut')
 }
@@ -82,6 +96,7 @@ export async function loginWithMeds(page: Page, meds: MedRow[], fakeNow: Date) {
   const { error } = await user.db.from('medications').insert(rows)
   expect(error).toBeNull()
 
+  clocked.add(page)
   await page.clock.install({ time: fakeNow })
   await openLoggedOut(page)
   await logInInUI(page, user.session.user.email!, PASSWORD)

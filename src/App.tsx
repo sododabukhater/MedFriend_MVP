@@ -1,6 +1,4 @@
 import { useCallback, useEffect, useState } from 'react'
-import LanguageSwitch from './components/LanguageSwitch'
-import MedicationCard from './components/MedicationCard'
 import ReminderBanner from './components/ReminderBanner'
 import TabBar, { type Tab } from './components/TabBar'
 import { useI18n, type MessageKey } from './i18n'
@@ -14,10 +12,11 @@ import {
   SignUpScreen,
   type AuthScreen,
 } from './screens/Auth/AuthScreens'
+import Medicines from './screens/Medicines/Medicines'
 import Progress from './screens/Progress/Progress'
 import Settings from './screens/Settings/Settings'
 import Today from './screens/Today/Today'
-import { deleteMedication, listMedications, type Medication } from './storage/medications'
+import { deleteAllMedications, deleteMedication, listMedications, type Medication } from './storage/medications'
 
 type MedsState = { status: 'loading' } | { status: 'ready'; meds: Medication[] } | { status: 'error' }
 
@@ -85,20 +84,26 @@ export default function App() {
     setAdding(true)
   }
 
+  async function handleReset() {
+    await deleteAllMedications()
+    setMeds({ status: 'ready', meds: [] })
+    doses.reload()
+  }
+
   function signedInScreen() {
     if (auth.status !== 'signedIn') return null
     if (tab === 'today') {
       return (
         <>
           {meds.status === 'error' && (
-            <div className="alert alert--top" role="alert">
+            <div className='alert alert--top' role='alert'>
               <p>{t('db.loadFailed')}</p>
-              <button type="button" className="btn-secondary" onClick={load}>
+              <button type='button' className='btn-secondary' onClick={load}>
                 {t('db.retry')}
               </button>
             </div>
           )}
-          {meds.status === 'ready' && <Today api={doses} onAdd={startAdding} />}
+          {meds.status === 'ready' && <Today api={doses} onAdd={startAdding} reminderOpen={doses.reminders.length > 0} />}
         </>
       )
     }
@@ -106,59 +111,18 @@ export default function App() {
       return meds.status === 'ready' ? <Progress meds={meds.meds} /> : null
     }
     if (tab === 'settings') {
-      return <Settings email={auth.user.email ?? ''} onTriggerNext={doses.triggerNext} />
+      return <Settings email={auth.user.email ?? ''} onTriggerNext={doses.triggerNext} onReset={handleReset} />
     }
     return (
-      <main className="screen">
-        <div className="top-bar">
-          <LanguageSwitch />
-        </div>
-
-        <header className="app-header">
-          <p className="app-title app-title--small">{t('app.name')}</p>
-          <h1 className="question">{t('home.myMeds')}</h1>
-        </header>
-
-        {meds.status === 'error' && (
-          <div className="alert" role="alert">
-            <p>{t('db.loadFailed')}</p>
-            <button type="button" className="btn-secondary" onClick={load}>
-              {t('db.retry')}
-            </button>
-          </div>
-        )}
-        {error && (
-          <div className="alert" role="alert">
-            <p>{t(error)}</p>
-          </div>
-        )}
-        <div role="status" className={notice ? 'notice' : 'visually-hidden'}>
-          {notice ? t(notice) : ''}
-        </div>
-
-        {meds.status === 'ready' && meds.meds.length > 0 ? (
-          <section className="med-section">
-            <ul className="med-list">
-              {meds.meds.map((med) => (
-                <MedicationCard key={med.id} med={med} onDelete={handleDelete} />
-              ))}
-            </ul>
-          </section>
-        ) : (
-          <section className="home-body">
-            {meds.status === 'ready' && <p className="empty-state">{t('home.empty')}</p>}
-          </section>
-        )}
-
-        <footer className="primary-action">
-          <button type="button" className="btn-primary" onClick={startAdding}>
-            <span aria-hidden="true" className="btn-icon">
-              +
-            </span>
-            {t('home.addMedication')}
-          </button>
-        </footer>
-      </main>
+      <Medicines
+        meds={meds.status === 'ready' ? meds.meds : null}
+        loadError={meds.status === 'error'}
+        error={error}
+        notice={notice}
+        onRetry={load}
+        onAdd={startAdding}
+        onDelete={handleDelete}
+      />
     )
   }
 
@@ -200,6 +164,7 @@ export default function App() {
         <ReminderBanner
           reminders={doses.reminders}
           busyKey={doses.busyKey}
+          saveError={doses.saveError}
           onAnswer={(reminder, action) => doses.answer(reminder.dose, action)}
         />
         {signedInScreen()}

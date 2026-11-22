@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useI18n, type MessageKey } from '../i18n'
-import { amountText, perDayText, strengthText } from '../lib/format'
+import { amountText, strengthText } from '../lib/format'
+import { dayPart } from '../lib/time'
 import type { Medication } from '../storage/medications'
 
 type Props = {
@@ -8,7 +9,7 @@ type Props = {
   onDelete: (med: Medication) => Promise<void>
 }
 
-/** One medicine on the home screen. Delete asks "Are you sure?" inside the card first. */
+/** One medicine in "My medicines": name + strength, "1 tablet, twice a day", time chips. */
 export default function MedicationCard({ med, onDelete }: Props) {
   const { t } = useI18n()
   const [confirming, setConfirming] = useState(false)
@@ -35,7 +36,7 @@ export default function MedicationCard({ med, onDelete }: Props) {
         {!confirming && (
           <button
             type="button"
-            className="btn-text btn-danger-text"
+            className="btn-link btn-link--danger"
             aria-label={t('card.deleteLabel', { name: med.name })}
             onClick={() => setConfirming(true)}
           >
@@ -44,12 +45,18 @@ export default function MedicationCard({ med, onDelete }: Props) {
         )}
       </div>
       <p className="med-detail">
-        {t(`form.${med.form}` as MessageKey)} · {amountText(t, med.form, med.amount)} ·{' '}
-        {perDayText(t, med.timesPerDay)}
+        {t('med.detail', {
+          amount: amountText(t, med.form, med.amount),
+          often: t(`often.${med.timesPerDay}` as MessageKey),
+        })}
       </p>
-      <p className="med-times" dir="ltr">
-        {med.times.join(' · ')}
-      </p>
+      <div className="chips">
+        {med.times.map((time, i) => (
+          <span key={i} className={`chip tint--${dayPart(time)}`} dir="ltr">
+            {time}
+          </span>
+        ))}
+      </div>
 
       {confirming && (
         <div className="confirm" role="alertdialog" aria-label={t('card.confirmDelete', { name: med.name })}>
@@ -58,12 +65,7 @@ export default function MedicationCard({ med, onDelete }: Props) {
             <button type="button" className="btn-danger" disabled={busy} onClick={confirmDelete}>
               {t('card.confirmYes')}
             </button>
-            <button
-              type="button"
-              className="btn-secondary"
-              disabled={busy}
-              onClick={() => setConfirming(false)}
-            >
+            <button type="button" className="btn-secondary" disabled={busy} onClick={() => setConfirming(false)}>
               {t('card.confirmNo')}
             </button>
           </div>
