@@ -5,6 +5,7 @@ import { anchorLabel } from '../lib/anchors'
 import { SNOOZE_MIN, type Reminder } from '../lib/doses'
 import { amountText, strengthText } from '../lib/format'
 import { useDemoSpeed } from '../lib/settings'
+import { daysText, type StockInfo } from '../lib/stock'
 import { doseSpeech, getReadAloud, speak, stopSpeaking } from '../lib/speech'
 import type { DoseAction } from '../lib/useDoses'
 import { CheckIcon, PartIcon } from './Icons'
@@ -15,13 +16,15 @@ type Props = {
   busyKey: string | null
   saveError: boolean
   onAnswer: (reminder: Reminder, action: DoseAction) => void
+  /** F7: a low / out-of-stock medicine gets a refill line in its reminder. */
+  stock: Map<string, StockInfo>
 }
 
 /**
  * F1: reminder for the first due dose, as a panel at the bottom over a dimmed screen,
  * tinted with the colour of its part of the day. Spec: docs/specs/F1.md, docs/specs/DESIGN.md
  */
-export default function ReminderBanner({ reminders, busyKey, saveError, onAnswer }: Props) {
+export default function ReminderBanner({ reminders, busyKey, saveError, onAnswer, stock }: Props) {
   const { t, lang } = useI18n()
   const demo = useDemoSpeed()
   const alerted = useRef(new Set<string>())
@@ -59,6 +62,7 @@ export default function ReminderBanner({ reminders, busyKey, saveError, onAnswer
   const { med } = dose
   const strength = strengthText(t, med.strengthValue, med.strengthUnit)
   const busy = busyKey === dose.key
+  const supply = stock.get(med.id)
   const part = t(`partIn.${dose.part}` as MessageKey)
   const answer = (action: DoseAction) => {
     stopSpeaking() // F5: answering ends the readout
@@ -98,6 +102,11 @@ export default function ReminderBanner({ reminders, busyKey, saveError, onAnswer
           </p>
           <p className="sheet-amount">{amountText(t, med.form, med.amount)}</p>
         </div>
+        {supply && supply.level !== 'ok' && (
+          <p className={`refill refill--${supply.level} sheet-refill`} data-testid="reminder-refill">
+            {supply.level === 'out' ? t('rem.stockOut') : t('rem.stockLow', { days: daysText(t, supply.days) })}
+          </p>
+        )}
         <ReadAloudButton parts={doseSpeech(t, lang, dose, stage === 'followUp')} name={med.name} />
         {saveError && (
           <div className="alert" role="alert">

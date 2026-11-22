@@ -2255,3 +2255,9 @@ a.btn-primary {
 .stock-total {
   font-weight: 700;
 }
+
+/* F7: refill line inside the reminder panel (text only, not a button). */
+.sheet-refill {
+  cursor: default;
+  font-weight: 600;
+}

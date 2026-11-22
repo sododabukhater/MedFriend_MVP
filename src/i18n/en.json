@@ -386,5 +386,7 @@
   "stock.extra.less": "Fewer boxes",
   "stock.extra.more": "More boxes",
   "stock.total.q": "How many do you have now in total?",
-  "stock.totalLine": "In total: {n}"
+  "stock.totalLine": "In total: {n}",
+  "rem.stockLow": "Only {days} left. Time to get a refill.",
+  "rem.stockOut": "None left. Time to get a refill."
 }

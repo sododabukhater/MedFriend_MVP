@@ -129,7 +129,8 @@ tested by **Wed 25 Nov**; **code freeze Tue 24 Nov evening**.
     Phones normally have an Arabic voice.
 - **F7 stock:** `medications.pack_size`, `stock_count`, `stock_set_at`. Left = stock_count − amount × taken doses
   recorded after stock_set_at (nothing subtracted in the DB, so Undo just works). Low = 7 days or less; Today shows a
-  yellow refill card per low / out medicine (tap → My medicines).
+  yellow refill card per low / out medicine (tap → My medicines); the reminder panel of a low medicine shows a yellow
+  "Only about 4 days left. Time to get a refill." line.
 - **Account metadata** (Supabase Auth `user_metadata`, no tables): `full_name`, `birth_year`, `prayer_times`, `meal_times`.
 
 ## Code map

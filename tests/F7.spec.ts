@@ -215,3 +215,32 @@ test('10. Counting rules (pure): days, levels and the box checks', () => {
   expect(checkStock('30', '18', 2)).toEqual({ ok: true, empty: false, pack: 30, left: 78 })
   expect(checkStock('30', '31', null)).toEqual({ ok: true, empty: false, pack: 30, left: 31 }) // Correct the count
 })
+
+test('11. The reminder panel shows a refill line for a low medicine (not for one with enough left)', async ({ page }) => {
+  // 08:05 in Amman: both 08:00 doses are due, Concor (low) first.
+  const AT_DOSE = new Date('2026-11-20T05:05:00Z')
+  await loginWithMeds(
+    page,
+    [
+      { name: 'Concor', times: ['08:00', '20:00'], stock: { pack: 28, count: 10, setAt: SET_AT } }, // 5 days
+      { name: 'Lipitor', times: ['08:00'], stock: { pack: 30, count: 30, setAt: SET_AT } }, // 30 days
+    ],
+    AT_DOSE,
+  )
+  const panel = page.getByRole('alertdialog')
+  await expect(panel).toContainText('Concor')
+  await expect(panel.getByTestId('reminder-refill')).toHaveText('Only about 5 days left. Time to get a refill.')
+  await panel.getByRole('button', { name: 'I took it' }).click()
+  await expect(panel).toContainText('Lipitor')
+  await expect(panel.getByTestId('reminder-refill')).toHaveCount(0)
+})
+
+test('12. The reminder panel says when a medicine has run out (Arabic too)', async ({ page }) => {
+  const AT_DOSE = new Date('2026-11-20T05:05:00Z')
+  await loginWithMeds(page, [{ name: 'Concor', times: ['08:00'], stock: { pack: 28, count: 0, setAt: SET_AT } }], AT_DOSE)
+  const panel = page.getByRole('alertdialog')
+  await expect(panel.getByTestId('reminder-refill')).toHaveText('None left. Time to get a refill.')
+  await page.evaluate(() => localStorage.setItem('medfriend.lang', 'ar'))
+  await page.reload()
+  await expect(page.getByRole('alertdialog').getByTestId('reminder-refill')).toHaveText('نفد هذا الدواء. حان وقت شراء علبة جديدة.')
+})

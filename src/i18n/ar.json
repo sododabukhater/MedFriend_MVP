@@ -386,5 +386,7 @@
   "stock.extra.less": "علب أقل",
   "stock.extra.more": "علب أكثر",
   "stock.total.q": "كم لديك الآن في المجموع؟",
-  "stock.totalLine": "المجموع: {n}"
+  "stock.totalLine": "المجموع: {n}",
+  "rem.stockLow": "{days} فقط. حان وقت شراء علبة جديدة.",
+  "rem.stockOut": "نفد هذا الدواء. حان وقت شراء علبة جديدة."
 }

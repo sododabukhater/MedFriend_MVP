@@ -230,6 +230,7 @@ export default function App() {
           busyKey={doses.busyKey}
           saveError={doses.saveError}
           onAnswer={(reminder, action) => doses.answer(reminder.dose, action)}
+          stock={stock}
         />
         {signedInScreen()}
         <TabBar tab={tab} onChange={setTab} />

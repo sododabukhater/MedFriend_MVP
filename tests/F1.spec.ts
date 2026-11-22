@@ -114,6 +114,8 @@ test('6. Settings: Demo speed is remembered; "Show the next reminder now" runs t
   await demo.click()
   await expect(demo).toHaveAttribute('aria-checked', 'true')
   await page.reload()
+  // Wait until today's doses have loaded again, so "Show the next reminder now" has something to show.
+  await expect(page.getByTestId('summary')).toHaveText('0 of 2 taken', { timeout: 15_000 })
   await goToSettings(page)
   await expect(demo).toHaveAttribute('aria-checked', 'true')
 
