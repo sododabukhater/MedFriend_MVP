@@ -21,8 +21,8 @@ tested by **Wed 25 Nov**; **code freeze Tue 24 Nov evening**.
    - **Demo reset** done 22 Nov evening with the owner's OK (sample documents + fresh history). Run it again
      Tuesday evening / Wednesday morning as planned.
    - F10 feedback after the owner clicks through it (walkthrough video already sent).
-   - F7 feedback. **Demo account has no boxes yet**: `seed-demo.mjs` now adds them (Concor low, 5 left), but it was
-     not run after F7 (it resets the shared demo history; ask first). Until then demo cards show "Set the box size".
+   - F7 feedback. Demo reset run again 22 Nov late evening (owner OK): all six demo medicines have a box, Concor
+     is low (5 left).
 4. **Next step: Tuesday tasks below** (all features done). Before that: owner feedback / fixes only.
 5. New tables need `grant select, insert, update, delete … to authenticated` (forgot it once for F10).
 6. **Tuesday:** `DEFAULT_LANG = 'ar'` in `src/i18n/index.tsx`, Arabic review pass (all REVIEW-AR lists in the specs
@@ -76,7 +76,7 @@ tested by **Wed 25 Nov**; **code freeze Tue 24 Nov evening**.
 | `5e3d09c` | F5 Edge: parts spoken one at a time; English voice of the same kind (online Natural) as the Arabic one | `docs/specs/F5.md` | `tests/F5.spec.ts` 2d, 2e |
 | `c5d679b` | F5 only the name is English; the strength number is said by the Arabic voice | `docs/specs/F5.md` | `tests/F5.spec.ts` 2, 2b |
 | `f64177b` | F10 Document vault (Medicines | Documents switch, photo/PDF, type, date, name; open, delete) | `docs/specs/F10.md` | `tests/F10.spec.ts` |
-| (F7 commit) | F7 Stock count: box step in Add medication, card stock line + Low / Out of stock, new box, correct the count, Today refill card | `docs/specs/F7.md` | `tests/F7.spec.ts` |
+| `2dabdaf` | F7 Stock count: box step in Add medication, card stock line + Low / Out of stock, new box, correct the count, Today refill card | `docs/specs/F7.md` | `tests/F7.spec.ts` |
 
 ## How the app works now
 - **Login first** (email + password, Supabase Auth; "Confirm email" OFF). No welcome screen (owner, 20 Nov);
