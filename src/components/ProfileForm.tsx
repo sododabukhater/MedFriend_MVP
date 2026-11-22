@@ -1,4 +1,4 @@
-import { useId, useState, type FormEvent } from 'react'
+import { useEffect, useId, useState, type FormEvent } from 'react'
 import { useI18n, type MessageKey } from '../i18n'
 import { checkProfile, cleanYearInput, MAX_NAME, saveProfile, type Profile } from '../lib/profile'
 
@@ -11,6 +11,12 @@ export default function ProfileForm({ profile, thisYear }: { profile: Profile; t
   const [year, setYear] = useState(profile.birthYear === null ? '' : String(profile.birthYear))
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<{ key: MessageKey; ok: boolean } | null>(null)
+
+  // Fresh account details can arrive just after the screen opens (see useAuth): show them.
+  useEffect(() => {
+    setName(profile.name)
+    setYear(profile.birthYear === null ? '' : String(profile.birthYear))
+  }, [profile.name, profile.birthYear])
 
   async function submit(e: FormEvent) {
     e.preventDefault()

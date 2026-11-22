@@ -21,6 +21,18 @@ export function useAuth() {
           event === 'PASSWORD_RECOVERY' || (prev.status === 'signedIn' && prev.recovery && event !== 'USER_UPDATED')
         return { status: 'signedIn', user: session.user, recovery }
       })
+      // The saved login keeps an old copy of the account details ("My details", F9). Fetch the current ones
+      // once at start, so a name saved on another device shows here too.
+      // (Deferred: Supabase calls inside this callback can lock up the auth client.)
+      if (event === 'INITIAL_SESSION' && session) {
+        setTimeout(() => {
+          supabase.auth.getUser().then(({ data: fresh }) => {
+            const user = fresh.user
+            if (!user) return
+            setState((prev) => (prev.status === 'signedIn' && prev.user.id === user.id ? { ...prev, user } : prev))
+          })
+        }, 0)
+      }
     })
     return () => data.subscription.unsubscribe()
   }, [])

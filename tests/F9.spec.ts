@@ -187,6 +187,17 @@ test('6. The summary works in Arabic; text ≥ 18px and buttons ≥ 48px', async
   expect(smallest).toBeGreaterThanOrEqual(18)
 })
 
+test('1b. A name saved on another device shows after a refresh (the saved login is not stale)', async ({ page }) => {
+  const user = await loginWithMeds(page, [], FAKE_NOW)
+  // "Another device": the same account, outside this browser.
+  const { error } = await user.db.auth.updateUser({ data: { full_name: 'Omar Saleh', birth_year: 1971 } })
+  expect(error).toBeNull()
+  await page.reload()
+  await goToSettings(page)
+  await expect(page.getByLabel('Your name')).toHaveValue('Omar Saleh')
+  await expect(page.getByLabel('Year of birth (optional)')).toHaveValue('1971')
+})
+
 test('7. The demo account has a sample name on its summary', async ({ page }) => {
   await installEarlyClock(page) // no reminder panel in the way
   await openLoggedOut(page)
