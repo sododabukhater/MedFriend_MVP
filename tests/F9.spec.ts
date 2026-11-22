@@ -8,6 +8,9 @@ const at8 = (day: number) => `2026-11-${String(day).padStart(2, '0')}T05:00:00Z`
 
 const progressTab = (page: Page) => page.getByRole('navigation').getByRole('button', { name: 'Progress' }).click()
 const summaryPage = (page: Page) => page.getByTestId('summary-page')
+const patient = (page: Page) => page.getByTestId('patient-name')
+const medRow = (page: Page, name: string) => summaryPage(page).locator('.doc-meds tbody tr', { hasText: name })
+const stat = (page: Page, i: number) => summaryPage(page).locator('.doc-stat').nth(i)
 
 async function openSummary(page: Page) {
   await progressTab(page)
@@ -75,16 +78,19 @@ test('2. The summary shows the patient, every medicine, 7- and 30-day figures an
 
   await openSummary(page)
   const s = summaryPage(page)
-  await expect(s).toContainText('Patient: Sami Haddad')
-  await expect(s).toContainText('Born 1968 (58 years old)')
-  await expect(s).toContainText('Date: Wednesday 18 November')
-  await expect(s).toContainText('Concor 5 mg')
-  await expect(s).toContainText('1 tablet, once a day, at 08:00')
-  await expect(s).toContainText('Glucophage 500 mg')
-  await expect(s).toContainText('1 tablet, twice a day, at 08:00, 20:00')
-  await expect(s).toContainText('Last 7 days: 5 of 7 doses (71%)')
-  await expect(s).toContainText('Last 30 days: 5 of 17 doses (29%)')
-  await expect(s.locator('.summary-pct li')).toHaveText([/Concor 5 mg\s*29%/, /Glucophage 500 mg\s*—/])
+  await expect(patient(page)).toHaveText('Sami Haddad')
+  await expect(s).toContainText('1968 (58 years old)')
+  await expect(s.locator('.doc-date')).toHaveText('Wednesday 18 November')
+  await expect(s.locator('.doc-brand')).toContainText('Med Friend')
+  await expect(s.locator('.doc-meds tbody tr')).toHaveCount(2)
+  for (const text of ['Concor 5 mg', '1 tablet', 'once a day', '08:00']) await expect(medRow(page, 'Concor')).toContainText(text)
+  for (const text of ['Glucophage 500 mg', 'twice a day', '08:00, 20:00']) await expect(medRow(page, 'Glucophage')).toContainText(text)
+  for (const text of ['Last 7 days', '71%', '5 of 7 doses']) await expect(stat(page, 0)).toContainText(text)
+  for (const text of ['Last 30 days', '29%', '5 of 17 doses']) await expect(stat(page, 1)).toContainText(text)
+  await expect(s.locator('.doc-permed tbody tr')).toHaveText([
+    /Concor 5 mg\s*5 of 17 doses\s*29%/,
+    /Glucophage 500 mg\s*Not enough data yet\s*—/,
+  ])
   await expect(s).toContainText('Recorded by the patient in Med Friend. Not medical advice.')
   // The name form is only shown when no name is saved.
   await expect(page.getByLabel('Your name')).toHaveCount(0)
@@ -97,11 +103,11 @@ test('3. No name yet: the summary asks for it, and saving it there also fills My
   await setUp(page)
   await openSummary(page)
   await expect(page.getByText('Add your name so the doctor knows whose list this is.')).toBeVisible()
-  await expect(summaryPage(page)).not.toContainText('Patient:')
+  await expect(patient(page)).toHaveText('Not added')
 
   await fillDetails(page, 'Layla Khoury', '')
-  await expect(summaryPage(page)).toContainText('Patient: Layla Khoury')
-  await expect(summaryPage(page)).not.toContainText('Born')
+  await expect(patient(page)).toHaveText('Layla Khoury')
+  await expect(summaryPage(page).locator('.doc-patient dd').nth(1)).toHaveText('Not added')
   await expect(page.getByLabel('Your name')).toHaveCount(0)
 
   await page.getByRole('button', { name: 'Back' }).click()
@@ -128,6 +134,16 @@ test('4. Print / Save as PDF opens the print window; the printed page has no but
   await expect(page.getByRole('link', { name: 'Send on WhatsApp' })).toBeHidden()
   await expect(page.getByRole('button', { name: 'Back' })).toBeHidden()
   await expect(page.locator('.phone-frame')).toHaveCSS('border-top-width', '0px')
+
+  // The logo is in the top-right corner of the page.
+  const logo = (await page.locator('.doc-brand .logo-mark').boundingBox())!
+  const doc = (await summaryPage(page).boundingBox())!
+  expect(logo.y - doc.y).toBeLessThan(100)
+  expect(logo.x).toBeGreaterThan(doc.x + doc.width * 0.5)
+
+  // It fits on one A4 page.
+  const pdf = (await page.pdf({ format: 'A4', preferCSSPageSize: true })).toString('latin1')
+  expect(pdf.match(/\/Type\s*\/Page[^s]/g)).toHaveLength(1)
 })
 
 test('5. Send on WhatsApp opens a wa.me link with the summary as text', async ({ page }) => {
@@ -168,9 +184,13 @@ test('6. The summary works in Arabic; text ≥ 18px and buttons ≥ 48px', async
   await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
   const s = summaryPage(page)
   await expect(page.getByRole('heading', { name: 'ملخّص الأدوية' })).toBeVisible()
-  await expect(s).toContainText('المريض: سامي حداد')
-  await expect(s).toContainText('مواليد 1968 (العمر 58 سنة)')
-  await expect(s).toContainText('آخر 7 أيام: 5 من 7 جرعة (71%)')
+  await expect(patient(page)).toHaveText('سامي حداد')
+  await expect(s).toContainText('1968 (العمر 58 سنة)')
+  for (const text of ['آخر 7 أيام', '71%', '5 من 7 جرعة']) await expect(stat(page, 0)).toContainText(text)
+  // The logo stays in the top-right corner in Arabic too.
+  const logo = (await page.locator('.doc-brand .logo-mark').boundingBox())!
+  const doc = (await s.boundingBox())!
+  expect(logo.x).toBeGreaterThan(doc.x + doc.width * 0.5)
   await expect(page.getByRole('link', { name: 'أرسل عبر واتساب' })).toBeVisible()
 
   for (const el of await page.locator('button, a').all()) {
@@ -204,6 +224,6 @@ test('7. The demo account has a sample name on its summary', async ({ page }) =>
   await page.getByRole('button', { name: 'Use the demo account' }).click()
   await expect(page.getByRole('heading', { name: 'Today' })).toBeVisible({ timeout: 20_000 })
   await openSummary(page) // read only
-  await expect(summaryPage(page)).toContainText('Patient: مريض تجريبي (Demo patient)')
-  await expect(summaryPage(page)).toContainText('Born 1968')
+  await expect(patient(page)).toHaveText('مريض تجريبي (Demo patient)')
+  await expect(summaryPage(page)).toContainText('1968')
 })

@@ -8,7 +8,7 @@ Last updated: **Sun 22 Nov 2026** (design revamp built).
 1. Everything is committed and pushed to `main`; the live link is up to date. Working tree is clean.
 2. **Tier A is done** (F6, F2, F1, F8 + login, Settings, Progress) **and the design revamp is done**
    (approved and built 22 Nov, incl. "Reset all data") **and F9 is done** (doctor summary + "My details" profile).
-   134 Playwright tests pass (2 run-once DB checks skipped on laptop).
+   134 Playwright tests pass (2 run-once DB checks skipped on laptop). Note: the Bash tool halves backslashes in inline scripts; edit regexes with the Edit tool.
 3. **Next step: F3** (prayer and meal anchors, Amman prayer times). Write a short plan, get the owner's approval, build.
    - **Behind schedule** (revamp was planned for Sat, done Sun). If behind on Monday evening, cut F7 then F10.
 4. Then continue the plan one feature at a time: plan → owner approval → build → tests → commit → push →

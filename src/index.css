@@ -1422,81 +1422,244 @@ button:disabled {
   text-align: end; /* LTR digits inside an RTL form */
 }
 
-/* ---------- Summary for my doctor (F9) ---------- */
-.summary {
+/* ---------- Summary for my doctor (F9): a document, A4 when printed ---------- */
+.doc {
+  --doc-ink: #10231d;
+  --doc-muted: #4a5a53;
+  --doc-teal: #1a6b5a;
+  --doc-rule: #d5ded9;
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  padding: 20px 18px;
+  gap: 20px;
+  padding: 20px 16px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--card);
+  color: var(--doc-ink);
 }
 
-.summary-head {
+/* Title on one side, logo in the top-right corner (in both languages). */
+.doc-head {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
   padding-block-end: 14px;
-  border-block-end: 2px solid var(--ink);
+  border-block-end: 3px solid var(--doc-teal);
 }
 
-.summary-title {
-  font-size: 1.625rem;
+[dir='rtl'] .doc-brand {
+  order: -1; /* first in RTL = right-hand side */
+}
+
+.doc-title {
+  font-size: 1.5rem;
   font-weight: 700;
-  line-height: 1.25;
+  line-height: 1.2;
 }
 
-.summary-patient {
-  font-size: 1.25rem;
-  font-weight: 600;
+.doc-date {
+  margin-block-start: 4px;
+  font-size: 1.125rem;
+  color: var(--doc-muted);
 }
 
-.summary-date {
-  color: var(--muted);
+.doc-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
-.summary-h2 {
-  margin-block-end: 6px;
-  font-size: 1.25rem;
-  font-weight: 600;
-}
-
-.summary-h3 {
-  margin-block: 10px 4px;
+.doc-brand-name {
+  display: flex;
+  flex-direction: column;
   font-size: 1.125rem;
   font-weight: 600;
-  color: var(--muted);
+  line-height: 1.2;
+  color: var(--doc-teal);
 }
 
-.summary-list {
-  list-style: none;
+.logo-mark {
+  flex-shrink: 0;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+.doc-patient {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 12px 16px;
   margin: 0;
-  padding: 0;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #f3f7f5;
 }
 
-.summary-list li {
-  display: flex;
-  flex-direction: column;
-  padding-block: 8px;
+.doc-patient dt {
+  font-size: 1.125rem;
+  color: var(--doc-muted);
 }
 
-.summary-list li + li {
-  border-block-start: 1px solid var(--line);
+.doc-patient dd {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
 }
 
-.summary-detail {
-  color: var(--muted);
+.doc-h2 {
+  margin-block-end: 8px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--doc-teal);
 }
 
-.summary-pct li {
-  flex-direction: row;
-  justify-content: space-between;
+.doc-table {
+  inline-size: 100%;
+  border-collapse: collapse;
+}
+
+.doc-table caption {
+  padding-block: 14px 6px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  text-align: start;
+}
+
+.doc-table th,
+.doc-table td {
+  padding: 8px 6px;
+  border-block-end: 1px solid var(--doc-rule);
+  text-align: start;
+  vertical-align: top;
+}
+
+.doc-table thead th {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: var(--doc-muted);
+  border-block-end: 2px solid var(--doc-ink);
+}
+
+.doc-table tbody th {
+  font-weight: 600;
+}
+
+.doc-times {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+[dir='rtl'] .doc-times {
+  text-align: end; /* LTR digits in an RTL table cell */
+}
+
+.doc-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
-.summary-footer {
-  padding-block-start: 12px;
-  border-block-start: 1px solid var(--line);
+.doc-stat {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 14px;
+  border: 1px solid var(--doc-rule);
+  border-radius: 14px;
+}
+
+.doc-stat-label,
+.doc-stat-detail {
   font-size: 1.125rem;
-  color: var(--muted);
+  color: var(--doc-muted);
+}
+
+.doc-stat-pct {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  color: var(--doc-teal);
+}
+
+.doc-pct {
+  font-weight: 700;
+  text-align: end !important;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.doc-bar-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.doc-bar {
+  display: block;
+  flex: 1;
+  min-inline-size: 3rem;
+  block-size: 8px;
+  border-radius: 4px;
+  background: var(--line);
+  overflow: hidden;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+.doc-bar span {
+  display: block;
+  block-size: 100%;
+  background: var(--doc-teal);
+}
+
+.doc-bar-text {
+  font-size: 1.125rem;
+  color: var(--doc-muted);
+  white-space: nowrap;
+}
+
+.doc-footer {
+  padding-block-start: 4px;
+  font-size: 1.125rem;
+  color: var(--doc-muted);
+}
+
+/* On screen (always phone-width) the medicines table reads as a list; printing keeps the real table. */
+@media screen {
+  .doc-meds thead {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .doc-meds,
+  .doc-meds tbody,
+  .doc-meds tr,
+  .doc-meds th,
+  .doc-meds td {
+    display: block;
+  }
+  .doc-meds tr {
+    padding-block: 10px;
+    border-block-end: 1px solid var(--doc-rule);
+  }
+  .doc-meds th,
+  .doc-meds td {
+    padding: 0;
+    border: none;
+  }
+  .doc-meds td {
+    display: inline;
+    color: var(--doc-muted);
+  }
+  .doc-meds td + td::before {
+    content: ', ';
+  }
+  [dir='rtl'] .doc-meds td + td::before {
+    content: '، ';
+  }
 }
 
 .summary-actions {
@@ -1518,18 +1681,23 @@ button:disabled {
   cursor: not-allowed;
 }
 
-/* Printing: only the summary, black on white, no phone frame. */
+/* ---------- Printing: only the document, on A4 ---------- */
 @media print {
+  /* Margin 0 removes the browser's own header/footer (URL, date); the page margin is the padding below. */
   @page {
     size: A4;
-    margin: 16mm;
+    margin: 0;
+  }
+  html,
+  body {
+    background: #ffffff;
   }
   body {
     display: block;
+    min-block-size: 0;
     padding: 0;
-    background: #ffffff;
-    color: #000000;
-    font-size: 12pt;
+    font-size: 11pt;
+    line-height: 1.4;
   }
   .phone-frame {
     display: block;
@@ -1551,26 +1719,66 @@ button:disabled {
   .sheet-backdrop {
     display: none !important;
   }
-  .summary {
-    border: none;
-    padding: 0;
+  .doc {
     gap: 12pt;
+    padding: 14mm 16mm;
+    border: none;
+    border-radius: 0;
   }
-  .summary-title {
-    font-size: 20pt;
+  .doc-title {
+    font-size: 22pt;
   }
-  .summary-patient,
-  .summary-h2 {
+  .doc-date,
+  .doc-brand-name,
+  .doc-patient dt,
+  .doc-table caption,
+  .doc-table thead th,
+  .doc-stat-label,
+  .doc-stat-detail,
+  .doc-bar-text,
+  .doc-footer {
+    font-size: 10pt;
+  }
+  .doc-brand-name {
+    font-size: 12pt;
+  }
+  .doc-h2 {
     font-size: 14pt;
   }
-  .summary-date,
-  .summary-detail,
-  .summary-h3,
-  .summary-footer {
-    color: #333333;
+  .doc-patient {
+    grid-template-columns: 1fr 1fr;
+    padding: 8pt 12pt;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
   }
-  .summary-list li {
-    padding-block: 4pt;
+  .doc-patient dd {
+    font-size: 12pt;
+  }
+  .doc-table th,
+  .doc-table td {
+    padding: 4pt 6pt;
+    font-size: 10.5pt;
+  }
+  .doc-table caption {
+    padding-block: 8pt 2pt;
+  }
+  .doc-h2 {
+    margin-block-end: 4pt;
+  }
+  .doc-stat {
+    padding: 6pt 10pt;
+  }
+  .doc-stat-pct {
+    font-size: 18pt;
+  }
+  .doc-permed td:nth-child(2) {
+    inline-size: 50%;
+  }
+  .doc-bar {
+    block-size: 6pt;
+  }
+  .doc-table tr,
+  .doc-stat {
     break-inside: avoid;
   }
 }

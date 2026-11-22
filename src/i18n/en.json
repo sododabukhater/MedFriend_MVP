@@ -212,7 +212,7 @@
   "summary.open": "Summary for my doctor",
   "summary.title": "Medication summary",
   "summary.patient": "Patient: {name}",
-  "summary.born": "Born {year} ({age} years old)",
+  "summary.born": "Born {born}",
   "summary.date": "Date: {date}",
   "summary.needName": "Add your name so the doctor knows whose list this is.",
   "summary.meds": "Medicines",
@@ -225,5 +225,16 @@
   "summary.footer": "Recorded by the patient in Med Friend. Not medical advice.",
   "summary.print": "Print or save as PDF",
   "summary.whatsapp": "Send on WhatsApp",
-  "summary.loading": "Loading…"
+  "summary.loading": "Loading…",
+  "summary.bornValue": "{year} ({age} years old)",
+  "summary.label.patient": "Patient",
+  "summary.label.born": "Year of birth",
+  "summary.label.date": "Date",
+  "summary.notSet": "Not added",
+  "summary.col.medicine": "Medicine",
+  "summary.col.amount": "Each time",
+  "summary.col.often": "How often",
+  "summary.col.times": "Times",
+  "summary.col.taken": "Doses taken",
+  "summary.ofDoses": "{n} of {total} doses"
 }

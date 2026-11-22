@@ -212,7 +212,7 @@
   "summary.open": "ملخّص لطبيبي",
   "summary.title": "ملخّص الأدوية",
   "summary.patient": "المريض: {name}",
-  "summary.born": "مواليد {year} (العمر {age} سنة)",
+  "summary.born": "مواليد {born}",
   "summary.date": "التاريخ: {date}",
   "summary.needName": "أضف اسمك ليعرف الطبيب لمن هذه القائمة.",
   "summary.meds": "الأدوية",
@@ -225,5 +225,16 @@
   "summary.footer": "سجّلها المريض في تطبيق صديقك الطبي. ليست نصيحة طبية.",
   "summary.print": "اطبع أو احفظ PDF",
   "summary.whatsapp": "أرسل عبر واتساب",
-  "summary.loading": "جارٍ التحميل…"
+  "summary.loading": "جارٍ التحميل…",
+  "summary.bornValue": "{year} (العمر {age} سنة)",
+  "summary.label.patient": "المريض",
+  "summary.label.born": "سنة الميلاد",
+  "summary.label.date": "التاريخ",
+  "summary.notSet": "غير مضاف",
+  "summary.col.medicine": "الدواء",
+  "summary.col.amount": "كل مرة",
+  "summary.col.often": "عدد المرات",
+  "summary.col.times": "المواعيد",
+  "summary.col.taken": "الجرعات المأخوذة",
+  "summary.ofDoses": "{n} من {total} جرعة"
 }

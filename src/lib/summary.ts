@@ -1,21 +1,31 @@
 import type { Lang, MessageKey } from '../i18n'
 import type { Medication } from '../storage/medications'
-import { lastDays, SHORT_DAYS, stats, type LoggedDose } from './adherence'
+import { lastDays, SHORT_DAYS, stats, type LoggedDose, type Stats } from './adherence'
 import { amountText, strengthText } from './format'
 import type { Profile } from './profile'
 import { ammanDate, longDate } from './time'
 
-// F9: the doctor summary, as lines used both on screen and in the WhatsApp text. Spec: docs/specs/F9.md
+// F9: the doctor summary. Built once, shown as a document on screen / in print, and as WhatsApp text.
+// Spec: docs/specs/F9.md
 
 type T = (key: MessageKey, vars?: Record<string, string | number>) => string
 
+export type SummaryMed = {
+  name: string // "Glucophage 500 mg"
+  amount: string // "1 tablet"
+  often: string // "twice a day"
+  times: string // "08:00, 20:00"
+}
+
+export type SummaryPeriod = { label: string; stats: Stats }
+
 export type Summary = {
-  patient: string | null // "Patient: Sami Haddad"
-  born: string | null // "Born 1968 (58 years old)"
-  date: string // "Date: Sunday 22 November"
-  meds: { name: string; detail: string }[]
-  periods: string[] // "Last 7 days: 19 of 45 doses (42%)"
-  perMed: { name: string; pct: string }[]
+  name: string // "" when not saved yet
+  born: string | null // "1968 (58 years old)"
+  date: string // "Sunday 22 November"
+  meds: SummaryMed[]
+  periods: SummaryPeriod[] // last 7 days, last 30 days
+  perMed: { name: string; stats: Stats }[] // last 30 days
 }
 
 export function buildSummary(
@@ -31,45 +41,53 @@ export function buildSummary(
     const strength = strengthText(t, med.strengthValue, med.strengthUnit)
     return strength ? `${med.name} ${strength}` : med.name
   }
-  const period = (label: MessageKey, doses: LoggedDose[]) => {
-    const s = stats(doses)
-    return s.pct === null
-      ? t('summary.periodNone', { period: t(label) })
-      : t('summary.period', { period: t(label), n: s.taken, total: s.counted, pct: s.pct })
-  }
   return {
-    patient: profile.name ? t('summary.patient', { name: profile.name }) : null,
+    name: profile.name,
     born:
-      profile.birthYear === null ? null : t('summary.born', { year: profile.birthYear, age: thisYear - profile.birthYear }),
-    date: t('summary.date', { date: longDate(now, lang) }),
+      profile.birthYear === null
+        ? null
+        : t('summary.bornValue', { year: profile.birthYear, age: thisYear - profile.birthYear }),
+    date: longDate(now, lang),
     meds: meds.map((med) => ({
       name: fullName(med),
-      detail: t('summary.medLine', {
-        amount: amountText(t, med.form, med.amount),
-        often: t(`often.${med.timesPerDay}` as MessageKey),
-        times: med.times.join(lang === 'ar' ? '، ' : ', '),
-      }),
+      amount: amountText(t, med.form, med.amount),
+      often: t(`often.${med.timesPerDay}` as MessageKey),
+      times: med.times.join(lang === 'ar' ? '، ' : ', '),
     })),
-    periods: [period('progress.last7', lastDays(all, now, SHORT_DAYS)), period('progress.last30', all)],
-    perMed: meds.map((med) => {
-      const s = stats(all.filter((d) => d.med.id === med.id))
-      return { name: fullName(med), pct: s.pct === null ? t('progress.noDataShort') : `${s.pct}%` }
-    }),
+    periods: [
+      { label: t('progress.last7'), stats: stats(lastDays(all, now, SHORT_DAYS)) },
+      { label: t('progress.last30'), stats: stats(all) },
+    ],
+    perMed: meds.map((med) => ({ name: fullName(med), stats: stats(all.filter((d) => d.med.id === med.id)) })),
   }
+}
+
+/** "Last 7 days: 19 of 45 doses (42%)" */
+export function periodLine(t: T, p: SummaryPeriod): string {
+  const s = p.stats
+  return s.pct === null
+    ? t('summary.periodNone', { period: p.label })
+    : t('summary.period', { period: p.label, n: s.taken, total: s.counted, pct: s.pct })
+}
+
+export function pctText(t: T, s: Stats): string {
+  return s.pct === null ? t('progress.noDataShort') : `${s.pct}%`
 }
 
 /** Plain text for WhatsApp (*bold* is WhatsApp's own formatting). */
 export function summaryText(t: T, s: Summary): string {
-  const lines = [`*${t('summary.title')}*`]
-  if (s.patient) lines.push(s.patient)
-  if (s.born) lines.push(s.born)
-  lines.push(s.date, '', `*${t('summary.meds')}*`)
+  const lines = [`*${t('summary.title')}*`, t('app.name')]
+  if (s.name) lines.push(t('summary.patient', { name: s.name }))
+  if (s.born) lines.push(t('summary.born', { born: s.born }))
+  lines.push(t('summary.date', { date: s.date }), '', `*${t('summary.meds')}*`)
   if (s.meds.length === 0) lines.push(t('summary.noMeds'))
-  for (const m of s.meds) lines.push(`- ${m.name}: ${m.detail}`)
-  lines.push('', `*${t('summary.taken')}*`, ...s.periods)
+  for (const m of s.meds) {
+    lines.push(`- ${m.name}: ${t('summary.medLine', { amount: m.amount, often: m.often, times: m.times })}`)
+  }
+  lines.push('', `*${t('summary.taken')}*`, ...s.periods.map((p) => periodLine(t, p)))
   if (s.perMed.length > 0) {
     lines.push('', t('summary.perMed'))
-    for (const m of s.perMed) lines.push(`- ${m.name}: ${m.pct}`)
+    for (const m of s.perMed) lines.push(`- ${m.name}: ${pctText(t, m.stats)}`)
   }
   lines.push('', t('summary.footer'))
   return lines.join('\n')
