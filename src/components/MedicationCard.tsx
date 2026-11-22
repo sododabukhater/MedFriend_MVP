@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useI18n, type MessageKey } from '../i18n'
 import { amountText, strengthText } from '../lib/format'
-import { anchorLabel, doseTimesOn } from '../lib/anchors'
+import { anchorLabel, currentDoseTimes, timesStartTomorrow } from '../lib/anchors'
 import { usePrefs } from '../lib/prefs'
 import type { StockInfo } from '../lib/stock'
 import { ammanDate, dayPart } from '../lib/time'
@@ -20,10 +20,12 @@ type Props = {
   /** F7: what is left (undefined = no box set), and saving a new box size / count (throws on failure). */
   stock?: StockInfo
   onStock: (med: Medication, packSize: number, count: number) => Promise<void>
+  /** Opens Change times (docs/specs/TIMES.md). */
+  onChangeTimes: (med: Medication) => void
 }
 
 /** One medicine in "My medicines": name + strength, "1 tablet, twice a day", time chips. */
-export default function MedicationCard({ med, onDelete, onPhoto, onRemovePhoto, stock, onStock }: Props) {
+export default function MedicationCard({ med, onDelete, onPhoto, onRemovePhoto, stock, onStock, onChangeTimes }: Props) {
   const { t } = useI18n()
   const prefs = usePrefs()
   const [confirming, setConfirming] = useState(false)
@@ -83,7 +85,7 @@ export default function MedicationCard({ med, onDelete, onPhoto, onRemovePhoto, 
         })}
       </p>
       <div className="chips">
-        {doseTimesOn(med, ammanDate(new Date()), prefs).map(({ time, anchor }, i) =>
+        {currentDoseTimes(med, ammanDate(new Date()), prefs).map(({ time, anchor }, i) =>
           anchor ? (
             <span key={i} className={`chip tint--${dayPart(time)}`}>
               {anchorLabel(t, anchor)}
@@ -95,6 +97,15 @@ export default function MedicationCard({ med, onDelete, onPhoto, onRemovePhoto, 
           ),
         )}
       </div>
+      {timesStartTomorrow(med, ammanDate(new Date())) && <p className="item-hint">{t('times.tomorrow')}</p>}
+      <button
+        type="button"
+        className="btn-link"
+        aria-label={t('times.changeLabel', { name: med.name })}
+        onClick={() => onChangeTimes(med)}
+      >
+        {t('times.change')}
+      </button>
 
       <StockArea med={med} info={stock} onStock={onStock} />
 

@@ -282,7 +282,7 @@
   "settings.prayer.today": "اليوم في عمّان",
   "settings.meals.title": "مواعيد وجباتي",
   "settings.meals.save": "احفظ مواعيد الوجبات",
-  "settings.meals.saved": "تم حفظ مواعيد الوجبات.",
+  "settings.meals.saved": "تم حفظ مواعيد الوجبات. تبدأ المواعيد الجديدة من الغد، ويبقى اليوم كما هو.",
   "photo.add": "أضف صورة",
   "photo.addLabel": "أضف صورة لـ {name}",
   "photo.change": "غيّر الصورة",
@@ -389,5 +389,13 @@
   "stock.total.q": "كم لديك الآن في المجموع؟",
   "stock.totalLine": "المجموع: {n}",
   "rem.stockLow": "{days} فقط. حان وقت شراء علبة جديدة.",
-  "rem.stockOut": "نفد هذا الدواء. حان وقت شراء علبة جديدة."
+  "rem.stockOut": "نفد هذا الدواء. حان وقت شراء علبة جديدة.",
+  "times.change": "تغيير المواعيد",
+  "times.changeLabel": "تغيير مواعيد {name}",
+  "times.title": "المواعيد الجديدة لدواء {name}",
+  "times.hint": "الجرعات التي سجّلتها تبقى كما هي. تبدأ المواعيد الجديدة من الغد.",
+  "times.save": "احفظ المواعيد الجديدة",
+  "times.saving": "جارٍ الحفظ…",
+  "times.saved": "تم حفظ المواعيد الجديدة. تبدأ من الغد.",
+  "times.tomorrow": "تبدأ المواعيد الجديدة من الغد."
 }

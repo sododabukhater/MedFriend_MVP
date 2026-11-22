@@ -103,21 +103,24 @@ test('3. With the switch on: add "after Fajr" and "before breakfast"; Today, My 
   await expect(page.getByTestId('summary-page').locator('.doc-meds')).toContainText('After Fajr, Before breakfast')
 })
 
-test('4. Changing a meal time moves the doses tied to that meal', async ({ page }) => {
+test('4. Changing a meal time moves the doses tied to that meal (from tomorrow, see TIMES.md)', async ({ page }) => {
   await loginWithMeds(page, [{ name: 'Nexium', times: ['07:30'], anchors: ['breakfast:before'] }], FAKE_NOW)
   await expect(dose(page, '07:30 Nexium')).toContainText('Before breakfast')
 
   await goToSettings(page)
   await page.getByLabel('Breakfast').fill('09:00')
   await page.getByRole('button', { name: 'Save meal times' }).click()
-  await expect(page.getByText('Meal times saved.')).toBeVisible()
+  await expect(page.getByText('Meal times saved. The new times start tomorrow; today stays as it was.')).toBeVisible()
 
+  // Today keeps its time; saved with the account, so a reload changes nothing.
   await page.getByRole('navigation').getByRole('button', { name: 'Today' }).click()
+  await expect(dose(page, '07:30 Nexium')).toContainText('Before breakfast')
+  await page.reload()
+  await expect(dose(page, '07:30 Nexium')).toBeVisible()
+  // Tomorrow: 08:30.
+  await page.clock.fastForward('24:00:00')
   await expect(dose(page, '08:30 Nexium')).toContainText('Before breakfast')
   await expect(dose(page, '07:30 Nexium')).toHaveCount(0)
-  // Saved with the account.
-  await page.reload()
-  await expect(dose(page, '08:30 Nexium')).toBeVisible()
 })
 
 test('5. The reminder for "after Dhuhr" comes 15 minutes after Dhuhr and names the moment, even with the switch off', async ({ page }) => {

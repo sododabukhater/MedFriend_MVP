@@ -1,10 +1,11 @@
 # Handoff — current status (read this first)
 
-Last updated: **Sun 22 Nov 2026, night** (eighth session: code review of all of `src` (owner asked), 9 of 10 findings fixed). **All planned features are built.** `CLAUDE.md` is the rulebook.
+Last updated: **Sun 22 Nov 2026, night** (eighth session: code review of all of `src` (owner asked), all 10 findings
+fixed; the 10th became **Change times**, `docs/specs/TIMES.md`). **All planned features are built.** `CLAUDE.md` is the rulebook.
 This file is the current state of the work. Deadline: live and tested by **Wed 25 Nov**; **code freeze Tue 24 Nov evening**.
 
 ## ▶ Start here (new chat)
-1. Everything is committed and pushed to `main` (last commit: code-review fixes, see Done table);
+1. Everything is committed and pushed to `main` (last commit: Change times, see Done table);
    the live link is up to date; working tree clean.
 2. **Done:** Tier A (F6, F2, F1, F8 + login, Settings, Progress), **design revamp** (+ Reset all data),
    **F9** doctor summary (+ "My details" profile, A4 print with logo), **F3** prayer and meal anchors
@@ -18,8 +19,10 @@ This file is the current state of the work. Deadline: live and tested by **Wed 2
    "I got a new box" / "Correct the count" (asks the total) on the card.
    **240 Playwright tests (237 + 3 skipped by design)**, all passing on 22 Nov night (~5–6 min). `retries: 1` in
    `playwright.config.ts` (owner approved 22 Nov), so Supabase network timeouts show as "flaky", not failed.
-   **Code review 22 Nov (owner asked):** 10 findings; 9 fixed (see Done table). **Not fixed, owner to decide:**
-   changing a meal time in Settings re-times past anchored doses, so their old answers show as Missed (known limit).
+   **Code review 22 Nov (owner asked):** 10 findings; 9 fixed (see Done table). The 10th (meal-time change re-timed past doses) led to
+   **Change times** (owner: "changing any time must not affect the history"): "Change times" link on each medicine card;
+   new medicine or meal times start **tomorrow** (owner chose); past days keep their times (`medications.past_schedules`,
+   account `meal_times_past`). `tests/TIMES.spec.ts`.
 3. **Open questions for the owner:**
    - **F5 Edge check** of the last two fixes (name in English, strength number in Arabic) — owner said "sounds great"
      after the first; the number fix (`c5d679b`) is not yet confirmed by ear.
@@ -84,7 +87,8 @@ This file is the current state of the work. Deadline: live and tested by **Wed 2
 | `2dabdaf` | F7 Stock count: box step in Add medication, card stock line + Low / Out of stock, new box, correct the count, Today refill card | `docs/specs/F7.md` | `tests/F7.spec.ts` |
 | `d285a21` | F7 several boxes: box size + more full boxes (− / +) + left in the box in use; Correct the count asks the total | `docs/specs/F7.md` | `tests/F7.spec.ts` 2b, 10 |
 | `14fc90f` | F7 refill line in the reminder panel (low / out); F1 test 6 waits for doses after reload | `docs/specs/F7.md` | `tests/F7.spec.ts` 11, 12 |
-| (this) | Code-review fixes: stock hidden until loaded (+ retry), box size keeps typed "left", dose logs read page by page (>1000 rows), two quick answers both kept, no two doses at the same time, Demo-speed on-time, follow-up read aloud, Amman birth year | `docs/specs/F2.md`, `F6.md`, `F7.md` | `F2` 5b, `F6` 6b, `F7` 13, 14 |
+| `7af52a3` | Code-review fixes: stock hidden until loaded (+ retry), box size keeps typed "left", dose logs read page by page (>1000 rows), two quick answers both kept, no two doses at the same time, Demo-speed on-time, follow-up read aloud, Amman birth year | `docs/specs/F2.md`, `F6.md`, `F7.md` | `F2` 5b, `F6` 6b, `F7` 13, 14 |
+| (this) | **Change times**: link on each card, new times (medicine or meal) start tomorrow, past days keep their times; `past_schedules` column | `docs/specs/TIMES.md` | `tests/TIMES.spec.ts`, `F3` 4 |
 
 ## How the app works now
 - **Login first** (email + password, Supabase Auth; "Confirm email" OFF). No welcome screen (owner, 20 Nov);
@@ -113,8 +117,7 @@ This file is the current state of the work. Deadline: live and tested by **Wed 2
   Follow-up / snooze 15 min. Demo speed (per device): 1 minute = 1 second. Adherence = Taken ÷ decided doses.
 - **F3 anchors:** after a prayer = prayer time + 15 min; before / with / after a meal = −30 / 0 / +30 min; Suhoor =
   Fajr − 45 min; Iftar = Maghrib. Prayer times calculated in-app (Jordan Ministry of Awqaf: Fajr/Isha 18°,
-  Maghrib = sunset + 5 min), matched the official timetable to the minute. Known limit: changing a meal time also moves
-  past anchored doses, so an old answer may show as Missed.
+  Maghrib = sunset + 5 min), matched the official timetable to the minute. A changed meal time starts tomorrow (TIMES.md).
 - **F4 photos:** shrunk in the browser (800 px JPEG), private bucket `pill-photos`, path `<user id>/<med id>-<time>.jpg`,
   `medications.photo_path`; shown via 1-day signed links made when the list loads. Deleting a medicine / Reset all data
   deletes the files; `seed-demo.mjs` clears demo photos. Demo medicines have no photos.
@@ -150,15 +153,15 @@ This file is the current state of the work. Deadline: live and tested by **Wed 2
   `prefs.tsx` (prefs context).
 - `src/storage/`: `medications.ts` (incl. `anchors`, `photoPath`/`photoUrl`, `deleteAllMedications`), `doseLogs.ts`,
   `photos.ts` (F4), `documents.ts` (F10).
-- `src/screens/`: `Documents/` (F10, shown inside My medicines), `Auth/`, `AddMedication/`, `Today/`, `Medicines/`, `Progress/`, `Summary/`, `Settings/`.
+- `src/screens/`: `ChangeTimes/` (TIMES.md), `Documents/` (F10, shown inside My medicines), `Auth/`, `AddMedication/`, `Today/`, `Medicines/`, `Progress/`, `Summary/`, `Settings/`.
 - `src/components/`: `TabBar`, `ReminderBanner` (bottom panel), `MedicationCard`, `Autocomplete`, `LanguageSwitch`,
-  `ScreenHeader`, `Icons`, `Logo` (brand mark), `ProfileForm`, `DoseTimeRow` (F3 picker), `DaySettings` (F3 settings), `PhotoPicker` (F4), `ReadAloudButton` (F5).
+  `ScreenHeader`, `Icons`, `Logo` (brand mark), `ProfileForm`, `DoseTimeRow` (F3 picker), `TimesPicker` (times step, shared by Add medication + Change times), `DaySettings` (F3 settings), `PhotoPicker` (F4), `ReadAloudButton` (F5).
 - `src/i18n/en.json`, `ar.json`: all text, same keys. `src/index.css`: all styles, tokens at the top, print styles in F9.
 - `public/icon.svg`: the Med Friend logo (from the owner's deck "Med Friend - 17 Screens", slide S-P-01).
 - `supabase/migrations/`: SQL applied to the project. `scripts/seed-demo.mjs`: demo reset.
 
 ## Database (Supabase project `medfriend`, ref `zotspmzlyopvkqsrgrng`)
-- `medications` (strength_value + strength_unit; unused old `strength` column kept; **`anchors text[]`** added 22 Nov,
+- `medications` (strength_value + strength_unit; unused old `strength` column kept; **`anchors text[]`** added 22 Nov, **`past_schedules jsonb`** added 22 Nov night for Change times,
   one per dose, '' = clock time, check on allowed codes; **`photo_path`** added 22 Nov for F4) and `dose_logs` (`unique (medication_id, scheduled_at)`;
   delete cascades from medications). RLS owner-only on both.
 - Supabase MCP plugin works here (`apply_migration`, `execute_sql`). Many throwaway test users
@@ -170,7 +173,7 @@ This file is the current state of the work. Deadline: live and tested by **Wed 2
 - Each test creates its own `@mailinator.com` account. Time-based tests use a fake clock (Nov 2026);
   `loginWithMeds()` (supports `anchors`) and `installEarlyClock()` (03:00 Amman, so no reminder panel gets in the way)
   in `tests/helpers.ts`. Tests can import pure files from `src/lib` (e.g. `tests/F3.spec.ts` imports `prayer.ts`).
-- Spec files: `DESIGN`, `F1`, `F2`, `F3`, `F4`, `F5`, `F6`, `F7`, `F8`, `F9`, `F10`, `auth`, `home`, `DB-supabase`.
+- Spec files: `TIMES`, `DESIGN`, `F1`, `F2`, `F3`, `F4`, `F5`, `F6`, `F7`, `F8`, `F9`, `F10`, `auth`, `home`, `DB-supabase`.
 - Tests that walk through Add medication must tap "Skip for now" twice (box step 5, photo step 6) before the review. Box step labels: "How many are in one box?",
   "More boxes", "How many are left in the box you are using?"; Correct the count: "How many do you have now in total?".
   `loginWithMeds` takes `form`, `amount` and `stock: { pack, count, setAt }`.

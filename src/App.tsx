@@ -9,6 +9,7 @@ import { profileOf } from './lib/profile'
 import { useDoses } from './lib/useDoses'
 import { useStock } from './lib/useStock'
 import AddMedication from './screens/AddMedication/AddMedication'
+import ChangeTimes from './screens/ChangeTimes/ChangeTimes'
 import {
   ForgotScreen,
   LoginScreen,
@@ -34,6 +35,7 @@ export default function App() {
   const [tab, setTab] = useState<Tab>('today')
   const [adding, setAdding] = useState(false)
   const [summary, setSummary] = useState(false)
+  const [changingTimes, setChangingTimes] = useState<Medication | null>(null)
   const [medsView, setMedsView] = useState<MedsView>('meds') // F10: Medicines | Documents
   const [meds, setMeds] = useState<MedsState>({ status: 'loading' })
   const [notice, setNotice] = useState<MessageKey | null>(null)
@@ -71,6 +73,7 @@ export default function App() {
       setTab('today')
       setAdding(false)
       setSummary(false)
+      setChangingTimes(null)
       setMedsView('meds')
       setMeds({ status: 'loading' })
       setError(null)
@@ -180,6 +183,10 @@ export default function App() {
         onRemovePhoto={handleRemovePhoto}
         stock={stock}
         onStock={handleStock}
+        onChangeTimes={(med) => {
+          setNotice(null)
+          setChangingTimes(med)
+        }}
         view={medsView}
         onView={setMedsView}
       />
@@ -206,6 +213,20 @@ export default function App() {
     }
     if (summary && meds.status === 'ready') {
       return <Summary user={auth.user} meds={meds.meds} onBack={() => setSummary(false)} />
+    }
+    if (changingTimes) {
+      return (
+        <ChangeTimes
+          med={changingTimes}
+          onCancel={() => setChangingTimes(null)}
+          onSaved={(med) => {
+            replaceMed(med)
+            setNotice('times.saved')
+            setError(null)
+            setChangingTimes(null)
+          }}
+        />
+      )
     }
     if (adding) {
       return (

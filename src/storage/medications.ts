@@ -1,4 +1,4 @@
-import type { Anchor } from '../lib/anchors'
+import { ALL_ANCHORS, scheduleChange, type Anchor, type PastSchedule } from '../lib/anchors'
 import { supabase } from '../lib/supabase'
 import { photoLinks, removeAllPhotos, removeFiles } from './photos'
 
@@ -25,6 +25,8 @@ export type Medication = {
   times: string[] // "08:00", sorted
   /** F3: one per dose, same order as times; '' = clock time. Anchored doses get each day's own time. */
   anchors: Anchor[]
+  /** Times before a change (docs/specs/TIMES.md), oldest first; past days use the one that applied then. */
+  pastSchedules: PastSchedule[]
   /** F4: the patient's own photo (private Storage path) and a short-lived link to show it. */
   photoPath: string | null
   photoUrl: string | null
@@ -35,10 +37,10 @@ export type Medication = {
   createdAt: string
 }
 
-export type NewMedication = Omit<Medication, 'id' | 'createdAt' | 'photoPath' | 'photoUrl' | 'stockSetAt'>
+export type NewMedication = Omit<Medication, 'id' | 'createdAt' | 'photoPath' | 'photoUrl' | 'stockSetAt' | 'pastSchedules'>
 
 const COLUMNS =
-  'id, name, from_list, strength_value, strength_unit, form, amount, times_per_day, times, anchors, photo_path, pack_size, stock_count, stock_set_at, created_at'
+  'id, name, from_list, strength_value, strength_unit, form, amount, times_per_day, times, anchors, photo_path, pack_size, stock_count, stock_set_at, past_schedules, created_at'
 
 type Row = {
   id: string
@@ -55,7 +57,24 @@ type Row = {
   pack_size: number | string | null
   stock_count: number | string | null
   stock_set_at: string | null
+  past_schedules: unknown
   created_at: string
+}
+
+/** Keeps only well-formed entries (the column is plain JSON). */
+function pastFrom(value: unknown): PastSchedule[] {
+  if (!Array.isArray(value)) return []
+  return value
+    .filter(
+      (p): p is PastSchedule =>
+        typeof p === 'object' && p !== null &&
+        typeof p.until === 'string' &&
+        Array.isArray(p.times) && p.times.every((t: unknown) => typeof t === 'string') &&
+        Array.isArray(p.anchors) && p.anchors.length === p.times.length &&
+        p.anchors.every((a: unknown) => ALL_ANCHORS.includes(a as Anchor)),
+    )
+    .map((p) => ({ until: p.until, times: p.times, anchors: p.anchors }))
+    .sort((a, b) => a.until.localeCompare(b.until))
 }
 
 function fromRow(r: Row, links = new Map<string, string>()): Medication {
@@ -70,6 +89,7 @@ function fromRow(r: Row, links = new Map<string, string>()): Medication {
     timesPerDay: r.times_per_day,
     times: r.times,
     anchors: r.anchors ?? r.times.map(() => ''),
+    pastSchedules: pastFrom(r.past_schedules),
     photoPath: r.photo_path,
     photoUrl: r.photo_path ? (links.get(r.photo_path) ?? null) : null,
     packSize: r.pack_size === null ? null : Number(r.pack_size),
@@ -128,6 +148,25 @@ export async function setStock(id: string, packSize: number, count: number): Pro
   const row = data as Row
   const links = await photoLinks(row.photo_path ? [row.photo_path] : [])
   return fromRow(row, links)
+}
+
+/**
+ * Change times: saves the new times; today keeps the times it had (kept in past_schedules) and the new ones start
+ * tomorrow, so earlier answers keep matching their doses.
+ */
+export async function updateTimes(med: Medication, times: string[], anchors: Anchor[], today: string): Promise<Medication> {
+  const { data, error } = await supabase
+    .from('medications')
+    .update({
+      times_per_day: times.length,
+      ...sortedDoses(times, anchors),
+      past_schedules: scheduleChange(med, today),
+    })
+    .eq('id', med.id)
+    .select(COLUMNS)
+    .single()
+  if (error) throw error
+  return { ...fromRow(data as Row), photoUrl: med.photoUrl }
 }
 
 /** Times sorted, with each dose's anchor kept next to its time. */

@@ -282,7 +282,7 @@
   "settings.prayer.today": "Today in Amman",
   "settings.meals.title": "My meal times",
   "settings.meals.save": "Save meal times",
-  "settings.meals.saved": "Meal times saved.",
+  "settings.meals.saved": "Meal times saved. The new times start tomorrow; today stays as it was.",
   "photo.add": "Add a photo",
   "photo.addLabel": "Add a photo of {name}",
   "photo.change": "Change photo",
@@ -389,5 +389,13 @@
   "stock.total.q": "How many do you have now in total?",
   "stock.totalLine": "In total: {n}",
   "rem.stockLow": "Only {days} left. Time to get a refill.",
-  "rem.stockOut": "None left. Time to get a refill."
+  "rem.stockOut": "None left. Time to get a refill.",
+  "times.change": "Change times",
+  "times.changeLabel": "Change times for {name}",
+  "times.title": "New times for {name}",
+  "times.hint": "Doses you already answered stay as they are. The new times start tomorrow.",
+  "times.save": "Save new times",
+  "times.saving": "Saving…",
+  "times.saved": "New times saved. They start tomorrow.",
+  "times.tomorrow": "New times start tomorrow."
 }

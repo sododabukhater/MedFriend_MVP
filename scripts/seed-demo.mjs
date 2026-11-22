@@ -192,6 +192,7 @@ const profile = await db.auth.updateUser({
     birth_year: 1968,
     prayer_times: true,
     meal_times: { breakfast: '08:00', lunch: '14:00', dinner: '20:00' },
+    meal_times_past: [], // Change times (TIMES.md): no earlier meal times
   },
 })
 if (profile.error) throw profile.error

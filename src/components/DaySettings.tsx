@@ -1,6 +1,6 @@
 import { useEffect, useId, useState, type FormEvent } from 'react'
 import { useI18n, type MessageKey } from '../i18n'
-import { MEALS, savePrefs, type MealTimes, type Prefs } from '../lib/anchors'
+import { mealChange, MEALS, savePrefs, type MealTimes, type Prefs } from '../lib/anchors'
 import { PRAYERS, prayerTimes } from '../lib/prayer'
 import { ammanDate } from '../lib/time'
 
@@ -35,7 +35,9 @@ export default function DaySettings({ prefs }: { prefs: Prefs }) {
 
   function saveMeals(e: FormEvent) {
     e.preventDefault()
-    run({ meals }, 'settings.meals.saved')
+    // New meal times start tomorrow: today and earlier days keep theirs (docs/specs/TIMES.md).
+    if (JSON.stringify(meals) === JSON.stringify(prefs.meals)) return setMessage({ key: 'settings.meals.saved', ok: true })
+    run(mealChange(prefs, meals, ammanDate(new Date())), 'settings.meals.saved')
   }
 
   return (

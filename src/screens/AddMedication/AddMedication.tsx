@@ -5,8 +5,8 @@ import PhotoPicker from '../../components/PhotoPicker'
 import StockFields from '../../components/StockFields'
 import LanguageSwitch from '../../components/LanguageSwitch'
 import { useI18n, type MessageKey } from '../../i18n'
-import DoseTimeRow, { type TimeMode } from '../../components/DoseTimeRow'
-import { anchorLabel, anchorTime, type Anchor } from '../../lib/anchors'
+import TimesPicker, { EMPTY_TIMES, timesInfo, type TimesValue } from '../../components/TimesPicker'
+import { anchorLabel } from '../../lib/anchors'
 import { amountText, perDayText, strengthText } from '../../lib/format'
 import { usePrefs } from '../../lib/prefs'
 import { checkStock } from '../../lib/stock'
@@ -18,7 +18,6 @@ import {
   FORMS,
   MAX_STRENGTH,
   STRENGTH_UNITS,
-  SUGGESTED_TIMES,
   type Form,
   type Medication,
   type StrengthUnit,
@@ -49,15 +48,13 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
   const [form, setForm] = useState<Form | null>(null)
   // Starts at 0 on purpose: the app never suggests a dose.
   const [amount, setAmount] = useState(0)
-  const [times, setTimes] = useState<string[]>([])
-  // F3: each dose is a clock time or a moment in the day (anchor).
-  const [modes, setModes] = useState<TimeMode[]>([])
-  const [anchors, setAnchors] = useState<Anchor[]>([])
+  // Step 4 (F3): each dose is a clock time or a moment in the day (anchor).
+  const [timesValue, setTimesValue] = useState<TimesValue>(EMPTY_TIMES)
   const prefs = usePrefs()
   const today = ammanDate(new Date())
-  const isMoment = (i: number) => modes[i] === 'moment'
-  /** Today's time of each dose (anchored doses: worked out from the anchor). */
-  const doseTime = (i: number) => (isMoment(i) && anchors[i] ? anchorTime(anchors[i] as Exclude<Anchor, ''>, today, prefs) : times[i])
+  const timing = timesInfo(timesValue, today, prefs)
+  const { times, anchors } = timesValue
+  const { isMoment, doseTime } = timing
   // F4: the chosen photo, already shrunk, and a preview link for it.
   const [photo, setPhoto] = useState<Blob | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
@@ -97,16 +94,11 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
         ? 'add.strength.needNumber'
         : null
 
-  const timesSet = times.length > 0 && times.every((time, i) => (isMoment(i) ? anchors[i] !== '' : /^\d{2}:\d{2}$/.test(time)))
-  // Two doses at the same moment would share one answer, so they are not allowed.
-  const todayTimes = timesSet ? times.map((_, i) => doseTime(i)) : []
-  const sameTime = todayTimes.find((time, i) => todayTimes.indexOf(time) !== i) ?? null
-
   const answered: Record<Step, boolean> = {
     1: name.trim().length > 0 && strengthProblem === null,
     2: form !== null,
     3: amount > 0,
-    4: timesSet && sameTime === null,
+    4: timing.ok,
     5: stock.ok,
     6: true,
     7: true,
@@ -137,8 +129,7 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
         form,
         amount,
         timesPerDay: times.length,
-        times: times.map((_, i) => doseTime(i)),
-        anchors: times.map((_, i) => (isMoment(i) ? anchors[i] : '')),
+        ...timing.schedule,
         packSize: stock.ok && !stock.empty ? stock.pack : null,
         stockCount: stock.ok && !stock.empty ? stock.left : null,
       })
@@ -277,48 +268,7 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
         {step === 4 && (
           <>
             <h1 className="question">{t('add.times.q')}</h1>
-            <div className="choice-grid">
-              {[1, 2, 3, 4].map((n) => (
-                <button
-                  key={n}
-                  type="button"
-                  className="choice"
-                  aria-pressed={times.length === n}
-                  onClick={() => {
-                    setTimes(SUGGESTED_TIMES[n])
-                    setModes(Array<TimeMode>(n).fill('clock'))
-                    setAnchors(Array<Anchor>(n).fill(''))
-                  }}
-                >
-                  {perDayText(t, n)}
-                </button>
-              ))}
-            </div>
-            {times.length > 0 && (
-              <>
-                <p className="hint">{t('add.times.hint')}</p>
-                <div className="time-list">
-                  {times.map((time, i) => (
-                    <DoseTimeRow
-                      key={i}
-                      n={i + 1}
-                      time={time}
-                      mode={modes[i] ?? 'clock'}
-                      anchor={anchors[i] ?? ''}
-                      todayTime={doseTime(i)}
-                      onTime={(v) => setTimes((all) => all.map((old, j) => (j === i ? v : old)))}
-                      onMode={(m) => setModes((all) => all.map((old, j) => (j === i ? m : old)))}
-                      onAnchor={(v) => setAnchors((all) => all.map((old, j) => (j === i ? v : old)))}
-                    />
-                  ))}
-                </div>
-                {sameTime && (
-                  <p className="field-problem" role="alert">
-                    {t('add.times.same', { time: sameTime })}
-                  </p>
-                )}
-              </>
-            )}
+            <TimesPicker value={timesValue} onChange={setTimesValue} info={timing} />
           </>
         )}
 

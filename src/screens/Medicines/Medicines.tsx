@@ -23,11 +23,12 @@ type Props = {
   onRemovePhoto: (med: Medication) => Promise<void>
   stock: Map<string, StockInfo> // F7
   onStock: (med: Medication, packSize: number, count: number) => Promise<void>
+  onChangeTimes: (med: Medication) => void
   view: MedsView
   onView: (view: MedsView) => void
 }
 
-export default function Medicines({ meds, loadError, error, notice, onRetry, onAdd, onDelete, onPhoto, onRemovePhoto, stock, onStock, view, onView }: Props) {
+export default function Medicines({ meds, loadError, error, notice, onRetry, onAdd, onDelete, onPhoto, onRemovePhoto, stock, onStock, onChangeTimes, view, onView }: Props) {
   const { t } = useI18n()
   const switcher = (
     <div className="segmented" role="group" aria-label={t('meds.view.label')}>
@@ -75,6 +76,7 @@ export default function Medicines({ meds, loadError, error, notice, onRetry, onA
                 onRemovePhoto={onRemovePhoto}
                 stock={stock.get(med.id)}
                 onStock={onStock}
+                onChangeTimes={onChangeTimes}
               />
             ))}
           </ul>
