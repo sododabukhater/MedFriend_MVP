@@ -1,20 +1,19 @@
 # Handoff — current status (read this first)
 
-Last updated: **Sun 22 Nov 2026, ~12:30** (end of the fourth session: design revamp, F9, F3 built).
+Last updated: **Sun 22 Nov 2026, afternoon** (fifth session: F4 built).
 `CLAUDE.md` is the rulebook. This file is the current state of the work. Deadline: live and tested by
 **Wed 25 Nov**; **code freeze Tue 24 Nov evening**.
 
 ## ▶ Start here (new chat)
-1. Everything is committed and pushed to `main` (last commit `6c25c91`); the live link is up to date; working tree clean.
+1. Everything is committed and pushed to `main`; the live link is up to date; working tree clean.
 2. **Done:** Tier A (F6, F2, F1, F8 + login, Settings, Progress), **design revamp** (+ Reset all data),
    **F9** doctor summary (+ "My details" profile, A4 print with logo), **F3** prayer and meal anchors
-   (+ "Prayer and Ramadan times" switch, off by default). **145 Playwright tests pass** (3 skipped by design).
-3. **Next step: F4 — own-pill photo card.** Explain it to the owner in plain words first (as was done for F9 and F3:
-   what the patient sees, what it does not do, time, then 2–3 multiple-choice decisions with a recommended option),
-   then write `docs/specs/F4.md`, get approval, build, test, commit, push, tell the owner what to click,
-   and offer a walkthrough video (see "Showing the owner").
-   - F4 needs a private Supabase Storage bucket (owner-only RLS) → a database/storage change: **ask before applying**.
-4. Then F5 (voice), F10 (documents), F7 (stock). Cut line: if behind on **Monday evening**, drop F7 first, then F10.
+   (+ "Prayer and Ramadan times" switch, off by default), **F4** own-pill photo (My medicines + optional step 5,
+   shown in the reminder, on Today and on the card). **163 Playwright tests pass** (3 skipped by design).
+3. **Next step: F5 — Arabic voice dose readout.** Explain it to the owner in plain words first (what the patient
+   sees, what it does not do, time, then 2–3 multiple-choice decisions with a recommended option), then write
+   `docs/specs/F5.md`, get approval, build, test, commit, push, tell the owner what to click, offer a walkthrough video.
+4. Then F10 (documents; needs a Storage bucket like F4: ask before applying), F7 (stock). Cut line: if behind on **Monday evening**, drop F7 first, then F10.
 5. **Tuesday:** `DEFAULT_LANG = 'ar'` in `src/i18n/index.tsx`, Arabic review pass (all REVIEW-AR lists in the specs),
    run `node scripts/seed-demo.mjs` (Tuesday evening or Wednesday morning), code freeze.
 
@@ -24,8 +23,8 @@ Last updated: **Sun 22 Nov 2026, ~12:30** (end of the fourth session: design rev
 | 1 | Design revamp + "Reset all data" | 4–5 h | ✅ Sun | `docs/specs/DESIGN.md` |
 | 2 | F9 Summary for my doctor: print / PDF + WhatsApp | 2–3 h | ✅ Sun | `docs/specs/F9.md`; print redesigned after owner feedback |
 | 3 | F3 Prayer and meal anchors, Amman prayer times | ~5 h | ✅ Sun | `docs/specs/F3.md` |
-| 4 | **F4** Own-pill photo card (photo on the medicine and in the reminder) | ~3 h | **next** (Sun/Mon) | Private Supabase Storage bucket, owner-only RLS |
-| 5 | F5 Arabic voice dose readout | ~2 h | Mon | Browser `speechSynthesis`; "Voice not available" if no Arabic voice |
+| 4 | F4 Own-pill photo card (photo on the medicine and in the reminder) | ~3 h | ✅ Sun | `docs/specs/F4.md`; private bucket `pill-photos` |
+| 5 | **F5** Arabic voice dose readout | ~2 h | **next** (Sun/Mon) | Browser `speechSynthesis`; "Voice not available" if no Arabic voice |
 | 6 | F10 Document vault (lab results / prescriptions, tag by date and type) | 3–4 h | Mon | Supabase Storage |
 | 7 | F7 Stock count + low-stock refill alert | 2–3 h | Mon/Tue | First to cut |
 | — | Tuesday: Arabic default + review pass, demo reset, freeze | | Tue | |
@@ -58,6 +57,7 @@ Last updated: **Sun 22 Nov 2026, ~12:30** (end of the fourth session: design rev
 | `c1701b0` | Refresh account details at app start (name saved on another device shows) | `docs/specs/F9.md` | `tests/F9.spec.ts` 1b |
 | `afad07c` | F9 print redesign: A4 document, Med Friend logo top right | `docs/specs/F9.md` | `tests/F9.spec.ts` 4 |
 | `6c25c91` | F3 Prayer and meal anchors + prayer switch (off by default) + meal times | `docs/specs/F3.md` | `tests/F3.spec.ts` |
+| (F4 commit) | F4 Own-pill photo: My medicines + Add medication step 5; reminder, Today, card | `docs/specs/F4.md` | `tests/F4.spec.ts` |
 
 ## How the app works now
 - **Login first** (email + password, Supabase Auth; "Confirm email" OFF). No welcome screen (owner, 20 Nov);
@@ -73,7 +73,8 @@ Last updated: **Sun 22 Nov 2026, ~12:30** (end of the fourth session: design rev
     tap a row → I took it / Skip / Undo. Anchored doses show their moment ("After Fajr").
   - **Reminder:** bottom panel over a dimmed screen; blocks the app until answered (I took it / Remind me in 15 minutes /
     Skip this dose); names the moment for anchored doses.
-  - **My medicines:** list with coloured time chips ("08:00" or "After Fajr"); fixed "Add a medicine".
+  - **My medicines:** list with coloured time chips ("08:00" or "After Fajr"); photo area (Add a photo / Change /
+    Remove); fixed "Add a medicine". Add medication has 5 steps (step 5 = optional photo, "Skip for now").
   - **Progress:** 7 / 30 days switch, sentence with %, day bars, per-medicine %, "Summary for my doctor", "See every dose".
   - **Summary for my doctor (F9):** document with logo top right; asks for the name on the page if none saved;
     "Print or save as PDF" (one A4 page, own margins, no browser header) and "Send on WhatsApp" (`wa.me` text).
@@ -86,6 +87,9 @@ Last updated: **Sun 22 Nov 2026, ~12:30** (end of the fourth session: design rev
   Fajr − 45 min; Iftar = Maghrib. Prayer times calculated in-app (Jordan Ministry of Awqaf: Fajr/Isha 18°,
   Maghrib = sunset + 5 min), matched the official timetable to the minute. Known limit: changing a meal time also moves
   past anchored doses, so an old answer may show as Missed.
+- **F4 photos:** shrunk in the browser (800 px JPEG), private bucket `pill-photos`, path `<user id>/<med id>-<time>.jpg`,
+  `medications.photo_path`; shown via 1-day signed links made when the list loads. Deleting a medicine / Reset all data
+  deletes the files; `seed-demo.mjs` clears demo photos. Demo medicines have no photos.
 - **Account metadata** (Supabase Auth `user_metadata`, no tables): `full_name`, `birth_year`, `prayer_times`, `meal_times`.
 
 ## Code map
@@ -95,17 +99,18 @@ Last updated: **Sun 22 Nov 2026, ~12:30** (end of the fourth session: design rev
   Progress + Summary), `settings.ts` (Demo speed), `alert.ts`, `format.ts`, `profile.ts` (My details),
   `summary.ts` (F9 data + WhatsApp text), `prayer.ts` (F3 prayer times), `anchors.ts` (F3 anchors, meal / prayer prefs),
   `prefs.tsx` (prefs context).
-- `src/storage/`: `medications.ts` (incl. `anchors`, `deleteAllMedications`), `doseLogs.ts`.
+- `src/storage/`: `medications.ts` (incl. `anchors`, `photoPath`/`photoUrl`, `deleteAllMedications`), `doseLogs.ts`,
+  `photos.ts` (F4).
 - `src/screens/`: `Auth/`, `AddMedication/`, `Today/`, `Medicines/`, `Progress/`, `Summary/`, `Settings/`.
 - `src/components/`: `TabBar`, `ReminderBanner` (bottom panel), `MedicationCard`, `Autocomplete`, `LanguageSwitch`,
-  `ScreenHeader`, `Icons`, `Logo` (brand mark), `ProfileForm`, `DoseTimeRow` (F3 picker), `DaySettings` (F3 settings).
+  `ScreenHeader`, `Icons`, `Logo` (brand mark), `ProfileForm`, `DoseTimeRow` (F3 picker), `DaySettings` (F3 settings), `PhotoPicker` (F4).
 - `src/i18n/en.json`, `ar.json`: all text, same keys. `src/index.css`: all styles, tokens at the top, print styles in F9.
 - `public/icon.svg`: the Med Friend logo (from the owner's deck "Med Friend - 17 Screens", slide S-P-01).
 - `supabase/migrations/`: SQL applied to the project. `scripts/seed-demo.mjs`: demo reset.
 
 ## Database (Supabase project `medfriend`, ref `zotspmzlyopvkqsrgrng`)
 - `medications` (strength_value + strength_unit; unused old `strength` column kept; **`anchors text[]`** added 22 Nov,
-  one per dose, '' = clock time, check on allowed codes) and `dose_logs` (`unique (medication_id, scheduled_at)`;
+  one per dose, '' = clock time, check on allowed codes; **`photo_path`** added 22 Nov for F4) and `dose_logs` (`unique (medication_id, scheduled_at)`;
   delete cascades from medications). RLS owner-only on both.
 - Supabase MCP plugin works here (`apply_migration`, `execute_sql`). Many throwaway test users
   (`medfriend-test-…@mailinator.com`) exist; delete only when the owner asks.
@@ -115,7 +120,9 @@ Last updated: **Sun 22 Nov 2026, ~12:30** (end of the fourth session: design rev
 - Each test creates its own `@mailinator.com` account. Time-based tests use a fake clock (Nov 2026);
   `loginWithMeds()` (supports `anchors`) and `installEarlyClock()` (03:00 Amman, so no reminder panel gets in the way)
   in `tests/helpers.ts`. Tests can import pure files from `src/lib` (e.g. `tests/F3.spec.ts` imports `prayer.ts`).
-- Spec files: `DESIGN`, `F1`, `F2`, `F3`, `F6`, `F8`, `F9`, `auth`, `home`, `DB-supabase`.
+- Spec files: `DESIGN`, `F1`, `F2`, `F3`, `F4`, `F6`, `F8`, `F9`, `auth`, `home`, `DB-supabase`.
+- Tests that walk through Add medication must tap "Skip for now" (step 5) before the review screen.
+- Test images are drawn in the page (canvas) — no image files; no `@types/node`, so tests reach `Buffer` via `globalThis`.
 
 ## Showing the owner
 - **Video:** write a temporary `tests/zz-video.spec.ts` (viewport 412×860, `video: { mode: 'on' }`, a caption overlay
@@ -134,7 +141,7 @@ Last updated: **Sun 22 Nov 2026, ~12:30** (end of the fourth session: design rev
 ## Key decisions and rules
 1. English default while building; Arabic written for every string. Before freeze: `DEFAULT_LANG = 'ar'` + review.
    JSON can't hold `// REVIEW-AR`, so uncertain Arabic is listed under "REVIEW-AR" in each spec
-   (`DESIGN.md`, `F9.md`, `F3.md`, `F6.md`) and `src/data/drugs.ts`.
+   (`DESIGN.md`, `F9.md`, `F3.md`, `F4.md`, `F6.md`) and `src/data/drugs.ts`.
 2. Font Readex Pro. Colours: page `#EEF3F0`, action green `#0A6B52`, brand teal `#1A6B5A` (logo), day-part tints.
    No ESLint, no router, no UI framework. Logical CSS properties only (the summary logo uses `order` to stay top right).
 3. Dependencies unchanged: react, react-dom, vite, @vitejs/plugin-react, typescript, @types/react(-dom),

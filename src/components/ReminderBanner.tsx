@@ -77,6 +77,9 @@ export default function ReminderBanner({ reminders, busyKey, saveError, onAnswer
             {dose.time}
           </p>
           {dose.anchor && <p className="anchor-tag">{anchorLabel(t, dose.anchor)}</p>}
+          {med.photoUrl && (
+            <img className="pill-photo pill-photo--sheet" src={med.photoUrl} alt={t('photo.alt', { name: med.name })} />
+          )}
           <p className="sheet-name">
             {med.name}
             {strength && ` ${strength}`}

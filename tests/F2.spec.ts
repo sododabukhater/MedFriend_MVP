@@ -98,6 +98,7 @@ test('A new medicine shows on Today right away; empty Today offers Add medicatio
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByRole('button', { name: '4 times a day' }).click()
   await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByRole('button', { name: 'Skip for now' }).click() // F4 photo step
   await page.getByRole('button', { name: 'Save medication' }).click()
   await expect(page.getByRole('heading', { name: 'My medicines' })).toBeVisible()
 

@@ -1,5 +1,6 @@
 import type { Anchor } from '../lib/anchors'
 import { supabase } from '../lib/supabase'
+import { photoLinks, removeAllPhotos, removeFiles } from './photos'
 
 // Supabase table `medications` (docs/specs/DB-supabase.md). RLS keeps each user's rows private.
 
@@ -24,10 +25,13 @@ export type Medication = {
   times: string[] // "08:00", sorted
   /** F3: one per dose, same order as times; '' = clock time. Anchored doses get each day's own time. */
   anchors: Anchor[]
+  /** F4: the patient's own photo (private Storage path) and a short-lived link to show it. */
+  photoPath: string | null
+  photoUrl: string | null
   createdAt: string
 }
 
-export type NewMedication = Omit<Medication, 'id' | 'createdAt'>
+export type NewMedication = Omit<Medication, 'id' | 'createdAt' | 'photoPath' | 'photoUrl'>
 
 type Row = {
   id: string
@@ -40,10 +44,11 @@ type Row = {
   times_per_day: number
   times: string[]
   anchors: Anchor[] | null
+  photo_path: string | null
   created_at: string
 }
 
-function fromRow(r: Row): Medication {
+function fromRow(r: Row, links = new Map<string, string>()): Medication {
   return {
     id: r.id,
     name: r.name,
@@ -55,6 +60,8 @@ function fromRow(r: Row): Medication {
     timesPerDay: r.times_per_day,
     times: r.times,
     anchors: r.anchors ?? r.times.map(() => ''),
+    photoPath: r.photo_path,
+    photoUrl: r.photo_path ? (links.get(r.photo_path) ?? null) : null,
     createdAt: r.created_at,
   }
 }
@@ -62,10 +69,12 @@ function fromRow(r: Row): Medication {
 export async function listMedications(): Promise<Medication[]> {
   const { data, error } = await supabase
     .from('medications')
-    .select('id, name, from_list, strength_value, strength_unit, form, amount, times_per_day, times, anchors, created_at')
+    .select('id, name, from_list, strength_value, strength_unit, form, amount, times_per_day, times, anchors, photo_path, created_at')
     .order('created_at', { ascending: true })
   if (error) throw error
-  return (data as Row[]).map(fromRow)
+  const rows = data as Row[]
+  const links = await photoLinks(rows.flatMap((r) => (r.photo_path ? [r.photo_path] : [])))
+  return rows.map((r) => fromRow(r, links))
 }
 
 export async function addMedication(med: NewMedication): Promise<Medication> {
@@ -81,7 +90,7 @@ export async function addMedication(med: NewMedication): Promise<Medication> {
       times_per_day: med.timesPerDay,
       ...sortedDoses(med.times, med.anchors),
     })
-    .select('id, name, from_list, strength_value, strength_unit, form, amount, times_per_day, times, anchors, created_at')
+    .select('id, name, from_list, strength_value, strength_unit, form, amount, times_per_day, times, anchors, photo_path, created_at')
     .single()
   if (error) throw error
   return fromRow(data as Row)
@@ -93,9 +102,10 @@ function sortedDoses(times: string[], anchors: Anchor[]) {
   return { times: pairs.map((p) => p.time), anchors: pairs.map((p) => p.anchor) }
 }
 
-export async function deleteMedication(id: string): Promise<void> {
+export async function deleteMedication(id: string, photoPath: string | null = null): Promise<void> {
   const { error } = await supabase.from('medications').delete().eq('id', id)
   if (error) throw error
+  if (photoPath) await removeFiles([photoPath]) // F4
 }
 
 /** Suggested clock times only (one per time-of-day group); never doses. */
@@ -133,4 +143,5 @@ export async function deleteAllMedications(): Promise<void> {
   // RLS limits this to the logged-in user's rows; the filter is required by the API and matches every row.
   const { error } = await supabase.from('medications').delete().not('id', 'is', null)
   if (error) throw error
+  await removeAllPhotos() // F4
 }

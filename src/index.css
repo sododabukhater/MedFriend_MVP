@@ -1784,7 +1784,7 @@ button:disabled {
 }
 
 /* ---------- Prayer and meal anchors (F3) ---------- */
-.dose-time {
+fieldset.dose-time {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -1796,7 +1796,7 @@ button:disabled {
   min-inline-size: 0;
 }
 
-.dose-time legend {
+fieldset.dose-time legend {
   float: inline-start; /* keeps the legend inside the box */
   inline-size: 100%;
   margin: 0;
@@ -1892,4 +1892,112 @@ button:disabled {
 .meal-field .time-input {
   padding-inline: 6px;
   font-size: 1.125rem;
+}
+
+/* ---------- Own-pill photo (F4) ---------- */
+.pill-photo {
+  display: block;
+  object-fit: cover;
+  border-radius: 14px;
+  background: var(--green-soft);
+  border: 1px solid var(--line);
+}
+
+.pill-photo--card {
+  inline-size: 96px;
+  block-size: 96px;
+}
+
+.pill-photo--step {
+  inline-size: 100%;
+  max-block-size: 260px;
+  margin-block-end: 12px;
+}
+
+.pill-photo--sheet {
+  inline-size: 160px;
+  block-size: 160px;
+  margin-block: 4px 10px;
+  border-radius: 18px;
+}
+
+.pill-photo--hero {
+  flex-shrink: 0;
+  inline-size: 72px;
+  block-size: 72px;
+}
+
+.pill-photo--thumb {
+  flex-shrink: 0;
+  inline-size: 48px;
+  block-size: 48px;
+  border-radius: 50%;
+}
+
+.hero-med {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.med-photo-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-block-start: 4px;
+}
+
+.med-photo-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.btn-small {
+  min-block-size: var(--tap-min);
+  font-size: 1.0625rem;
+}
+
+/* Dashed "Add a photo" box with a camera icon. */
+.photo-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-block-size: 56px;
+  padding-inline: 18px;
+  border: 2px dashed color-mix(in srgb, var(--green) 55%, transparent);
+  border-radius: 14px;
+  background: var(--green-soft);
+  color: var(--green);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.photo-add--big {
+  inline-size: 100%;
+  min-block-size: 120px;
+  flex-direction: column;
+  font-size: 1.1875rem;
+}
+
+.photo-status {
+  color: var(--muted);
+}
+
+.btn-with-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* Today row: the time with the pill photo under it (keeps the name wide). */
+.dose-when {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
 }

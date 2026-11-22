@@ -14,9 +14,11 @@ type Props = {
   onRetry: () => void
   onAdd: () => void
   onDelete: (med: Medication) => Promise<void>
+  onPhoto: (med: Medication, file: File) => Promise<void>
+  onRemovePhoto: (med: Medication) => Promise<void>
 }
 
-export default function Medicines({ meds, loadError, error, notice, onRetry, onAdd, onDelete }: Props) {
+export default function Medicines({ meds, loadError, error, notice, onRetry, onAdd, onDelete, onPhoto, onRemovePhoto }: Props) {
   const { t } = useI18n()
   const sub = meds && meds.length > 0 ? (meds.length === 1 ? t('home.count.one') : t('home.count', { n: meds.length })) : undefined
 
@@ -45,7 +47,7 @@ export default function Medicines({ meds, loadError, error, notice, onRetry, onA
         {meds && meds.length > 0 && (
           <ul className="med-list box">
             {meds.map((med) => (
-              <MedicationCard key={med.id} med={med} onDelete={onDelete} />
+              <MedicationCard key={med.id} med={med} onDelete={onDelete} onPhoto={onPhoto} onRemovePhoto={onRemovePhoto} />
             ))}
           </ul>
         )}

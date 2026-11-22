@@ -149,12 +149,15 @@ function HeroCard({ dose, busy, onAnswer }: { dose: Dose; busy: boolean; onAnswe
         {dose.time}
       </p>
       {dose.anchor && <p className="anchor-tag">{anchorLabel(t, dose.anchor)}</p>}
-      <div>
-        <p className="hero-name">
-          {med.name}
-          {strength && ` ${strength}`}
-        </p>
-        <p className="hero-amount">{amountText(t, med.form, med.amount)}</p>
+      <div className="hero-med">
+        {med.photoUrl && <img className="pill-photo pill-photo--hero" src={med.photoUrl} alt={t('photo.alt', { name: med.name })} />}
+        <div>
+          <p className="hero-name">
+            {med.name}
+            {strength && ` ${strength}`}
+          </p>
+          <p className="hero-amount">{amountText(t, med.form, med.amount)}</p>
+        </div>
       </div>
       <button type="button" className="btn-primary btn-take-big" disabled={busy} onClick={() => onAnswer('taken')}>
         <CheckIcon size={26} />
@@ -192,8 +195,11 @@ function DoseRow({ dose, open, busy, onToggle, onAnswer }: RowProps) {
   return (
     <li className={`dose dose--${status}`} aria-label={`${time} ${med.name}`} data-status={status}>
       <button type="button" className="dose-row" aria-expanded={open} aria-controls={actionsId} onClick={onToggle}>
-        <span className="dose-time" dir="ltr">
-          {time}
+        <span className="dose-when">
+          <span className="dose-time" dir="ltr">
+            {time}
+          </span>
+          {med.photoUrl && <img className="pill-photo pill-photo--thumb" src={med.photoUrl} alt="" />}
         </span>
         <span className="dose-name">
           {med.name}

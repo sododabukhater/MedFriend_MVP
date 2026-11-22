@@ -24,6 +24,7 @@ async function addMed(page: Page, med: Med) {
   await next(page).click()
   await page.getByRole('button', { name: med.perDay }).click()
   await next(page).click()
+  await page.getByRole('button', { name: 'Skip for now' }).click() // F4 photo step
   await page.getByRole('button', { name: 'Save medication' }).click()
   await expect(page.getByRole('status')).toHaveText('Medication saved')
 }
@@ -33,7 +34,7 @@ const card = (page: Page, name: string) => page.getByRole('listitem', { name })
 test('1. "Add medication" opens step 1 with a large text box', async ({ page }) => {
   await openHome(page)
   await page.getByRole('button', { name: 'Add a medicine' }).click()
-  await expect(page.getByText('Step 1 of 4')).toBeVisible()
+  await expect(page.getByText('Step 1 of 5')).toBeVisible()
   await expect(page.getByRole('heading', { name: "What is the medicine's name?" })).toBeVisible()
   const box = page.getByRole('combobox', { name: 'Medicine name' })
   await expect(box).toBeFocused()
@@ -128,6 +129,7 @@ test('6. Choosing 3 times shows 08:00, 14:00, 20:00, each editable', async ({ pa
   await page.getByLabel('Time of dose 2').fill('13:30')
 
   await next(page).click()
+  await page.getByRole('button', { name: 'Skip for now' }).click() // F4 photo step
   await expect(page.getByRole('heading', { name: 'Check and save' })).toBeVisible()
   await expect(page.locator('.review')).toContainText('08:00, 13:30, 20:00')
   await page.getByRole('button', { name: 'Save medication' }).click()
@@ -200,6 +202,7 @@ test('Back keeps the answers; the review screen shows everything', async ({ page
   await page.getByRole('button', { name: 'Once a day' }).click()
   await next(page).click()
 
+  await page.getByRole('button', { name: 'Skip for now' }).click() // F4 photo step
   const review = page.locator('.review')
   for (const text of ['Crestor', '10 mg', 'Tablet', '1 tablet', 'Once a day: 08:00']) {
     await expect(review).toContainText(text)
@@ -253,6 +256,7 @@ test('Strength takes only a clean number plus a unit from the list (both or neit
   await next(page).click()
   await page.getByRole('button', { name: 'Twice a day' }).click()
   await next(page).click()
+  await page.getByRole('button', { name: 'Skip for now' }).click() // F4 photo step
   await page.getByRole('button', { name: 'Save medication' }).click()
   await expect(card(page, 'Glucophage')).toContainText('500 mg')
 
@@ -293,6 +297,7 @@ test('Saving offline shows a clear message and keeps the answers', async ({ page
   await next(page).click()
 
   await page.route('**/rest/v1/medications**', (route) => route.abort())
+  await page.getByRole('button', { name: 'Skip for now' }).click() // F4 photo step
   await page.getByRole('button', { name: 'Save medication' }).click()
   await expect(page.getByRole('alert')).toContainText('Could not save')
   await expect(page.locator('.review')).toContainText('Offline test')
@@ -324,7 +329,7 @@ test('11. Works in Arabic; text ≥ 18px and buttons ≥ 48px on every step', as
   await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
 
   await page.getByRole('button', { name: 'إضافة دواء' }).click()
-  await expect(page.getByText('الخطوة 1 من 4')).toBeVisible()
+  await expect(page.getByText('الخطوة 1 من 5')).toBeVisible()
   await page.getByRole('combobox', { name: 'اسم الدواء' }).fill('جلو')
   await checkSizes()
   await page.getByRole('button', { name: /^Glucophage · / }).click()
@@ -343,6 +348,10 @@ test('11. Works in Arabic; text ≥ 18px and buttons ≥ 48px on every step', as
   await page.getByRole('button', { name: 'مرتين يومياً' }).click()
   await checkSizes()
   await page.getByRole('button', { name: 'التالي' }).click()
+
+  await expect(page.getByRole('heading', { name: 'صوّر دواءك أو علبته' })).toBeVisible() // F4 photo step
+  await checkSizes()
+  await page.getByRole('button', { name: 'ليس الآن' }).click()
 
   await expect(page.getByRole('heading', { name: 'راجِع واحفظ' })).toBeVisible()
   await checkSizes()

@@ -21,6 +21,7 @@ import Settings from './screens/Settings/Settings'
 import Summary from './screens/Summary/Summary'
 import Today from './screens/Today/Today'
 import { deleteAllMedications, deleteMedication, listMedications, type Medication } from './storage/medications'
+import { removePhoto, savePhoto } from './storage/photos'
 
 type MedsState = { status: 'loading' } | { status: 'ready'; meds: Medication[] } | { status: 'error' }
 
@@ -80,13 +81,29 @@ export default function App() {
   async function handleDelete(med: Medication) {
     setError(null)
     try {
-      await deleteMedication(med.id)
+      await deleteMedication(med.id, med.photoPath)
       setMeds((s) => (s.status === 'ready' ? { ...s, meds: s.meds.filter((m) => m.id !== med.id) } : s))
       setNotice('home.deleted')
     } catch (err) {
       console.error('Deleting medication failed', err)
       setError('db.deleteFailed')
     }
+  }
+
+  /** Puts a changed medicine back into the list (F4 photo). */
+  function replaceMed(next: Medication) {
+    setMeds((s) => (s.status === 'ready' ? { ...s, meds: s.meds.map((m) => (m.id === next.id ? next : m)) } : s))
+  }
+
+  async function handlePhoto(med: Medication, file: File) {
+    const saved = await savePhoto(med.id, med.photoPath, file)
+    replaceMed({ ...med, ...saved })
+  }
+
+  async function handleRemovePhoto(med: Medication) {
+    if (!med.photoPath) return
+    await removePhoto(med.id, med.photoPath)
+    replaceMed({ ...med, photoPath: null, photoUrl: null })
   }
 
   function startAdding() {
@@ -135,6 +152,8 @@ export default function App() {
         onRetry={load}
         onAdd={startAdding}
         onDelete={handleDelete}
+        onPhoto={handlePhoto}
+        onRemovePhoto={handleRemovePhoto}
       />
     )
   }
@@ -164,10 +183,10 @@ export default function App() {
       return (
         <AddMedication
           onCancel={() => setAdding(false)}
-          onSaved={(med) => {
+          onSaved={(med, photoFailed) => {
             if (meds.status === 'ready') setMeds({ status: 'ready', meds: [...meds.meds, med] })
             else load()
-            setNotice('home.saved')
+            setNotice(photoFailed ? 'home.savedNoPhoto' : 'home.saved')
             setError(null)
             setAdding(false)
             setTab('meds') // shows the new card with "Medication saved"

@@ -1,5 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Autocomplete from '../../components/Autocomplete'
+import { CameraIcon } from '../../components/Icons'
+import PhotoPicker from '../../components/PhotoPicker'
 import LanguageSwitch from '../../components/LanguageSwitch'
 import { useI18n, type MessageKey } from '../../i18n'
 import DoseTimeRow, { type TimeMode } from '../../components/DoseTimeRow'
@@ -19,12 +21,16 @@ import {
   type Medication,
   type StrengthUnit,
 } from '../../storage/medications'
+import { NotAnImageError, savePhoto, shrinkPhoto } from '../../storage/photos'
 
-// F6-lite: 4 steps, one question per screen, then a review screen. Spec: docs/specs/F6.md
-type Step = 1 | 2 | 3 | 4 | 5 // 5 = review
+// F6-lite: 4 steps, one question per screen, an optional photo step (F4), then a review screen.
+// Specs: docs/specs/F6.md, docs/specs/F4.md
+type Step = 1 | 2 | 3 | 4 | 5 | 6 // 5 = photo (optional), 6 = review
+const STEPS = 5
 
 type Props = {
-  onSaved: (med: Medication) => void
+  /** photoFailed: the medicine was saved but its photo was not. */
+  onSaved: (med: Medication, photoFailed: boolean) => void
   onCancel: () => void
 }
 
@@ -50,6 +56,26 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
   const isMoment = (i: number) => modes[i] === 'moment'
   /** Today's time of each dose (anchored doses: worked out from the anchor). */
   const doseTime = (i: number) => (isMoment(i) && anchors[i] ? anchorTime(anchors[i] as Exclude<Anchor, ''>, today, prefs) : times[i])
+  // F4: the chosen photo, already shrunk, and a preview link for it.
+  const [photo, setPhoto] = useState<Blob | null>(null)
+  const [preview, setPreview] = useState<string | null>(null)
+  const [photoProblem, setPhotoProblem] = useState<MessageKey | null>(null)
+  useEffect(() => {
+    if (!photo) return setPreview(null)
+    const url = URL.createObjectURL(photo)
+    setPreview(url)
+    return () => URL.revokeObjectURL(url)
+  }, [photo])
+
+  async function choosePhoto(file: File) {
+    setPhotoProblem(null)
+    try {
+      setPhoto(await shrinkPhoto(file))
+    } catch (err) {
+      console.error('Reading the photo failed', err)
+      setPhotoProblem(err instanceof NotAnImageError ? 'photo.notImage' : 'photo.failed')
+    }
+  }
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(false)
 
@@ -69,6 +95,7 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
     3: amount > 0,
     4: times.length > 0 && times.every((time, i) => (isMoment(i) ? anchors[i] !== '' : /^\d{2}:\d{2}$/.test(time))),
     5: true,
+    6: true,
   }
 
   function chooseForm(next: Form) {
@@ -93,7 +120,13 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
         times: times.map((_, i) => doseTime(i)),
         anchors: times.map((_, i) => (isMoment(i) ? anchors[i] : '')),
       })
-      onSaved(med)
+      if (!photo) return onSaved(med, false)
+      try {
+        onSaved({ ...med, ...(await savePhoto(med.id, null, photo)) }, false)
+      } catch (err) {
+        console.error('Saving the photo failed', err)
+        onSaved(med, true)
+      }
     } catch (err) {
       console.error('Saving medication failed', err)
       setSaveError(true)
@@ -114,11 +147,11 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
 
       <header className="wizard-header">
         <p className="wizard-progress">
-          {step <= 4 ? t('add.step', { n: step }) : t('add.title')}
+          {step <= STEPS ? t('add.step', { n: step }) : t('add.title')}
         </p>
-        {step <= 4 && (
+        {step <= STEPS && (
           <div className="progress-bar" aria-hidden="true">
-            <div className="progress-fill" style={{ inlineSize: `${(step / 4) * 100}%` }} />
+            <div className="progress-fill" style={{ inlineSize: `${(step / STEPS) * 100}%` }} />
           </div>
         )}
       </header>
@@ -262,9 +295,32 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
           </>
         )}
 
-        {step === 5 && form && (
+        {step === 5 && (
+          <>
+            <h1 className="question">{t('photo.step.q')}</h1>
+            <p className="hint">{t('photo.step.hint')}</p>
+            {preview && <img className="pill-photo pill-photo--step" src={preview} alt={t('photo.alt', { name: name.trim() })} />}
+            <PhotoPicker className={preview ? 'btn-secondary btn-wide btn-with-icon' : 'photo-add photo-add--big'} onFile={choosePhoto}>
+              <CameraIcon size={28} />
+              {preview ? t('photo.step.retake') : t('photo.step.take')}
+            </PhotoPicker>
+            {preview && (
+              <button type="button" className="btn-link btn-link--danger" onClick={() => setPhoto(null)}>
+                {t('photo.remove')}
+              </button>
+            )}
+            {photoProblem && (
+              <p className="field-problem" role="alert">
+                {t(photoProblem)}
+              </p>
+            )}
+          </>
+        )}
+
+        {step === 6 && form && (
           <>
             <h1 className="question">{t('add.review.title')}</h1>
+            {preview && <img className="pill-photo pill-photo--card" src={preview} alt={t('photo.alt', { name: name.trim() })} />}
             <dl className="review">
               <dt>{t('add.review.name')}</dt>
               <dd>{name.trim()}</dd>
@@ -308,14 +364,14 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
             {t('add.back')}
           </button>
         )}
-        {step < 5 ? (
+        {step <= STEPS ? (
           <button
             type="button"
             className="btn-primary"
             disabled={!answered[step]}
             onClick={() => setStep((s) => (s + 1) as Step)}
           >
-            {t('add.next')}
+            {step === 5 && !photo ? t('photo.skip') : t('add.next')}
           </button>
         ) : (
           <button type="button" className="btn-primary" disabled={saving} onClick={save}>

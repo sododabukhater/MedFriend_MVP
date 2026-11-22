@@ -77,6 +77,13 @@ const samples = [
 const { data: { user } } = await db.auth.getUser()
 const del = await db.from('medications').delete().eq('user_id', user.id) // dose logs go with them
 if (del.error) throw del.error
+// F4: remove photos the demo users added.
+const photos = await db.storage.from('pill-photos').list(user.id, { limit: 1000 })
+if (photos.error) throw photos.error
+if (photos.data.length) {
+  const rm = await db.storage.from('pill-photos').remove(photos.data.map((f) => `${user.id}/${f.name}`))
+  if (rm.error) throw rm.error
+}
 const ins = await db.from('medications').insert(samples).select('id, name, times')
 if (ins.error) throw ins.error
 
