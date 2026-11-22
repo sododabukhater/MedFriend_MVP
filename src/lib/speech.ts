@@ -115,16 +115,16 @@ export function doseSpeech(t: T, lang: string, dose: Dose, followUp = false): Sp
     amount: sayAmountAr(med.form, med.amount),
     moment: dose.anchor ? t('speak.moment', { moment: anchorLabel(t, dose.anchor) }) : '',
   }
+  const strengthAr = hasStrength ? ` ${sayStrengthAr(med.strengthValue!, med.strengthUnit!)}` : ''
   if (!englishName) {
     // A name typed in Arabic stays in the Arabic sentence.
-    const nameAr = hasStrength ? `${name} ${sayStrengthAr(med.strengthValue!, med.strengthUnit!)}` : name
-    return [{ text: prefix + t('speak.dose', { name: nameAr, ...rest }), lang: 'ar' }]
+    return [{ text: prefix + t('speak.dose', { name: name + strengthAr, ...rest }), lang: 'ar' }]
   }
-  // An English name (and its strength) is said by the English voice, between the Arabic parts.
-  const [before, after = ''] = t('speak.dose', { name: NAME_SLOT, ...rest }).split(NAME_SLOT)
+  // Only the English name is said by the English voice; the strength number stays Arabic (owner, 22 Nov).
+  const [before, after = ''] = t('speak.dose', { name: NAME_SLOT + strengthAr, ...rest }).split(NAME_SLOT)
   const parts: SpeechPart[] = [
     { text: (prefix + before).trim(), lang: 'ar' },
-    { text: nameEn, lang: 'en' },
+    { text: name, lang: 'en' },
     { text: after.replace(/^[\s،,]+/, '').trim(), lang: 'ar' },
   ]
   return parts.filter((p) => p.text !== '')

@@ -88,12 +88,12 @@ test('2. In Arabic the readout is Arabic, with an Arabic voice and the moment of
   await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
   await page.clock.fastForward('01:00:15')
   await expect(banner(page)).toBeVisible()
-  // A name from the list is said in English by the English voice, between the Arabic parts;
+  // A name from the list is said in English by the English voice, between the Arabic parts; the strength number is Arabic;
   // the amount carries its case endings.
   await expect.poll(() => spoken(page)).toEqual([
     { text: 'حان وقت دوائك:', lang: 'ar-SA', voice: 'ar-SA' },
-    { text: 'Concor 5 milligrams', lang: 'en-US', voice: 'en-US' },
-    { text: 'حبّةٌ واحدةٌ، مع الغداء.', lang: 'ar-SA', voice: 'ar-SA' },
+    { text: 'Concor', lang: 'en-US', voice: 'en-US' },
+    { text: '5 milligram، حبّةٌ واحدةٌ، مع الغداء.', lang: 'ar-SA', voice: 'ar-SA' },
   ])
   const button = banner(page).getByRole('button', { name: 'اقرأ بصوت عالٍ: كونكور' })
   await expect(button).toHaveText('اقرأ بصوت عالٍ')
@@ -107,8 +107,8 @@ test('2b. Arabic, device without an English voice: the Arabic voice says the who
   await expect(banner(page)).toBeVisible()
   await expect.poll(() => spoken(page)).toEqual([
     { text: 'حان وقت دوائك:', lang: 'ar-SA', voice: 'ar-SA' },
-    { text: 'Glucophage 850 milligrams', lang: 'ar-SA', voice: 'ar-SA' },
-    { text: 'حبّةٌ واحدةٌ.', lang: 'ar-SA', voice: 'ar-SA' },
+    { text: 'Glucophage', lang: 'ar-SA', voice: 'ar-SA' },
+    { text: '850 milligram، حبّةٌ واحدةٌ.', lang: 'ar-SA', voice: 'ar-SA' },
   ])
 })
 
@@ -124,7 +124,7 @@ test('2d. Edge: the English name is said by an online Natural English voice, lik
   await page.clock.fastForward('00:15')
   await expect(banner(page)).toBeVisible()
   await expect.poll(() => spoken(page)).toHaveLength(3)
-  expect((await spoken(page))[1].text).toBe('Glucophage 850 milligrams')
+  expect((await spoken(page))[1].text).toBe('Glucophage')
   expect(await page.evaluate(() => (window as unknown as { voiceNames: string[] }).voiceNames)).toEqual([
     'Microsoft Hamed Online (Natural) - Arabic (Saudi Arabia)',
     'Microsoft Ava Online (Natural) - English (United States)',
@@ -141,7 +141,7 @@ test('2e. The parts are spoken one after another: the next starts only when the 
   const endPart = () => page.evaluate(() => (window as unknown as { endPart: () => void }).endPart())
   await endPart()
   await expect.poll(() => spoken(page)).toHaveLength(2)
-  expect((await spoken(page))[1]).toEqual({ text: 'Glucophage 850 milligrams', lang: 'en-US', voice: 'en-US' })
+  expect((await spoken(page))[1]).toEqual({ text: 'Glucophage', lang: 'en-US', voice: 'en-US' })
   await endPart()
   await expect.poll(() => spoken(page)).toHaveLength(3)
 })
