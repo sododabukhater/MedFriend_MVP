@@ -244,3 +244,46 @@ test('12. The reminder panel says when a medicine has run out (Arabic too)', asy
   await page.reload()
   await expect(page.getByRole('alertdialog').getByTestId('reminder-refill')).toHaveText('نفد هذا الدواء. حان وقت شراء علبة جديدة.')
 })
+
+test('13. Setting a box on the card: changing the box size keeps the number typed for "left"', async ({ page }) => {
+  await loginWithMeds(page, [{ name: 'Concor', times: ['20:00'] }], EARLY)
+  await goToMeds(page)
+  await page.getByRole('button', { name: 'Set the box size for Concor' }).click()
+  const left = page.getByLabel('How many are left in the box you are using?')
+  await page.getByLabel('How many are in one box?').fill('30')
+  await expect(left).toHaveValue('30') // a new box: full unless changed
+  await left.fill('12')
+  await page.getByLabel('How many are in one box?').fill('28')
+  await expect(left).toHaveValue('12')
+  await page.getByRole('button', { name: 'Save', exact: true }).click()
+  await expect(stockOf(page, 'Concor')).toContainText('12 tablets left')
+})
+
+test('14. While earlier doses load (or loading fails) no stock number shows; then the right one does', async ({ page }) => {
+  const user = await loginWithMeds(
+    page,
+    [{ name: 'Glucophage', times: ['20:00'], amount: 2, stock: { pack: 100, count: 100, setAt: SET_AT } }],
+    EARLY,
+  )
+  const { data: med } = await user.db.from('medications').select('id').single()
+  await user.db.from('dose_logs').insert({
+    medication_id: med!.id,
+    scheduled_at: '2026-11-19T17:00:00Z',
+    status: 'taken',
+    recorded_at: '2026-11-19T17:05:00Z',
+  })
+  // The first load of earlier taken doses fails; the app tries again by itself.
+  let failed = 0
+  await page.route(/\/rest\/v1\/dose_logs\?.*status=eq\.taken/, async (route) => {
+    if (failed++ === 0) return route.abort()
+    return route.continue()
+  })
+  await page.reload()
+  await goToMeds(page)
+  await expect(card(page, 'Glucophage')).toBeVisible()
+  // Never the too-high 100, and never "Set the box size" for a medicine that has a box.
+  await expect(stockOf(page, 'Glucophage')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Set the box size for Glucophage' })).toHaveCount(0)
+  await expect(stockOf(page, 'Glucophage')).toContainText('98 tablets left', { timeout: 15_000 })
+  expect(failed).toBeGreaterThanOrEqual(2)
+})

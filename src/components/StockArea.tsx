@@ -22,6 +22,8 @@ export default function StockArea({ med, info, onStock }: Props) {
   const [busy, setBusy] = useState(false)
   const [failed, setFailed] = useState(false)
   const [extraBoxes, setExtraBoxes] = useState(0)
+  // Setting up a box: "left" follows the box size until the patient types it themselves.
+  const [leftTouched, setLeftTouched] = useState(false)
   // Setting up a box: full boxes + what is left in the box in use. Correcting the count: the total.
   const check = checkStock(pack, left, info ? null : extraBoxes)
 
@@ -43,9 +45,13 @@ export default function StockArea({ med, info, onStock }: Props) {
     setPack(med.packSize !== null ? String(med.packSize) : '')
     setLeft(info ? String(info.left) : '')
     setExtraBoxes(0)
+    setLeftTouched(false)
     setFailed(false)
     setMode('edit')
   }
+
+  // The medicine has a count, but the earlier doses are still loading: show nothing rather than a wrong number.
+  if (!info && med.stockSetAt !== null && med.stockCount !== null && med.packSize !== null) return null
 
   const boxText = med.packSize !== null ? amountText(t, med.form, med.packSize) : ''
 
@@ -125,9 +131,12 @@ export default function StockArea({ med, info, onStock }: Props) {
             left={left}
             onPack={(v) => {
               setPack(v)
-              if (!info) setLeft(v) // a new box: full unless changed
+              if (!info && !leftTouched) setLeft(v) // a new box: full unless changed
             }}
-            onLeft={setLeft}
+            onLeft={(v) => {
+              setLeft(v)
+              setLeftTouched(true)
+            }}
             problem={check.ok ? null : check.problem}
             extra={info ? undefined : { boxes: extraBoxes, onBoxes: setExtraBoxes, total: check.ok && !check.empty ? check.left : null }}
           />

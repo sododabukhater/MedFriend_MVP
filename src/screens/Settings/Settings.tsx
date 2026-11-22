@@ -8,6 +8,7 @@ import { DEMO_ACCOUNT, logOut } from '../../lib/auth'
 import type { Profile } from '../../lib/profile'
 import { setDemoSpeed, useDemoSpeed } from '../../lib/settings'
 import { setReadAloud, useReadAloud } from '../../lib/speech'
+import { ammanDate } from '../../lib/time'
 
 // Settings: my details (F9), language, demo tools for the professor, account (Log out, Reset all data), disclaimer.
 // Specs: docs/specs/F1.md, docs/specs/DESIGN.md
@@ -52,7 +53,7 @@ export default function Settings({ email, profile, onTriggerNext, onReset }: Pro
         <h2 id="profile-title" className="group-title">
           {t('profile.title')}
         </h2>
-        <ProfileForm profile={profile} thisYear={new Date().getFullYear()} />
+        <ProfileForm profile={profile} thisYear={Number(ammanDate(new Date()).slice(0, 4))} />
       </section>
 
       <section className="group" aria-labelledby="day-title">

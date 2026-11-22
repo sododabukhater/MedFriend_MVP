@@ -372,3 +372,25 @@ test('11. Works in Arabic; text ≥ 18px and buttons ≥ 48px on every step', as
   await expect(card(page, 'جلوكوفاج')).toContainText('1 حبة، مرتين يومياً')
   await checkSizes()
 })
+
+test('6b. Two doses at the same time are not allowed', async ({ page }) => {
+  await openHome(page)
+  await page.getByRole('button', { name: 'Add a medicine' }).click()
+  await page.getByRole('combobox', { name: 'Medicine name' }).fill('Concor')
+  await next(page).click()
+  await page.getByRole('button', { name: 'Tablet', exact: true }).click()
+  await next(page).click()
+  await page.getByRole('button', { name: 'More' }).click()
+  await page.getByRole('button', { name: 'More' }).click()
+  await next(page).click()
+  await page.getByRole('button', { name: 'Twice a day' }).click()
+  await expect(next(page)).toBeEnabled()
+
+  await page.getByLabel('Time of dose 2').fill('08:00')
+  await expect(page.getByRole('alert')).toHaveText('Two doses are at the same time (08:00). Please choose different times.')
+  await expect(next(page)).toBeDisabled()
+
+  await page.getByLabel('Time of dose 2').fill('21:00')
+  await expect(page.getByRole('alert')).toHaveCount(0)
+  await expect(next(page)).toBeEnabled()
+})

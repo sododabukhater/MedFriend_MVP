@@ -55,18 +55,23 @@ export function useDoses(meds: Medication[] | null, userId: string | null, prefs
     setBusyKey(dose.key)
     setSaveError(false)
     try {
-      const others = (logs ?? []).filter((l) => doseKey(l.medicationId, l.scheduledAt) !== dose.key)
+      // Functional updates: two doses answered quickly one after the other must both stay saved on screen.
+      const without = (list: DoseLog[] | null) =>
+        (list ?? []).filter((l) => doseKey(l.medicationId, l.scheduledAt) !== dose.key)
       if (action === 'undo') {
         await undoDose(dose.med.id, dose.scheduledAt)
-        setLogs(others)
+        setLogs((prev) => without(prev))
       } else {
         const saved = await markDose(dose.med.id, dose.scheduledAt, action)
-        setLogs([...others, saved])
+        setLogs((prev) => [...without(prev), saved])
       }
-      if (action !== 'snoozed' && triggered.has(dose.key)) {
-        const next = new Map(triggered)
-        next.delete(dose.key)
-        setTriggered(next)
+      if (action !== 'snoozed') {
+        setTriggered((prev) => {
+          if (!prev.has(dose.key)) return prev
+          const next = new Map(prev)
+          next.delete(dose.key)
+          return next
+        })
       }
     } catch (err) {
       console.error('Saving dose failed', err)

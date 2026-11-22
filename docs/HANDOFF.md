@@ -1,11 +1,10 @@
 # Handoff — current status (read this first)
 
-Last updated: **Sun 22 Nov 2026, late evening** (seventh session: F7 stock count built, then 2 owner follow-ups:
-several boxes, refill line in the reminder panel). **All planned features are built.** `CLAUDE.md` is the rulebook.
+Last updated: **Sun 22 Nov 2026, night** (eighth session: code review of all of `src` (owner asked), 9 of 10 findings fixed). **All planned features are built.** `CLAUDE.md` is the rulebook.
 This file is the current state of the work. Deadline: live and tested by **Wed 25 Nov**; **code freeze Tue 24 Nov evening**.
 
 ## ▶ Start here (new chat)
-1. Everything is committed and pushed to `main` (last commit `14fc90f` F7 refill line in the reminder panel);
+1. Everything is committed and pushed to `main` (last commit: code-review fixes, see Done table);
    the live link is up to date; working tree clean.
 2. **Done:** Tier A (F6, F2, F1, F8 + login, Settings, Progress), **design revamp** (+ Reset all data),
    **F9** doctor summary (+ "My details" profile, A4 print with logo), **F3** prayer and meal anchors
@@ -17,18 +16,16 @@ This file is the current state of the work. Deadline: live and tested by **Wed 2
    full boxes (− / +) and how many are left in the box in use (max one box; total shown); counted down from taken
    doses; Low at 7 days or less → yellow card on Today, Low badge on the card, yellow line in the reminder panel;
    "I got a new box" / "Correct the count" (asks the total) on the card.
-   **~231 Playwright tests + 3 skipped by design** (~5–6 min). `retries: 1` in `playwright.config.ts` (owner approved
-   22 Nov), so Supabase network timeouts show as "flaky", not failed. Last full run had one real failure (F1 test 6,
-   a test timing issue, fixed and passed 3× in a row); the full suite was not re-run after that fix + one CSS line —
-   **run `npm test` once at the start of the next session.**
+   **240 Playwright tests (237 + 3 skipped by design)**, all passing on 22 Nov night (~5–6 min). `retries: 1` in
+   `playwright.config.ts` (owner approved 22 Nov), so Supabase network timeouts show as "flaky", not failed.
+   **Code review 22 Nov (owner asked):** 10 findings; 9 fixed (see Done table). **Not fixed, owner to decide:**
+   changing a meal time in Settings re-times past anchored doses, so their old answers show as Missed (known limit).
 3. **Open questions for the owner:**
    - **F5 Edge check** of the last two fixes (name in English, strength number in Arabic) — owner said "sounds great"
      after the first; the number fix (`c5d679b`) is not yet confirmed by ear.
    - **Demo reset** done 22 Nov evening with the owner's OK (sample documents + fresh history). Run it again
      Tuesday evening / Wednesday morning as planned.
-   - F10 feedback after the owner clicks through it (walkthrough video already sent).
-   - F7 feedback (3 videos sent: walkthrough, several boxes, low-stock warning). Demo reset run again 22 Nov late
-     evening (owner OK): all six demo medicines have a box, Concor is low (5 left).
+   - F10 and F7: owner said "fine" (22 Nov).
    - Offered, not chosen: a dot on the "My medicines" tab for low stock; a cap on "Correct the count".
 4. **Next step: Tuesday tasks below** (all features done). Before that: owner feedback / fixes only, each with
    headless tests, commit, push and "what to click".
@@ -87,6 +84,7 @@ This file is the current state of the work. Deadline: live and tested by **Wed 2
 | `2dabdaf` | F7 Stock count: box step in Add medication, card stock line + Low / Out of stock, new box, correct the count, Today refill card | `docs/specs/F7.md` | `tests/F7.spec.ts` |
 | `d285a21` | F7 several boxes: box size + more full boxes (− / +) + left in the box in use; Correct the count asks the total | `docs/specs/F7.md` | `tests/F7.spec.ts` 2b, 10 |
 | `14fc90f` | F7 refill line in the reminder panel (low / out); F1 test 6 waits for doses after reload | `docs/specs/F7.md` | `tests/F7.spec.ts` 11, 12 |
+| (this) | Code-review fixes: stock hidden until loaded (+ retry), box size keeps typed "left", dose logs read page by page (>1000 rows), two quick answers both kept, no two doses at the same time, Demo-speed on-time, follow-up read aloud, Amman birth year | `docs/specs/F2.md`, `F6.md`, `F7.md` | `F2` 5b, `F6` 6b, `F7` 13, 14 |
 
 ## How the app works now
 - **Login first** (email + password, Supabase Auth; "Confirm email" OFF). No welcome screen (owner, 20 Nov);

@@ -23,27 +23,51 @@ function fromRow(r: Row): DoseLog {
   }
 }
 
+// Supabase returns at most 1000 rows per request, so long lists are read page by page.
+const PAGE = 1000
+
+type Page = (start: number, end: number) => PromiseLike<{ data: unknown; error: unknown }>
+
+async function allRows(page: Page): Promise<DoseLog[]> {
+  const out: Row[] = []
+  for (let start = 0; ; start += PAGE) {
+    const { data, error } = await page(start, start + PAGE - 1)
+    if (error) throw error
+    const rows = data as Row[]
+    out.push(...rows)
+    if (rows.length < PAGE) return out.map(fromRow)
+  }
+}
+
+const COLUMNS = 'medication_id, scheduled_at, status, recorded_at'
+
 /** All logs for doses scheduled in [from, to). */
 export async function listDoseLogs(from: Date, to: Date): Promise<DoseLog[]> {
-  const { data, error } = await supabase
-    .from('dose_logs')
-    .select('medication_id, scheduled_at, status, recorded_at')
-    .gte('scheduled_at', from.toISOString())
-    .lt('scheduled_at', to.toISOString())
-  if (error) throw error
-  return (data as Row[]).map(fromRow)
+  return allRows((start, end) =>
+    supabase
+      .from('dose_logs')
+      .select(COLUMNS)
+      .gte('scheduled_at', from.toISOString())
+      .lt('scheduled_at', to.toISOString())
+      .order('scheduled_at')
+      .order('medication_id')
+      .range(start, end),
+  )
 }
 
 /** F7: taken doses recorded since `since`, for doses scheduled before `before` (today's come live from useDoses). */
 export async function listTakenBefore(since: Date, before: Date): Promise<DoseLog[]> {
-  const { data, error } = await supabase
-    .from('dose_logs')
-    .select('medication_id, scheduled_at, status, recorded_at')
-    .eq('status', 'taken')
-    .gte('recorded_at', since.toISOString())
-    .lt('scheduled_at', before.toISOString())
-  if (error) throw error
-  return (data as Row[]).map(fromRow)
+  return allRows((start, end) =>
+    supabase
+      .from('dose_logs')
+      .select(COLUMNS)
+      .eq('status', 'taken')
+      .gte('recorded_at', since.toISOString())
+      .lt('scheduled_at', before.toISOString())
+      .order('scheduled_at')
+      .order('medication_id')
+      .range(start, end),
+  )
 }
 
 /** Records (or changes) the answer for one dose. */

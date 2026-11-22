@@ -97,11 +97,16 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
         ? 'add.strength.needNumber'
         : null
 
+  const timesSet = times.length > 0 && times.every((time, i) => (isMoment(i) ? anchors[i] !== '' : /^\d{2}:\d{2}$/.test(time)))
+  // Two doses at the same moment would share one answer, so they are not allowed.
+  const todayTimes = timesSet ? times.map((_, i) => doseTime(i)) : []
+  const sameTime = todayTimes.find((time, i) => todayTimes.indexOf(time) !== i) ?? null
+
   const answered: Record<Step, boolean> = {
     1: name.trim().length > 0 && strengthProblem === null,
     2: form !== null,
     3: amount > 0,
-    4: times.length > 0 && times.every((time, i) => (isMoment(i) ? anchors[i] !== '' : /^\d{2}:\d{2}$/.test(time))),
+    4: timesSet && sameTime === null,
     5: stock.ok,
     6: true,
     7: true,
@@ -307,6 +312,11 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
                     />
                   ))}
                 </div>
+                {sameTime && (
+                  <p className="field-problem" role="alert">
+                    {t('add.times.same', { time: sameTime })}
+                  </p>
+                )}
               </>
             )}
           </>

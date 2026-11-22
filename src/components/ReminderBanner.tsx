@@ -37,8 +37,9 @@ export default function ReminderBanner({ reminders, busyKey, saveError, onAnswer
     if (newAlerts.length === 0) return
     newAlerts.forEach((r) => alerted.current.add(r.alertId))
     alertPatient(newAlerts.some((r) => r.stage === 'followUp'))
-    // F5: then read the first reminder aloud (if switched on), just after the chime.
-    const first = reminders[0]
+    // F5: then read the new reminder aloud (if switched on), just after the chime: the one on screen if it is new,
+    // otherwise the first new one (e.g. a follow-up for a dose further down the list).
+    const first = newAlerts.includes(reminders[0]) ? reminders[0] : newAlerts[0]
     const parts = doseSpeech(t, lang, first.dose, first.stage === 'followUp')
     setTimeout(() => {
       if (getReadAloud()) speak(parts, lang)

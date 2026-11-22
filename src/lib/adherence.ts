@@ -56,7 +56,7 @@ export function countedDoses(
         const onTime =
           status === 'taken' &&
           recordedAt !== null &&
-          Math.abs(recordedAt.getTime() - scheduledAt.getTime()) <= MISSED_AFTER_MIN * 60_000
+          Math.abs(recordedAt.getTime() - scheduledAt.getTime()) <= MISSED_AFTER_MIN * minute
         out.push({ med, date, time, scheduledAt, status, recordedAt, onTime })
       }
     }

@@ -151,3 +151,25 @@ test('7. Today works in Arabic; text ≥ 18px and buttons ≥ 48px', async ({ pa
   })
   expect(smallest).toBeGreaterThanOrEqual(18)
 })
+
+test('5b. Two doses answered quickly one after the other both stay Taken', async ({ page }) => {
+  await loginWithMeds(page, [
+    { name: 'Glucophage', times: ['08:00'] },
+    { name: 'Concor', times: ['20:00'] },
+  ])
+  const summary = page.getByTestId('summary')
+  await expect(summary).toHaveText('0 of 2 taken')
+  // The first save is slow, so the second answer is given while the first is still saving.
+  let saves = 0
+  await page.route(/\/rest\/v1\/dose_logs/, async (route) => {
+    if (route.request().method() === 'POST' && saves++ === 0) await new Promise((r) => setTimeout(r, 2000))
+    return route.continue()
+  })
+  await openDose(page, '08:00 Glucophage')
+  await page.getByRole('button', { name: 'I took it: Glucophage at 08:00' }).click()
+  await openDose(page, '20:00 Concor')
+  await page.getByRole('button', { name: 'I took it: Concor at 20:00' }).click()
+  await expect(dose(page, '20:00 Concor')).toHaveAttribute('data-status', 'taken')
+  await expect(dose(page, '08:00 Glucophage')).toHaveAttribute('data-status', 'taken')
+  await expect(summary).toHaveText('2 of 2 taken')
+})

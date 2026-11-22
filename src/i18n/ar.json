@@ -275,6 +275,7 @@
   "add.times.pick": "اختر وقتاً.",
   "add.times.chosen": "{anchor}: اليوم الساعة {time}",
   "add.times.prayerOff": "أوقات الصلاة ورمضان متوقفة. يمكنك تشغيلها من الإعدادات.",
+  "add.times.same": "جرعتان في الوقت نفسه ({time}). يُرجى اختيار أوقات مختلفة.",
   "settings.day.title": "يومي",
   "settings.prayer": "أوقات الصلاة ورمضان",
   "settings.prayer.hint": "لتحديد جرعة بعد الصلاة أو مع السحور أو الإفطار. الأوقات حسب عمّان.",

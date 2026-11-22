@@ -275,6 +275,7 @@
   "add.times.pick": "Choose a moment.",
   "add.times.chosen": "{anchor}: today at {time}",
   "add.times.prayerOff": "Prayer and Ramadan times are off. You can turn them on in Settings.",
+  "add.times.same": "Two doses are at the same time ({time}). Please choose different times.",
   "settings.day.title": "My day",
   "settings.prayer": "Prayer and Ramadan times",
   "settings.prayer.hint": "Lets you set a dose after a prayer, or with Suhoor or Iftar. Times for Amman.",
