@@ -25,18 +25,31 @@ function voiceFor(lang: string): SpeechSynthesisVoice | null | undefined {
   return fitting.find((v) => v.localService) ?? fitting[0]
 }
 
-/** Speaks the text in the app language. Returns false when this device has no voice for it. */
-export function speak(text: string, lang: string): boolean {
+/** One piece of a readout and the voice language it needs: an Arabic sentence can carry an English name. */
+export type SpeechPart = { text: string; lang: 'ar' | 'en' }
+
+const DEFAULT_LANG_TAG = { ar: 'ar-SA', en: 'en-US' } as const
+
+/**
+ * Speaks the parts one after another, each with a voice for its own language (an English name inside an Arabic
+ * sentence is said by the English voice). Returns false when this device has no voice for the app language.
+ */
+export function speak(parts: SpeechPart[], appLang: string): boolean {
   const s = synth()
   if (!s) return false
-  const voice = voiceFor(lang)
-  if (voice === undefined) return false
+  const main = voiceFor(appLang)
+  if (main === undefined) return false
   s.cancel() // a new readout replaces the previous one
-  const u = new SpeechSynthesisUtterance(text)
-  u.lang = voice?.lang ?? (lang === 'ar' ? 'ar-SA' : 'en-US')
-  if (voice) u.voice = voice
-  u.rate = 0.9 // a little slower than normal, easier to follow
-  s.speak(u)
+  for (const part of parts) {
+    const own = part.lang === appLang ? main : voiceFor(part.lang)
+    // No voice for this part's language: the app-language voice says it as well as it can.
+    const voice = own === undefined ? main : own
+    const u = new SpeechSynthesisUtterance(part.text)
+    u.lang = voice?.lang ?? (own === undefined ? DEFAULT_LANG_TAG[appLang as 'ar' | 'en'] : DEFAULT_LANG_TAG[part.lang])
+    if (voice) u.voice = voice
+    u.rate = 0.9 // a little slower than normal, easier to follow
+    s.speak(u)
+  }
   return true
 }
 
@@ -44,24 +57,46 @@ export function stopSpeaking(): void {
   synth()?.cancel()
 }
 
+const ARABIC_LETTERS = /[؀-ۿ]/
+const NAME_SLOT = '\u0001'
+
 /** What is read for a dose: name and strength, amount, and the moment of the day for anchored doses. */
-export function doseSpeech(t: T, lang: string, dose: Dose, followUp = false): string {
+export function doseSpeech(t: T, lang: string, dose: Dose, followUp = false): SpeechPart[] {
   const { med } = dose
-  const ar = lang === 'ar'
-  // Arabic: said the way people say it ("حبة واحدة", "5 milligram"), not as printed ("1 حبة", "5 ملغ").
-  const strength =
-    med.strengthValue === null || med.strengthUnit === null
-      ? ''
-      : ar
-        ? sayStrengthAr(med.strengthValue, med.strengthUnit)
-        : sayStrengthEn(med.strengthValue, med.strengthUnit)
-  const text = t('speak.dose', {
-    // Names from the suggestion list are said in English ("Concor"), even when saved in Arabic letters.
-    name: strength ? `${spokenName(med.name)} ${strength}` : spokenName(med.name),
-    amount: ar ? sayAmountAr(med.form, med.amount) : amountText(t, med.form, med.amount),
+  // Names from the suggestion list are said by their English box name ("Concor"), even when saved in Arabic letters.
+  const name = spokenName(med.name)
+  const hasStrength = med.strengthValue !== null && med.strengthUnit !== null
+  const englishName = !ARABIC_LETTERS.test(name)
+  const nameEn = hasStrength ? `${name} ${sayStrengthEn(med.strengthValue!, med.strengthUnit!)}` : name
+  const prefix = followUp ? `${t('speak.followUp')} ` : ''
+
+  if (lang !== 'ar') {
+    const text = t('speak.dose', {
+      name: nameEn,
+      amount: amountText(t, med.form, med.amount),
+      moment: dose.anchor ? t('speak.moment', { moment: anchorLabel(t, dose.anchor) }) : '',
+    })
+    return [{ text: prefix + text, lang: 'en' }]
+  }
+
+  // Arabic: said the way people say it ("حبّةٌ واحدةٌ"), not as printed ("1 حبة").
+  const rest = {
+    amount: sayAmountAr(med.form, med.amount),
     moment: dose.anchor ? t('speak.moment', { moment: anchorLabel(t, dose.anchor) }) : '',
-  })
-  return followUp ? `${t('speak.followUp')} ${text}` : text
+  }
+  if (!englishName) {
+    // A name typed in Arabic stays in the Arabic sentence.
+    const nameAr = hasStrength ? `${name} ${sayStrengthAr(med.strengthValue!, med.strengthUnit!)}` : name
+    return [{ text: prefix + t('speak.dose', { name: nameAr, ...rest }), lang: 'ar' }]
+  }
+  // An English name (and its strength) is said by the English voice, between the Arabic parts.
+  const [before, after = ''] = t('speak.dose', { name: NAME_SLOT, ...rest }).split(NAME_SLOT)
+  const parts: SpeechPart[] = [
+    { text: (prefix + before).trim(), lang: 'ar' },
+    { text: nameEn, lang: 'en' },
+    { text: after.replace(/^[\s،,]+/, '').trim(), lang: 'ar' },
+  ]
+  return parts.filter((p) => p.text !== '')
 }
 
 const UNITS_EN: Record<StrengthUnit, string> = {

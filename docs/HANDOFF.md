@@ -10,7 +10,7 @@ Last updated: **Sun 22 Nov 2026, afternoon** (fifth session: F4 and F5 built).
    **F9** doctor summary (+ "My details" profile, A4 print with logo), **F3** prayer and meal anchors
    (+ "Prayer and Ramadan times" switch, off by default), **F4** own-pill photo (My medicines + optional step 5,
    shown in the reminder, on Today and on the card), **F5** voice readout (automatic + 🔊 button, app language,
-   Settings switch; Arabic spoken forms fixed after owner listening). **178 Playwright tests pass** (3 skipped by design).
+   Settings switch; Arabic spoken forms fixed after owner listening). **180 Playwright tests** (pass when run per file; full runs often hit login timeouts at the test server) (3 skipped by design).
 3. **Next step: F10 — document vault** (lab results / prescriptions, tag by date and type). Explain it to the owner
    in plain words first (what the patient sees, what it does not do, time, then 2–3 multiple-choice decisions with a
    recommended option), then write `docs/specs/F10.md`, get approval, build, test, commit, push, tell the owner what

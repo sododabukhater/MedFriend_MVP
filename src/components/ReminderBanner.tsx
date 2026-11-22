@@ -36,9 +36,9 @@ export default function ReminderBanner({ reminders, busyKey, saveError, onAnswer
     alertPatient(newAlerts.some((r) => r.stage === 'followUp'))
     // F5: then read the first reminder aloud (if switched on), just after the chime.
     const first = reminders[0]
-    const text = doseSpeech(t, lang, first.dose, first.stage === 'followUp')
+    const parts = doseSpeech(t, lang, first.dose, first.stage === 'followUp')
     setTimeout(() => {
-      if (getReadAloud()) speak(text, lang)
+      if (getReadAloud()) speak(parts, lang)
     }, 700)
   }, [reminders]) // once per new reminder (t and lang are read at that moment)
 
@@ -98,7 +98,7 @@ export default function ReminderBanner({ reminders, busyKey, saveError, onAnswer
           </p>
           <p className="sheet-amount">{amountText(t, med.form, med.amount)}</p>
         </div>
-        <ReadAloudButton text={doseSpeech(t, lang, dose, stage === 'followUp')} name={med.name} />
+        <ReadAloudButton parts={doseSpeech(t, lang, dose, stage === 'followUp')} name={med.name} />
         {saveError && (
           <div className="alert" role="alert">
             <p>{t('db.saveFailed')}</p>

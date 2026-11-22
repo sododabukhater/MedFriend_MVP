@@ -175,7 +175,7 @@ function HeroCard({ dose, busy, onAnswer }: { dose: Dose; busy: boolean; onAnswe
           {t('dose.skip')}
         </button>
       </div>
-      <ReadAloudButton text={doseSpeech(t, lang, dose)} name={med.name} className="btn-link btn-read--link" />
+      <ReadAloudButton parts={doseSpeech(t, lang, dose)} name={med.name} className="btn-link btn-read--link" />
     </section>
   )
 }

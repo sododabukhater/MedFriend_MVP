@@ -69,15 +69,38 @@ test('2. In Arabic the readout is Arabic, with an Arabic voice and the moment of
   await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
   await page.clock.fastForward('01:00:15')
   await expect(banner(page)).toBeVisible()
-  await expect.poll(async () => (await spoken(page))[0]).toEqual({
-    // A name from the list is said in English; the amount carries its case endings.
-    text: 'حان وقت دوائك: Concor 5 milligram، حبّةٌ واحدةٌ، مع الغداء.',
-    lang: 'ar-SA',
-    voice: 'ar-SA',
-  })
+  // A name from the list is said in English by the English voice, between the Arabic parts;
+  // the amount carries its case endings.
+  await expect.poll(() => spoken(page)).toEqual([
+    { text: 'حان وقت دوائك:', lang: 'ar-SA', voice: 'ar-SA' },
+    { text: 'Concor 5 milligrams', lang: 'en-US', voice: 'en-US' },
+    { text: 'حبّةٌ واحدةٌ، مع الغداء.', lang: 'ar-SA', voice: 'ar-SA' },
+  ])
   const button = banner(page).getByRole('button', { name: 'اقرأ بصوت عالٍ: كونكور' })
   await expect(button).toHaveText('اقرأ بصوت عالٍ')
   expect((await button.boundingBox())!.height).toBeGreaterThanOrEqual(48)
+})
+
+test('2b. Arabic, device without an English voice: the Arabic voice says the whole sentence', async ({ page }) => {
+  await start(page, [{ name: 'Glucophage', times: ['13:00'], strength: [850, 'mg'] }], { voices: ['ar-SA'] })
+  await page.getByRole('button', { name: 'تغيير اللغة إلى العربية' }).click()
+  await page.clock.fastForward('00:15')
+  await expect(banner(page)).toBeVisible()
+  await expect.poll(() => spoken(page)).toEqual([
+    { text: 'حان وقت دوائك:', lang: 'ar-SA', voice: 'ar-SA' },
+    { text: 'Glucophage 850 milligrams', lang: 'ar-SA', voice: 'ar-SA' },
+    { text: 'حبّةٌ واحدةٌ.', lang: 'ar-SA', voice: 'ar-SA' },
+  ])
+})
+
+test('2c. Arabic, a name typed in Arabic stays in the Arabic sentence (one part)', async ({ page }) => {
+  await start(page, [{ name: 'دواء الضغط', times: ['13:00'], strength: [5, 'mg'] }])
+  await page.getByRole('button', { name: 'تغيير اللغة إلى العربية' }).click()
+  await page.clock.fastForward('00:15')
+  await expect(banner(page)).toBeVisible()
+  await expect.poll(() => spoken(page)).toEqual([
+    { text: 'حان وقت دوائك: دواء الضغط 5 milligram، حبّةٌ واحدةٌ.', lang: 'ar-SA', voice: 'ar-SA' },
+  ])
 })
 
 test('3. 🔊 in the reminder reads it again; 🔊 on the Today top card reads that dose', async ({ page }) => {
