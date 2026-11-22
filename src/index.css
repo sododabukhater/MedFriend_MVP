@@ -2238,3 +2238,20 @@ a.btn-primary {
   min-block-size: var(--tap-min);
   font-size: 1.125rem; /* 18px minimum (F11) */
 }
+
+/* F7: "How many more full boxes?" — a smaller − / + row inside the box questions. */
+.stepper--small {
+  max-inline-size: 16rem;
+  margin-block-start: 0;
+  padding: 6px;
+}
+
+.stepper--small .stepper-btn {
+  inline-size: 56px;
+  block-size: 56px;
+  font-size: 1.75rem;
+}
+
+.stock-total {
+  font-weight: 700;
+}

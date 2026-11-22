@@ -21,8 +21,9 @@ export default function StockArea({ med, info, onStock }: Props) {
   const [left, setLeft] = useState('')
   const [busy, setBusy] = useState(false)
   const [failed, setFailed] = useState(false)
-  // Setting up a box: what is left cannot be more than one box. Correcting after a new box: it can.
-  const check = checkStock(pack, left, !info)
+  const [extraBoxes, setExtraBoxes] = useState(0)
+  // Setting up a box: full boxes + what is left in the box in use. Correcting the count: the total.
+  const check = checkStock(pack, left, info ? null : extraBoxes)
 
   async function save(packSize: number, count: number) {
     setBusy(true)
@@ -41,6 +42,7 @@ export default function StockArea({ med, info, onStock }: Props) {
   function startEdit() {
     setPack(med.packSize !== null ? String(med.packSize) : '')
     setLeft(info ? String(info.left) : '')
+    setExtraBoxes(0)
     setFailed(false)
     setMode('edit')
   }
@@ -127,6 +129,7 @@ export default function StockArea({ med, info, onStock }: Props) {
             }}
             onLeft={setLeft}
             problem={check.ok ? null : check.problem}
+            extra={info ? undefined : { boxes: extraBoxes, onBoxes: setExtraBoxes, total: check.ok && !check.empty ? check.left : null }}
           />
           <div className="confirm-actions">
             <button

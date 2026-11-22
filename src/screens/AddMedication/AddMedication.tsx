@@ -82,7 +82,8 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
   const [packText, setPackText] = useState('')
   const [leftText, setLeftText] = useState('')
   const [leftTouched, setLeftTouched] = useState(false)
-  const stock = checkStock(packText, leftText, true)
+  const [extraBoxes, setExtraBoxes] = useState(0) // full boxes besides the one in use
+  const stock = checkStock(packText, leftText, extraBoxes)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(false)
 
@@ -113,6 +114,7 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
       setPackText('')
       setLeftText('')
       setLeftTouched(false)
+      setExtraBoxes(0)
     }
     setForm(next)
   }
@@ -327,6 +329,7 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
                 setLeftTouched(true)
               }}
               problem={stock.ok ? null : stock.problem}
+              extra={{ boxes: extraBoxes, onBoxes: setExtraBoxes, total: stock.ok && !stock.empty ? stock.left : null }}
             />
           </>
         )}

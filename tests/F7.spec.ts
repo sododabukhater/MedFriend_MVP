@@ -36,11 +36,11 @@ test('1. Add medication step 5 "The box": 100 in the box, left starts at 100; re
   await addUpToBox(page, 'Glucophage', 4) // 2 tablets, twice a day = 4 a day
   await expect(page.getByRole('button', { name: 'Skip for now' })).toBeVisible()
   await page.getByLabel('How many are in one box?').fill('100')
-  await expect(page.getByLabel('How many are left in it now?')).toHaveValue('100')
+  await expect(page.getByLabel('How many are left in the box you are using?')).toHaveValue('100')
   await expect(stockFieldUnits(page)).toHaveText(['tablets', 'tablets'])
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByRole('button', { name: 'Skip for now' }).click() // photo
-  await expect(page.getByText('100 tablets (100 left)')).toBeVisible()
+  await expect(page.getByText('100 tablets a box · 100 left')).toBeVisible()
   await page.getByRole('button', { name: 'Save medication' }).click()
   await expect(stockOf(page, 'Glucophage')).toContainText('100 tablets left · about 25 days')
   await page.reload()
@@ -55,16 +55,38 @@ test('2. "Left now" cannot be more than the box; Skip for now saves without a co
   await goToMeds(page)
   await addUpToBox(page, 'Concor', 2)
   await page.getByLabel('How many are in one box?').fill('30')
-  await page.getByLabel('How many are left in it now?').fill('40')
+  await page.getByLabel('How many are left in the box you are using?').fill('40')
   await expect(page.getByText('That is more than one box holds.')).toBeVisible()
   await expect(page.getByRole('button', { name: 'Next' })).toBeDisabled()
-  await page.getByLabel('How many are left in it now?').fill('')
+  await page.getByLabel('How many are left in the box you are using?').fill('')
   await page.getByLabel('How many are in one box?').fill('')
   await page.getByRole('button', { name: 'Skip for now' }).click() // box
   await page.getByRole('button', { name: 'Skip for now' }).click() // photo
   await expect(page.getByText('Box', { exact: true })).toHaveCount(0)
   await page.getByRole('button', { name: 'Save medication' }).click()
   await expect(card(page, 'Concor').getByRole('button', { name: 'Set the box size for Concor' })).toBeVisible()
+})
+
+test('2b. Several boxes: 30 a box, 2 more full boxes, 18 left in the box in use = 78', async ({ page }) => {
+  await signUpInUI(page)
+  await goToMeds(page)
+  await addUpToBox(page, 'Lipitor', 2) // 1 tablet, twice a day
+  await page.getByLabel('How many are in one box?').fill('30')
+  await page.getByRole('button', { name: 'More boxes' }).click()
+  await page.getByRole('button', { name: 'More boxes' }).click()
+  await expect(page.getByTestId('extra-boxes')).toHaveText('2')
+  await page.getByLabel('How many are left in the box you are using?').fill('18')
+  await expect(page.getByText('In total: 78 tablets')).toBeVisible()
+  // The box in use still cannot hold more than one box.
+  await page.getByLabel('How many are left in the box you are using?').fill('40')
+  await expect(page.getByText('That is more than one box holds.')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Next' })).toBeDisabled()
+  await page.getByLabel('How many are left in the box you are using?').fill('18')
+  await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByRole('button', { name: 'Skip for now' }).click() // photo
+  await expect(page.getByText('30 tablets a box · 78 left')).toBeVisible()
+  await page.getByRole('button', { name: 'Save medication' }).click()
+  await expect(stockOf(page, 'Lipitor')).toContainText('78 tablets left · about 39 days')
 })
 
 test('3. Taken takes the amount off; Undo puts it back; Skip changes nothing; earlier days count too', async ({ page }) => {
@@ -141,8 +163,8 @@ test('6. I got a new box adds one box; Correct the count sets the number; both s
   await expect(stockOf(page, 'Concor')).toContainText('40 tablets left')
 
   await page.getByRole('button', { name: 'Correct the count of Concor' }).click()
-  await expect(page.getByLabel('How many are left in it now?')).toHaveValue('40') // more than one box is fine here
-  await page.getByLabel('How many are left in it now?').fill('25')
+  await expect(page.getByLabel('How many do you have now in total?')).toHaveValue('40') // more than one box is fine here
+  await page.getByLabel('How many do you have now in total?').fill('25')
   await page.getByRole('button', { name: 'Save', exact: true }).click()
   await expect(stockOf(page, 'Concor')).toContainText('25 tablets left · about 25 days')
   await page.reload()
@@ -164,7 +186,7 @@ test('7 + 8. A medicine without a box can be given one; the unit follows the for
   await page.getByRole('button', { name: 'Set the box size for Augmentin syrup' }).click()
   await expect(stockFieldUnits(page)).toHaveText(['ml', 'ml'])
   await page.getByLabel('How many are in one box?').fill('100')
-  await expect(page.getByLabel('How many are left in it now?')).toHaveValue('100')
+  await expect(page.getByLabel('How many are left in the box you are using?')).toHaveValue('100')
   await page.getByRole('button', { name: 'Save', exact: true }).click()
   await expect(stockOf(page, 'Augmentin syrup')).toContainText('100 ml left · about 10 days')
 })
@@ -186,8 +208,10 @@ test('10. Counting rules (pure): days, levels and the box checks', () => {
   expect(stockInfo(med, 14)).toEqual({ left: 0, days: 0, level: 'out' })
   expect(stockInfo({ ...med, stockCount: 90 } as Medication, 0)).toEqual({ left: 90, days: 30, level: 'ok' })
   expect(stockInfo({ ...med, packSize: null, stockCount: null } as Medication, 0)).toBeNull()
-  expect(checkStock('', '', true)).toEqual({ ok: true, empty: true })
-  expect(checkStock('0', '0', true)).toEqual({ ok: false, problem: 'stock.needPack' })
-  expect(checkStock('30', '31', true)).toEqual({ ok: false, problem: 'stock.tooMany' })
-  expect(checkStock('30', '31', false)).toEqual({ ok: true, empty: false, pack: 30, left: 31 })
+  expect(checkStock('', '', 0)).toEqual({ ok: true, empty: true })
+  expect(checkStock('0', '0', 0)).toEqual({ ok: false, problem: 'stock.needPack' })
+  expect(checkStock('30', '31', 0)).toEqual({ ok: false, problem: 'stock.tooMany' })
+  expect(checkStock('30', '31', 2)).toEqual({ ok: false, problem: 'stock.tooMany' }) // the box in use: max one box
+  expect(checkStock('30', '18', 2)).toEqual({ ok: true, empty: false, pack: 30, left: 78 })
+  expect(checkStock('30', '31', null)).toEqual({ ok: true, empty: false, pack: 30, left: 31 }) // Correct the count
 })

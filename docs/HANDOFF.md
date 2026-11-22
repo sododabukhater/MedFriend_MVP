@@ -162,7 +162,8 @@ tested by **Wed 25 Nov**; **code freeze Tue 24 Nov evening**.
   `loginWithMeds()` (supports `anchors`) and `installEarlyClock()` (03:00 Amman, so no reminder panel gets in the way)
   in `tests/helpers.ts`. Tests can import pure files from `src/lib` (e.g. `tests/F3.spec.ts` imports `prayer.ts`).
 - Spec files: `DESIGN`, `F1`, `F2`, `F3`, `F4`, `F5`, `F6`, `F7`, `F8`, `F9`, `F10`, `auth`, `home`, `DB-supabase`.
-- Tests that walk through Add medication must tap "Skip for now" twice (box step 5, photo step 6) before the review.
+- Tests that walk through Add medication must tap "Skip for now" twice (box step 5, photo step 6) before the review. Box step labels: "How many are in one box?",
+  "More boxes", "How many are left in the box you are using?"; Correct the count: "How many do you have now in total?".
   `loginWithMeds` takes `form`, `amount` and `stock: { pack, count, setAt }`.
 - Test images are drawn in the page (canvas) — no image files; no `@types/node`, so tests reach `Buffer` via `globalThis`.
 - F5 tests replace `window.speechSynthesis` with a recorder (`addInitScript` in `tests/F5.spec.ts`); each spoken part

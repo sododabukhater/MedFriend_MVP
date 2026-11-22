@@ -9,6 +9,8 @@ import type { Medication } from '../storage/medications'
 export const LOW_DAYS = 7
 export const MAX_PACK = 9999
 export const MAX_COUNT = 99999
+/** "How many more full boxes?" goes up to this. */
+export const MAX_EXTRA_BOXES = 20
 
 export type StockLevel = 'ok' | 'low' | 'out'
 export type StockInfo = { left: number; days: number; level: StockLevel }
@@ -50,17 +52,22 @@ export type StockCheck =
   | { ok: false; problem: MessageKey | null }
 
 /**
- * Checks the two box questions. Both empty = nothing set (Add medication: Skip for now).
- * `leftUpToPack`: when setting up a box, what is left cannot be more than one box (after "I got a new box" it can).
+ * Checks the box questions. Both empty = nothing set (Add medication: Skip for now). `left` in the result is the total.
+ * `extraBoxes` = null: Correct the count (the second number is the total; it can be more than one box).
+ * `extraBoxes` = a number: setting up a box. The second number is what is left in the box in use (not more than one
+ * box); the total adds the full boxes.
  */
-export function checkStock(packText: string, leftText: string, leftUpToPack: boolean): StockCheck {
+export function checkStock(packText: string, leftText: string, extraBoxes: number | null): StockCheck {
   if (packText === '' && leftText === '') return { ok: true, empty: true }
   const pack = parseCount(packText, MAX_PACK)
   if (pack === null || pack === 0) return { ok: false, problem: packText === '' ? null : 'stock.needPack' }
   const left = parseCount(leftText, MAX_COUNT)
   if (left === null) return { ok: false, problem: leftText === '' ? null : 'stock.needLeft' }
-  if (leftUpToPack && left > pack) return { ok: false, problem: 'stock.tooMany' }
-  return { ok: true, empty: false, pack, left }
+  if (extraBoxes === null) return { ok: true, empty: false, pack, left }
+  if (left > pack) return { ok: false, problem: 'stock.tooMany' }
+  const total = Math.round((extraBoxes * pack + left) * 100) / 100
+  if (total > MAX_COUNT) return { ok: false, problem: 'stock.needLeft' }
+  return { ok: true, empty: false, pack, left: total }
 }
 
 /** Reads what the patient types in a count box: Arabic digits accepted, up to 2 decimals. Null = empty / invalid. */
