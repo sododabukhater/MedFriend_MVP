@@ -1,6 +1,6 @@
 # Handoff — current status (read this first)
 
-Last updated: **Sun 22 Nov 2026, afternoon** (fifth session: F4 built).
+Last updated: **Sun 22 Nov 2026, afternoon** (fifth session: F4 and F5 built).
 `CLAUDE.md` is the rulebook. This file is the current state of the work. Deadline: live and tested by
 **Wed 25 Nov**; **code freeze Tue 24 Nov evening**.
 
@@ -9,11 +9,14 @@ Last updated: **Sun 22 Nov 2026, afternoon** (fifth session: F4 built).
 2. **Done:** Tier A (F6, F2, F1, F8 + login, Settings, Progress), **design revamp** (+ Reset all data),
    **F9** doctor summary (+ "My details" profile, A4 print with logo), **F3** prayer and meal anchors
    (+ "Prayer and Ramadan times" switch, off by default), **F4** own-pill photo (My medicines + optional step 5,
-   shown in the reminder, on Today and on the card). **163 Playwright tests pass** (3 skipped by design).
-3. **Next step: F5 — Arabic voice dose readout.** Explain it to the owner in plain words first (what the patient
-   sees, what it does not do, time, then 2–3 multiple-choice decisions with a recommended option), then write
-   `docs/specs/F5.md`, get approval, build, test, commit, push, tell the owner what to click, offer a walkthrough video.
-4. Then F10 (documents; needs a Storage bucket like F4: ask before applying), F7 (stock). Cut line: if behind on **Monday evening**, drop F7 first, then F10.
+   shown in the reminder, on Today and on the card), **F5** voice readout (automatic + 🔊 button, app language,
+   Settings switch). **177 Playwright tests pass** (3 skipped by design).
+3. **Next step: F10 — document vault** (lab results / prescriptions, tag by date and type). Explain it to the owner
+   in plain words first (what the patient sees, what it does not do, time, then 2–3 multiple-choice decisions with a
+   recommended option), then write `docs/specs/F10.md`, get approval, build, test, commit, push, tell the owner what
+   to click, offer a walkthrough video. Needs a private Storage bucket like F4 (copy `pill-photos` policies): **ask
+   before applying**.
+4. Then F7 (stock). Cut line: if behind on **Monday evening**, drop F7 first, then F10.
 5. **Tuesday:** `DEFAULT_LANG = 'ar'` in `src/i18n/index.tsx`, Arabic review pass (all REVIEW-AR lists in the specs),
    run `node scripts/seed-demo.mjs` (Tuesday evening or Wednesday morning), code freeze.
 
@@ -24,8 +27,8 @@ Last updated: **Sun 22 Nov 2026, afternoon** (fifth session: F4 built).
 | 2 | F9 Summary for my doctor: print / PDF + WhatsApp | 2–3 h | ✅ Sun | `docs/specs/F9.md`; print redesigned after owner feedback |
 | 3 | F3 Prayer and meal anchors, Amman prayer times | ~5 h | ✅ Sun | `docs/specs/F3.md` |
 | 4 | F4 Own-pill photo card (photo on the medicine and in the reminder) | ~3 h | ✅ Sun | `docs/specs/F4.md`; private bucket `pill-photos` |
-| 5 | **F5** Arabic voice dose readout | ~2 h | **next** (Sun/Mon) | Browser `speechSynthesis`; "Voice not available" if no Arabic voice |
-| 6 | F10 Document vault (lab results / prescriptions, tag by date and type) | 3–4 h | Mon | Supabase Storage |
+| 5 | F5 Arabic voice dose readout | ~2 h | ✅ Sun | Browser `speechSynthesis`; "Voice not available" if no Arabic voice |
+| 6 | **F10** Document vault (lab results / prescriptions, tag by date and type) | 3–4 h | **next** (Sun/Mon) | Supabase Storage |
 | 7 | F7 Stock count + low-stock refill alert | 2–3 h | Mon/Tue | First to cut |
 | — | Tuesday: Arabic default + review pass, demo reset, freeze | | Tue | |
 
@@ -57,7 +60,8 @@ Last updated: **Sun 22 Nov 2026, afternoon** (fifth session: F4 built).
 | `c1701b0` | Refresh account details at app start (name saved on another device shows) | `docs/specs/F9.md` | `tests/F9.spec.ts` 1b |
 | `afad07c` | F9 print redesign: A4 document, Med Friend logo top right | `docs/specs/F9.md` | `tests/F9.spec.ts` 4 |
 | `6c25c91` | F3 Prayer and meal anchors + prayer switch (off by default) + meal times | `docs/specs/F3.md` | `tests/F3.spec.ts` |
-| (F4 commit) | F4 Own-pill photo: My medicines + Add medication step 5; reminder, Today, card | `docs/specs/F4.md` | `tests/F4.spec.ts` |
+| `b93c8d5` | F4 Own-pill photo: My medicines + Add medication step 5; reminder, Today, card | `docs/specs/F4.md` | `tests/F4.spec.ts` |
+| (F5 commit) | F5 Voice readout: automatic + 🔊 in reminder and Today top card; Settings → Reminders switch | `docs/specs/F5.md` | `tests/F5.spec.ts` |
 
 ## How the app works now
 - **Login first** (email + password, Supabase Auth; "Confirm email" OFF). No welcome screen (owner, 20 Nov);
@@ -79,7 +83,7 @@ Last updated: **Sun 22 Nov 2026, afternoon** (fifth session: F4 built).
   - **Summary for my doctor (F9):** document with logo top right; asks for the name on the page if none saved;
     "Print or save as PDF" (one A4 page, own margins, no browser header) and "Send on WhatsApp" (`wa.me` text).
   - **Settings:** My details (name, year of birth) · My day (Prayer and Ramadan times switch, today's Amman prayer
-    times when on, My meal times) · Language · For the demo (Demo speed, Show the next reminder now) · Account
+    times when on, My meal times) · Language · Reminders (Read reminders aloud) · For the demo (Demo speed, Show the next reminder now) · Account
     (Log out, Reset all data) · disclaimer.
 - **Rules:** "Due now" from the dose time until +60 min, then "Missed". Doses before a medicine was added never count.
   Follow-up / snooze 15 min. Demo speed (per device): 1 minute = 1 second. Adherence = Taken ÷ decided doses.
@@ -90,6 +94,9 @@ Last updated: **Sun 22 Nov 2026, afternoon** (fifth session: F4 built).
 - **F4 photos:** shrunk in the browser (800 px JPEG), private bucket `pill-photos`, path `<user id>/<med id>-<time>.jpg`,
   `medications.photo_path`; shown via 1-day signed links made when the list loads. Deleting a medicine / Reset all data
   deletes the files; `seed-demo.mjs` clears demo photos. Demo medicines have no photos.
+- **F5 voice:** browser `speechSynthesis` in the app language; reads name + strength, amount, moment ("with lunch");
+  follow-up adds "Reminder: this dose is not recorded yet." Automatic only after the first tap (browser rule).
+  "Read reminders aloud" is per device (localStorage, on by default). Laptops may have no Arabic voice.
 - **Account metadata** (Supabase Auth `user_metadata`, no tables): `full_name`, `birth_year`, `prayer_times`, `meal_times`.
 
 ## Code map
@@ -103,7 +110,7 @@ Last updated: **Sun 22 Nov 2026, afternoon** (fifth session: F4 built).
   `photos.ts` (F4).
 - `src/screens/`: `Auth/`, `AddMedication/`, `Today/`, `Medicines/`, `Progress/`, `Summary/`, `Settings/`.
 - `src/components/`: `TabBar`, `ReminderBanner` (bottom panel), `MedicationCard`, `Autocomplete`, `LanguageSwitch`,
-  `ScreenHeader`, `Icons`, `Logo` (brand mark), `ProfileForm`, `DoseTimeRow` (F3 picker), `DaySettings` (F3 settings), `PhotoPicker` (F4).
+  `ScreenHeader`, `Icons`, `Logo` (brand mark), `ProfileForm`, `DoseTimeRow` (F3 picker), `DaySettings` (F3 settings), `PhotoPicker` (F4), `ReadAloudButton` (F5). `src/lib/speech.ts` (F5).
 - `src/i18n/en.json`, `ar.json`: all text, same keys. `src/index.css`: all styles, tokens at the top, print styles in F9.
 - `public/icon.svg`: the Med Friend logo (from the owner's deck "Med Friend - 17 Screens", slide S-P-01).
 - `supabase/migrations/`: SQL applied to the project. `scripts/seed-demo.mjs`: demo reset.
@@ -120,7 +127,7 @@ Last updated: **Sun 22 Nov 2026, afternoon** (fifth session: F4 built).
 - Each test creates its own `@mailinator.com` account. Time-based tests use a fake clock (Nov 2026);
   `loginWithMeds()` (supports `anchors`) and `installEarlyClock()` (03:00 Amman, so no reminder panel gets in the way)
   in `tests/helpers.ts`. Tests can import pure files from `src/lib` (e.g. `tests/F3.spec.ts` imports `prayer.ts`).
-- Spec files: `DESIGN`, `F1`, `F2`, `F3`, `F4`, `F6`, `F8`, `F9`, `auth`, `home`, `DB-supabase`.
+- Spec files: `DESIGN`, `F1`, `F2`, `F3`, `F4`, `F5`, `F6`, `F8`, `F9`, `auth`, `home`, `DB-supabase`.
 - Tests that walk through Add medication must tap "Skip for now" (step 5) before the review screen.
 - Test images are drawn in the page (canvas) — no image files; no `@types/node`, so tests reach `Buffer` via `globalThis`.
 
@@ -141,7 +148,7 @@ Last updated: **Sun 22 Nov 2026, afternoon** (fifth session: F4 built).
 ## Key decisions and rules
 1. English default while building; Arabic written for every string. Before freeze: `DEFAULT_LANG = 'ar'` + review.
    JSON can't hold `// REVIEW-AR`, so uncertain Arabic is listed under "REVIEW-AR" in each spec
-   (`DESIGN.md`, `F9.md`, `F3.md`, `F4.md`, `F6.md`) and `src/data/drugs.ts`.
+   (`DESIGN.md`, `F9.md`, `F3.md`, `F4.md`, `F5.md`, `F6.md`) and `src/data/drugs.ts`.
 2. Font Readex Pro. Colours: page `#EEF3F0`, action green `#0A6B52`, brand teal `#1A6B5A` (logo), day-part tints.
    No ESLint, no router, no UI framework. Logical CSS properties only (the summary logo uses `order` to stay top right).
 3. Dependencies unchanged: react, react-dom, vite, @vitejs/plugin-react, typescript, @types/react(-dom),

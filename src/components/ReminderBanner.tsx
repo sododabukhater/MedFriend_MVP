@@ -5,8 +5,10 @@ import { anchorLabel } from '../lib/anchors'
 import { SNOOZE_MIN, type Reminder } from '../lib/doses'
 import { amountText, strengthText } from '../lib/format'
 import { useDemoSpeed } from '../lib/settings'
+import { doseSpeech, getReadAloud, speak, stopSpeaking } from '../lib/speech'
 import type { DoseAction } from '../lib/useDoses'
 import { CheckIcon, PartIcon } from './Icons'
+import ReadAloudButton from './ReadAloudButton'
 
 type Props = {
   reminders: Reminder[]
@@ -32,7 +34,13 @@ export default function ReminderBanner({ reminders, busyKey, saveError, onAnswer
     if (newAlerts.length === 0) return
     newAlerts.forEach((r) => alerted.current.add(r.alertId))
     alertPatient(newAlerts.some((r) => r.stage === 'followUp'))
-  }, [reminders])
+    // F5: then read the first reminder aloud (if switched on), just after the chime.
+    const first = reminders[0]
+    const text = doseSpeech(t, first.dose, first.stage === 'followUp')
+    setTimeout(() => {
+      if (getReadAloud()) speak(text, lang)
+    }, 700)
+  }, [reminders]) // once per new reminder (t and lang are read at that moment)
 
   // "(1) Med Friend" in the browser tab while reminders are waiting.
   useEffect(() => {
@@ -52,6 +60,10 @@ export default function ReminderBanner({ reminders, busyKey, saveError, onAnswer
   const strength = strengthText(t, med.strengthValue, med.strengthUnit)
   const busy = busyKey === dose.key
   const part = t(`partIn.${dose.part}` as MessageKey)
+  const answer = (action: DoseAction) => {
+    stopSpeaking() // F5: answering ends the readout
+    onAnswer(current, action)
+  }
 
   return (
     <div className="sheet-backdrop">
@@ -86,6 +98,7 @@ export default function ReminderBanner({ reminders, busyKey, saveError, onAnswer
           </p>
           <p className="sheet-amount">{amountText(t, med.form, med.amount)}</p>
         </div>
+        <ReadAloudButton text={doseSpeech(t, dose, stage === 'followUp')} name={med.name} />
         {saveError && (
           <div className="alert" role="alert">
             <p>{t('db.saveFailed')}</p>
@@ -96,15 +109,15 @@ export default function ReminderBanner({ reminders, busyKey, saveError, onAnswer
           type="button"
           className="btn-primary btn-take-big"
           disabled={busy}
-          onClick={() => onAnswer(current, 'taken')}
+          onClick={() => answer('taken')}
         >
           <CheckIcon size={28} />
           {t('hero.take')}
         </button>
-        <button type="button" className="btn-secondary btn-on-tint" disabled={busy} onClick={() => onAnswer(current, 'snoozed')}>
+        <button type="button" className="btn-secondary btn-on-tint" disabled={busy} onClick={() => answer('snoozed')}>
           {t(demo ? 'rem.snoozeSec' : 'rem.snoozeMin', { n: SNOOZE_MIN })}
         </button>
-        <button type="button" className="btn-link" disabled={busy} onClick={() => onAnswer(current, 'skipped')}>
+        <button type="button" className="btn-link" disabled={busy} onClick={() => answer('skipped')}>
           {t('rem.skip')}
         </button>
       </section>

@@ -7,6 +7,7 @@ import { useI18n, type MessageKey } from '../../i18n'
 import { DEMO_ACCOUNT, logOut } from '../../lib/auth'
 import type { Profile } from '../../lib/profile'
 import { setDemoSpeed, useDemoSpeed } from '../../lib/settings'
+import { setReadAloud, useReadAloud } from '../../lib/speech'
 
 // Settings: my details (F9), language, demo tools for the professor, account (Log out, Reset all data), disclaimer.
 // Specs: docs/specs/F1.md, docs/specs/DESIGN.md
@@ -22,6 +23,7 @@ type Props = {
 export default function Settings({ email, profile, onTriggerNext, onReset }: Props) {
   const { t, lang, setLang } = useI18n()
   const demo = useDemoSpeed()
+  const readAloud = useReadAloud()
   const prefs = usePrefs()
   const [message, setMessage] = useState<MessageKey | null>(null)
   const [confirming, setConfirming] = useState(false)
@@ -71,6 +73,30 @@ export default function Settings({ email, profile, onTriggerNext, onReset }: Pro
           <button type="button" lang="en" aria-pressed={lang === 'en'} onClick={() => setLang('en')}>
             English
           </button>
+        </div>
+      </section>
+
+      <section className="group" aria-labelledby="reminders-title">
+        <h2 id="reminders-title" className="group-title">
+          {t('settings.reminders.title')}
+        </h2>
+        <div className="box">
+          <div className="item">
+            <span className="item-text">
+              <span id="read-aloud-label">{t('settings.readAloud')}</span>
+              <small className="item-hint">{t('settings.readAloud.short')}</small>
+            </span>
+            <button
+              type="button"
+              role="switch"
+              className="switch"
+              aria-checked={readAloud}
+              aria-labelledby="read-aloud-label"
+              onClick={() => setReadAloud(!readAloud)}
+            >
+              <span className="switch-knob" aria-hidden="true" />
+            </button>
+          </div>
         </div>
       </section>
 

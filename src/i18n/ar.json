@@ -300,5 +300,14 @@
   "photo.step.retake": "اختر صورة أخرى",
   "photo.skip": "ليس الآن",
   "add.review.photo": "الصورة",
-  "home.savedNoPhoto": "تم حفظ الدواء، لكن تعذّر حفظ الصورة. أضفها من هذه القائمة."
+  "home.savedNoPhoto": "تم حفظ الدواء، لكن تعذّر حفظ الصورة. أضفها من هذه القائمة.",
+  "speak.dose": "حان وقت دوائك: {name}، {amount}{moment}.",
+  "speak.moment": "، {moment}",
+  "speak.followUp": "تذكير: لم تُسجّل هذه الجرعة بعد.",
+  "voice.read": "اقرأ بصوت عالٍ",
+  "voice.readLabel": "اقرأ بصوت عالٍ: {name}",
+  "voice.none": "الصوت غير متوفر على هذا الجهاز.",
+  "settings.reminders.title": "التذكيرات",
+  "settings.readAloud": "اقرأ التذكيرات بصوت عالٍ",
+  "settings.readAloud.short": "يقرأ الهاتف كل تذكير بصوت مسموع (على هذا الجهاز)."
 }

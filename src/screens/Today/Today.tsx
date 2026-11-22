@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { CheckIcon, PartIcon, PlusIcon } from '../../components/Icons'
 import { anchorLabel } from '../../lib/anchors'
+import ReadAloudButton from '../../components/ReadAloudButton'
 import ScreenHeader from '../../components/ScreenHeader'
 import { useI18n, type MessageKey } from '../../i18n'
 import type { Dose } from '../../lib/doses'
 import { amountText, strengthText } from '../../lib/format'
 import { ammanTime, DAY_PARTS, longDate } from '../../lib/time'
+import { doseSpeech } from '../../lib/speech'
 import type { DoseAction, DosesApi } from '../../lib/useDoses'
 
 // F2: today's doses. Top card = the dose due now (or next); then the count; then one box per part of the day.
@@ -173,6 +175,7 @@ function HeroCard({ dose, busy, onAnswer }: { dose: Dose; busy: boolean; onAnswe
           {t('dose.skip')}
         </button>
       </div>
+      <ReadAloudButton text={doseSpeech(t, dose)} name={med.name} className="btn-link btn-read--link" />
     </section>
   )
 }

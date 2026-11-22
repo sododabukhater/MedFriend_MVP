@@ -300,5 +300,14 @@
   "photo.step.retake": "Choose another photo",
   "photo.skip": "Skip for now",
   "add.review.photo": "Photo",
-  "home.savedNoPhoto": "Medication saved, but the photo could not be saved. Add it from this list."
+  "home.savedNoPhoto": "Medication saved, but the photo could not be saved. Add it from this list.",
+  "speak.dose": "Time for your medicine: {name}, {amount}{moment}.",
+  "speak.moment": ", {moment}",
+  "speak.followUp": "Reminder: this dose is not recorded yet.",
+  "voice.read": "Read aloud",
+  "voice.readLabel": "Read aloud: {name}",
+  "voice.none": "Voice not available on this device.",
+  "settings.reminders.title": "Reminders",
+  "settings.readAloud": "Read reminders aloud",
+  "settings.readAloud.short": "The phone says each reminder out loud (this device)."
 }
