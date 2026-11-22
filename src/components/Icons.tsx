@@ -96,6 +96,14 @@ export const CameraIcon = ({ size }: P) => (
   </Svg>
 )
 
+/** F10: a page (PDF / document). */
+export const DocIcon = ({ size }: P) => (
+  <Svg size={size}>
+    <path d="M6 2h8l5 5v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z" />
+    <path d="M14 2v5h5M8.5 13h7M8.5 17h7" />
+  </Svg>
+)
+
 export const SpeakerIcon = ({ size }: P) => (
   <Svg size={size}>
     <path d="M4 9h4l5-4v14l-5-4H4z" />

@@ -87,6 +87,16 @@ export function addDays(date: string, n: number): string {
   return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10)
 }
 
+/** "18 November 2026" / "18 تشرين الثاني 2026" for a "YYYY-MM-DD" date (F10). */
+export function dateWithYear(date: string, lang: 'ar' | 'en'): string {
+  return new Intl.DateTimeFormat(lang === 'ar' ? 'ar-JO-u-nu-latn' : 'en-GB', {
+    timeZone: TIME_ZONE,
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(ammanInstant(date, '12:00'))
+}
+
 /** "Thursday 19 November" for a "YYYY-MM-DD" date (Western digits in both languages). */
 export function longDateOf(date: string, lang: 'ar' | 'en'): string {
   return longDate(ammanInstant(date, '12:00'), lang)

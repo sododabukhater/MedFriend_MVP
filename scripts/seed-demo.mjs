@@ -1,4 +1,5 @@
-// Resets the demo account: 6 sample medicines + 30 days of past dose history (F8) + sample name (F9).
+// Resets the demo account: 6 sample medicines + 30 days of past dose history (F8) + sample name (F9)
+// + two sample documents (F10).
 // Run:  node scripts/seed-demo.mjs
 // Uses only the public .env values and logs in as the demo user (normal RLS path, no secret key).
 // Today's doses are left unanswered, so the demo can use Today and the reminders.
@@ -16,7 +17,11 @@ const db = createClient(env.VITE_SUPABASE_URL, env.VITE_SUPABASE_PUBLISHABLE_KEY
 })
 
 // Same values as DEMO_ACCOUNT in src/lib/auth.ts (public on purpose: demo data only).
-const { error } = await db.auth.signInWithPassword({ email: 'demo@medfriend.jo', password: '123456' })
+// SEED_EMAIL / SEED_PASSWORD: try the script on a throwaway test account instead of the demo.
+const { error } = await db.auth.signInWithPassword({
+  email: process.env.SEED_EMAIL ?? 'demo@medfriend.jo',
+  password: process.env.SEED_PASSWORD ?? '123456',
+})
 if (error) throw error
 
 const HISTORY_DAYS = 30
@@ -108,6 +113,71 @@ for (let i = 1; i <= HISTORY_DAYS; i++) {
 }
 const logIns = await db.from('dose_logs').insert(logs)
 if (logIns.error) throw logIns.error
+
+// F10: two sample documents (clearly marked SAMPLE), made here with the project's Playwright browser:
+// a lab result as a PDF and a prescription as a photo. Older demo documents are removed first.
+const docsDel = await db.from('documents').delete().eq('user_id', user.id)
+if (docsDel.error) throw docsDel.error
+const oldDocs = await db.storage.from('documents').list(user.id, { limit: 1000 })
+if (oldDocs.error) throw oldDocs.error
+if (oldDocs.data.length) {
+  const rm = await db.storage.from('documents').remove(oldDocs.data.map((f) => `${user.id}/${f.name}`))
+  if (rm.error) throw rm.error
+}
+const { chromium } = await import('@playwright/test')
+const browser = await chromium.launch({ headless: true })
+const page = await browser.newPage({ viewport: { width: 700, height: 900 } })
+const labDate = addDays(today, -5)
+const rxDate = addDays(today, -12)
+const sheet = (body) => `<!doctype html><html><head><meta charset="utf-8"><style>
+  body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; margin: 36px; color: #10231d; }
+  h1 { font-size: 26px; margin: 0 0 4px; } .sub { color: #4a5a53; margin: 0 0 18px; }
+  .sample { display: inline-block; border: 3px solid #9b1c1c; color: #9b1c1c; padding: 4px 12px;
+            font-weight: 700; transform: rotate(-4deg); margin-bottom: 14px; }
+  table { border-collapse: collapse; width: 100%; font-size: 17px; }
+  th, td { border-bottom: 1px solid #c9d6cf; padding: 9px 6px; text-align: start; }
+  .rx { font-size: 21px; line-height: 1.8; }
+</style></head><body>${body}</body></html>`
+await page.setContent(sheet(`
+  <div class="sample">SAMPLE · نموذج تجريبي</div>
+  <h1>Laboratory result · نتيجة مختبر</h1>
+  <p class="sub">Demo patient · مريض تجريبي — ${labDate}</p>
+  <table>
+    <tr><th>Test</th><th>Result</th><th>Reference range</th></tr>
+    <tr><td>HbA1c</td><td>7.1 %</td><td>4.0 – 5.6 %</td></tr>
+    <tr><td>Fasting glucose</td><td>138 mg/dL</td><td>70 – 99 mg/dL</td></tr>
+    <tr><td>Total cholesterol</td><td>182 mg/dL</td><td>&lt; 200 mg/dL</td></tr>
+    <tr><td>Creatinine</td><td>0.9 mg/dL</td><td>0.6 – 1.2 mg/dL</td></tr>
+  </table>
+  <p class="sub" style="margin-top:24px">Sample data for the Med Friend demo. Not a real result.</p>`))
+const labPdf = await page.pdf({ format: 'A4', printBackground: true })
+await page.setContent(sheet(`
+  <div class="sample">SAMPLE · نموذج تجريبي</div>
+  <h1>Prescription · وصفة طبية</h1>
+  <p class="sub">Demo patient · مريض تجريبي — ${rxDate}</p>
+  <div class="rx">
+    Rx<br>
+    1. Glucophage 500 mg — 1 tablet twice a day<br>
+    2. Concor 5 mg — 1 tablet in the morning<br>
+    3. Lipitor 20 mg — 1 tablet in the evening
+  </div>
+  <p class="sub" style="margin-top:24px">Sample data for the Med Friend demo. Not a real prescription.</p>`))
+await page.setViewportSize({ width: 700, height: 460 }) // just the prescription, no empty page below
+const rxJpg = await page.screenshot({ type: 'jpeg', quality: 85, fullPage: false })
+await browser.close()
+for (const [type, date, title, bytes, mime, ext] of [
+  ['lab', labDate, 'Sample blood test', labPdf, 'application/pdf', 'pdf'],
+  ['prescription', rxDate, 'Sample prescription', rxJpg, 'image/jpeg', 'jpg'],
+]) {
+  const id = crypto.randomUUID()
+  const path = `${user.id}/${id}.${ext}`
+  const up = await db.storage.from('documents').upload(path, bytes, { contentType: mime })
+  if (up.error) throw up.error
+  const row = await db.from('documents')
+    .insert({ id, doc_type: type, doc_date: date, title, file_path: path, mime_type: mime })
+  if (row.error) throw row.error
+}
+console.log(`Documents: sample lab result (${labDate}, PDF) and prescription (${rxDate}, photo)`)
 
 console.log(`Demo medicines: ${ins.data.map((m) => m.name).join(', ')}`)
 console.log(`History: ${logs.length} answered doses over ${HISTORY_DAYS} days (from ${firstDay})`)

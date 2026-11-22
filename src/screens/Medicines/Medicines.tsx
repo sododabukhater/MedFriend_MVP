@@ -3,8 +3,12 @@ import MedicationCard from '../../components/MedicationCard'
 import ScreenHeader from '../../components/ScreenHeader'
 import { useI18n, type MessageKey } from '../../i18n'
 import type { Medication } from '../../storage/medications'
+import Documents from '../Documents/Documents'
 
 // "My medicines" tab (F6): one list of medicines, and one big "Add a medicine" button above the tabs.
+// F10: a Medicines | Documents switch at the top; Documents is the document vault.
+
+export type MedsView = 'meds' | 'docs'
 
 type Props = {
   meds: Medication[] | null
@@ -16,16 +20,29 @@ type Props = {
   onDelete: (med: Medication) => Promise<void>
   onPhoto: (med: Medication, file: File) => Promise<void>
   onRemovePhoto: (med: Medication) => Promise<void>
+  view: MedsView
+  onView: (view: MedsView) => void
 }
 
-export default function Medicines({ meds, loadError, error, notice, onRetry, onAdd, onDelete, onPhoto, onRemovePhoto }: Props) {
+export default function Medicines({ meds, loadError, error, notice, onRetry, onAdd, onDelete, onPhoto, onRemovePhoto, view, onView }: Props) {
   const { t } = useI18n()
+  const switcher = (
+    <div className="segmented" role="group" aria-label={t('meds.view.label')}>
+      {(['meds', 'docs'] as MedsView[]).map((v) => (
+        <button key={v} type="button" aria-pressed={view === v} onClick={() => onView(v)}>
+          {t(v === 'meds' ? 'meds.view.meds' : 'meds.view.docs')}
+        </button>
+      ))}
+    </div>
+  )
+  if (view === 'docs') return <Documents switcher={switcher} />
   const sub = meds && meds.length > 0 ? (meds.length === 1 ? t('home.count.one') : t('home.count', { n: meds.length })) : undefined
 
   return (
     <>
       <main className="screen">
         <ScreenHeader title={t('home.myMeds')} sub={sub} />
+        {switcher}
 
         {loadError && (
           <div className="alert" role="alert">

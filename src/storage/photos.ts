@@ -11,8 +11,8 @@ const LINK_SECONDS = 24 * 3600
 
 export class NotAnImageError extends Error {}
 
-/** Shrinks a photo in the browser (longest side 800 px) and returns it as a JPEG. */
-export async function shrinkPhoto(file: File): Promise<Blob> {
+/** Shrinks a photo in the browser (longest side 800 px, or `maxSide`) and returns it as a JPEG. */
+export async function shrinkPhoto(file: File, maxSide = PHOTO_MAX_SIDE, quality = 0.8): Promise<Blob> {
   if (!file.type.startsWith('image/')) throw new NotAnImageError()
   const url = URL.createObjectURL(file)
   try {
@@ -23,7 +23,7 @@ export async function shrinkPhoto(file: File): Promise<Blob> {
     } catch {
       throw new NotAnImageError()
     }
-    const scale = Math.min(1, PHOTO_MAX_SIDE / Math.max(img.naturalWidth, img.naturalHeight))
+    const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight))
     const canvas = document.createElement('canvas')
     canvas.width = Math.max(1, Math.round(img.naturalWidth * scale))
     canvas.height = Math.max(1, Math.round(img.naturalHeight * scale))
@@ -31,7 +31,7 @@ export async function shrinkPhoto(file: File): Promise<Blob> {
     ctx.fillStyle = '#fff' // transparent PNGs get a white background
     ctx.fillRect(0, 0, canvas.width, canvas.height)
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
-    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.8))
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', quality))
     if (!blob) throw new Error('Could not encode the photo')
     return blob
   } finally {

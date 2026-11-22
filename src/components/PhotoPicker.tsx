@@ -5,6 +5,9 @@ type Props = {
   label?: string
   disabled?: boolean
   onFile: (file: File) => void
+  /** F10: documents also accept PDF files. */
+  accept?: string
+  testId?: string
   children: ReactNode
 }
 
@@ -12,7 +15,7 @@ type Props = {
  * F4: a button that opens the camera or the gallery (phones) or a file picker (laptops).
  * No `capture` attribute, so the phone itself offers "Camera" or "Gallery".
  */
-export default function PhotoPicker({ className, label, disabled, onFile, children }: Props) {
+export default function PhotoPicker({ className, label, disabled, onFile, accept = 'image/*', testId = 'photo-input', children }: Props) {
   const input = useRef<HTMLInputElement>(null)
   return (
     <>
@@ -28,9 +31,9 @@ export default function PhotoPicker({ className, label, disabled, onFile, childr
       <input
         ref={input}
         type="file"
-        accept="image/*"
+        accept={accept}
         hidden
-        data-testid="photo-input"
+        data-testid={testId}
         onChange={(e) => {
           const file = e.target.files?.[0]
           e.target.value = '' // choosing the same file again still counts

@@ -15,13 +15,14 @@ import {
   SignUpScreen,
   type AuthScreen,
 } from './screens/Auth/AuthScreens'
-import Medicines from './screens/Medicines/Medicines'
+import Medicines, { type MedsView } from './screens/Medicines/Medicines'
 import Progress from './screens/Progress/Progress'
 import Settings from './screens/Settings/Settings'
 import Summary from './screens/Summary/Summary'
 import Today from './screens/Today/Today'
 import { deleteAllMedications, deleteMedication, listMedications, type Medication } from './storage/medications'
 import { removePhoto, savePhoto } from './storage/photos'
+import { deleteAllDocuments } from './storage/documents'
 
 type MedsState = { status: 'loading' } | { status: 'ready'; meds: Medication[] } | { status: 'error' }
 
@@ -32,6 +33,7 @@ export default function App() {
   const [tab, setTab] = useState<Tab>('today')
   const [adding, setAdding] = useState(false)
   const [summary, setSummary] = useState(false)
+  const [medsView, setMedsView] = useState<MedsView>('meds') // F10: Medicines | Documents
   const [meds, setMeds] = useState<MedsState>({ status: 'loading' })
   const [notice, setNotice] = useState<MessageKey | null>(null)
   const [error, setError] = useState<MessageKey | null>(null)
@@ -66,6 +68,7 @@ export default function App() {
       setTab('today')
       setAdding(false)
       setSummary(false)
+      setMedsView('meds')
       setMeds({ status: 'loading' })
       setError(null)
     }
@@ -113,6 +116,7 @@ export default function App() {
 
   async function handleReset() {
     await deleteAllMedications()
+    await deleteAllDocuments() // F10
     setMeds({ status: 'ready', meds: [] })
     doses.reload()
   }
@@ -154,6 +158,8 @@ export default function App() {
         onDelete={handleDelete}
         onPhoto={handlePhoto}
         onRemovePhoto={handleRemovePhoto}
+        view={medsView}
+        onView={setMedsView}
       />
     )
   }
@@ -189,6 +195,7 @@ export default function App() {
             setNotice(photoFailed ? 'home.savedNoPhoto' : 'home.saved')
             setError(null)
             setAdding(false)
+            setMedsView('meds')
             setTab('meds') // shows the new card with "Medication saved"
           }}
         />
