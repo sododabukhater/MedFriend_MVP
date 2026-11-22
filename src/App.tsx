@@ -3,6 +3,7 @@ import ReminderBanner from './components/ReminderBanner'
 import TabBar, { type Tab } from './components/TabBar'
 import { useI18n, type MessageKey } from './i18n'
 import { useAuth } from './lib/useAuth'
+import { profileOf } from './lib/profile'
 import { useDoses } from './lib/useDoses'
 import AddMedication from './screens/AddMedication/AddMedication'
 import {
@@ -15,6 +16,7 @@ import {
 import Medicines from './screens/Medicines/Medicines'
 import Progress from './screens/Progress/Progress'
 import Settings from './screens/Settings/Settings'
+import Summary from './screens/Summary/Summary'
 import Today from './screens/Today/Today'
 import { deleteAllMedications, deleteMedication, listMedications, type Medication } from './storage/medications'
 
@@ -26,6 +28,7 @@ export default function App() {
   const [authScreen, setAuthScreen] = useState<AuthScreen>('login')
   const [tab, setTab] = useState<Tab>('today')
   const [adding, setAdding] = useState(false)
+  const [summary, setSummary] = useState(false)
   const [meds, setMeds] = useState<MedsState>({ status: 'loading' })
   const [notice, setNotice] = useState<MessageKey | null>(null)
   const [error, setError] = useState<MessageKey | null>(null)
@@ -55,6 +58,7 @@ export default function App() {
       setAuthScreen('login')
       setTab('today')
       setAdding(false)
+      setSummary(false)
       setMeds({ status: 'loading' })
       setError(null)
     }
@@ -108,10 +112,13 @@ export default function App() {
       )
     }
     if (tab === 'progress') {
-      return meds.status === 'ready' ? <Progress meds={meds.meds} /> : null
+      return meds.status === 'ready' ? <Progress meds={meds.meds} onSummary={() => setSummary(true)} /> : null
     }
     if (tab === 'settings') {
-      return <Settings email={auth.user.email ?? ''} onTriggerNext={doses.triggerNext} onReset={handleReset} />
+      return <Settings
+          email={auth.user.email ?? ''}
+          profile={profileOf(auth.user)}
+          onTriggerNext={doses.triggerNext} onReset={handleReset} />
     }
     return (
       <Medicines
@@ -143,6 +150,9 @@ export default function App() {
           }}
         />
       )
+    }
+    if (summary && meds.status === 'ready') {
+      return <Summary user={auth.user} meds={meds.meds} onBack={() => setSummary(false)} />
     }
     if (adding) {
       return (

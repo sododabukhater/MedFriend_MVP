@@ -1,20 +1,23 @@
 import { useState } from 'react'
+import ProfileForm from '../../components/ProfileForm'
 import ScreenHeader from '../../components/ScreenHeader'
 import { useI18n, type MessageKey } from '../../i18n'
 import { DEMO_ACCOUNT, logOut } from '../../lib/auth'
+import type { Profile } from '../../lib/profile'
 import { setDemoSpeed, useDemoSpeed } from '../../lib/settings'
 
-// Settings: language, demo tools for the professor, account (Log out, Reset all data), disclaimer.
+// Settings: my details (F9), language, demo tools for the professor, account (Log out, Reset all data), disclaimer.
 // Specs: docs/specs/F1.md, docs/specs/DESIGN.md
 
 type Props = {
   email: string
+  profile: Profile
   onTriggerNext: () => boolean
   /** Deletes all medicines and dose logs of this account. */
   onReset: () => Promise<void>
 }
 
-export default function Settings({ email, onTriggerNext, onReset }: Props) {
+export default function Settings({ email, profile, onTriggerNext, onReset }: Props) {
   const { t, lang, setLang } = useI18n()
   const demo = useDemoSpeed()
   const [message, setMessage] = useState<MessageKey | null>(null)
@@ -39,6 +42,13 @@ export default function Settings({ email, onTriggerNext, onReset }: Props) {
   return (
     <main className="screen">
       <ScreenHeader title={t('settings.title')} lang={false} />
+
+      <section className="group" aria-labelledby="profile-title">
+        <h2 id="profile-title" className="group-title">
+          {t('profile.title')}
+        </h2>
+        <ProfileForm profile={profile} thisYear={new Date().getFullYear()} />
+      </section>
 
       <section className="group" aria-labelledby="lang-title">
         <h2 id="lang-title" className="group-title">

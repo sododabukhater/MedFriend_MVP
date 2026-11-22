@@ -1,49 +1,22 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useState } from 'react'
 import ScreenHeader from '../../components/ScreenHeader'
 import { useI18n } from '../../i18n'
-import {
-  countedDoses,
-  HISTORY_DAYS,
-  lastDays,
-  SHORT_DAYS,
-  stats,
-  type LoggedDose,
-  type Stats,
-} from '../../lib/adherence'
+import { HISTORY_DAYS, lastDays, SHORT_DAYS, stats, type LoggedDose, type Stats } from '../../lib/adherence'
 import { strengthText } from '../../lib/format'
-import { minuteMs, useDemoSpeed } from '../../lib/settings'
-import { addDays, ammanDate, ammanInstant, ammanTime, longDateOf, nextDate } from '../../lib/time'
-import { listDoseLogs, type DoseLog } from '../../storage/doseLogs'
+import { addDays, ammanDate, ammanTime, longDateOf } from '../../lib/time'
+import { useHistory } from '../../lib/useHistory'
 import type { Medication } from '../../storage/medications'
 
 // F8: adherence % (7 or 30 days, one switch) and the dose log. Specs: docs/specs/F8.md, docs/specs/DESIGN.md
 
 type Period = 7 | 30
 
-export default function Progress({ meds }: { meds: Medication[] }) {
+export default function Progress({ meds, onSummary }: { meds: Medication[]; onSummary: () => void }) {
   const { t, lang } = useI18n()
-  const minute = minuteMs(useDemoSpeed())
-  const [now] = useState(() => new Date())
-  const [logs, setLogs] = useState<DoseLog[] | null>(null)
-  const [loadError, setLoadError] = useState(false)
+  const { now, ready, loadError, reload, all } = useHistory(meds)
   const [period, setPeriod] = useState<Period>(SHORT_DAYS)
   const [showLog, setShowLog] = useState(false)
 
-  function load() {
-    setLoadError(false)
-    const today = ammanDate(now)
-    listDoseLogs(ammanInstant(addDays(today, -(HISTORY_DAYS - 1)), '00:00'), ammanInstant(nextDate(today), '00:00')).then(
-      setLogs,
-      (err: unknown) => {
-        console.error('Loading history failed', err)
-        setLoadError(true)
-      },
-    )
-  }
-  // Loaded each time the tab opens, so a dose just taken on Today shows here.
-  useEffect(() => load(), [])
-
-  const all = useMemo(() => (logs ? countedDoses(meds, logs, now, minute) : []), [meds, logs, now, minute])
   const shown = period === HISTORY_DAYS ? all : lastDays(all, now, period)
   const overall = stats(shown)
 
@@ -69,13 +42,13 @@ export default function Progress({ meds }: { meds: Medication[] }) {
       {loadError && (
         <div className="alert" role="alert">
           <p>{t('db.loadFailed')}</p>
-          <button type="button" className="btn-secondary" onClick={load}>
+          <button type="button" className="btn-secondary" onClick={reload}>
             {t('db.retry')}
           </button>
         </div>
       )}
 
-      {logs && (
+      {ready && (
         <>
           <div className="segmented" role="group" aria-label={t('progress.period')}>
             {([SHORT_DAYS, HISTORY_DAYS] as Period[]).map((p) => (
@@ -126,6 +99,10 @@ export default function Progress({ meds }: { meds: Medication[] }) {
               })}
             </ul>
           )}
+
+          <button type="button" className="btn-primary" onClick={onSummary}>
+            {t('summary.open')}
+          </button>
 
           <button type="button" className="btn-secondary btn-wide" aria-expanded={showLog} onClick={() => setShowLog(!showLog)}>
             {t(showLog ? 'progress.hideAll' : 'progress.seeAll')}

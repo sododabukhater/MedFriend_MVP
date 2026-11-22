@@ -1,4 +1,4 @@
-// Resets the demo account: 6 sample medicines + 30 days of past dose history (F8).
+// Resets the demo account: 6 sample medicines + 30 days of past dose history (F8) + sample name (F9).
 // Run:  node scripts/seed-demo.mjs
 // Uses only the public .env values and logs in as the demo user (normal RLS path, no secret key).
 // Today's doses are left unanswered, so the demo can use Today and the reminders.
@@ -20,6 +20,7 @@ const { error } = await db.auth.signInWithPassword({ email: 'demo@medfriend.jo',
 if (error) throw error
 
 const HISTORY_DAYS = 30
+const DEMO_NAME = 'مريض تجريبي (Demo patient)'
 
 // ---- Amman dates (same rule as src/lib/time.ts) ----
 const fmt = new Intl.DateTimeFormat('en-CA', {
@@ -102,4 +103,8 @@ if (logIns.error) throw logIns.error
 
 console.log(`Demo medicines: ${ins.data.map((m) => m.name).join(', ')}`)
 console.log(`History: ${logs.length} answered doses over ${HISTORY_DAYS} days (from ${firstDay})`)
+// "My details" (F9): sample name and year of birth for the doctor summary.
+const profile = await db.auth.updateUser({ data: { full_name: DEMO_NAME, birth_year: 1968 } })
+if (profile.error) throw profile.error
+
 await db.auth.signOut()

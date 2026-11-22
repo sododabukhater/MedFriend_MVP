@@ -1393,3 +1393,184 @@ button:disabled {
   padding-block-start: 20px;
   border-block-start: 1px solid #d5ded9;
 }
+
+/* ---------- My details (F9) ---------- */
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 16px 16px;
+}
+
+.profile-form .field-label {
+  margin-block-start: 12px;
+}
+
+.profile-form .btn-wide {
+  margin-block-start: 14px;
+}
+
+.profile-form .notice,
+.profile-form .field-problem {
+  margin-block-start: 12px;
+}
+
+.year-input {
+  max-inline-size: 9rem;
+}
+
+[dir='rtl'] .year-input {
+  text-align: end; /* LTR digits inside an RTL form */
+}
+
+/* ---------- Summary for my doctor (F9) ---------- */
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px 18px;
+}
+
+.summary-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-block-end: 14px;
+  border-block-end: 2px solid var(--ink);
+}
+
+.summary-title {
+  font-size: 1.625rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.summary-patient {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.summary-date {
+  color: var(--muted);
+}
+
+.summary-h2 {
+  margin-block-end: 6px;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.summary-h3 {
+  margin-block: 10px 4px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.summary-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.summary-list li {
+  display: flex;
+  flex-direction: column;
+  padding-block: 8px;
+}
+
+.summary-list li + li {
+  border-block-start: 1px solid var(--line);
+}
+
+.summary-detail {
+  color: var(--muted);
+}
+
+.summary-pct li {
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.summary-footer {
+  padding-block-start: 12px;
+  border-block-start: 1px solid var(--line);
+  font-size: 1.125rem;
+  color: var(--muted);
+}
+
+.summary-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* A link that looks like a button (WhatsApp opens in a new tab or the app). */
+.btn-link-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.btn-link-button.is-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Printing: only the summary, black on white, no phone frame. */
+@media print {
+  @page {
+    size: A4;
+    margin: 16mm;
+  }
+  body {
+    display: block;
+    padding: 0;
+    background: #ffffff;
+    color: #000000;
+    font-size: 12pt;
+  }
+  .phone-frame {
+    display: block;
+    inline-size: auto;
+    max-inline-size: none;
+    block-size: auto;
+    border: none;
+    border-radius: 0;
+    overflow: visible;
+    background: #ffffff;
+  }
+  .screen {
+    display: block;
+    padding: 0;
+    overflow: visible;
+  }
+  .no-print,
+  .tab-bar,
+  .sheet-backdrop {
+    display: none !important;
+  }
+  .summary {
+    border: none;
+    padding: 0;
+    gap: 12pt;
+  }
+  .summary-title {
+    font-size: 20pt;
+  }
+  .summary-patient,
+  .summary-h2 {
+    font-size: 14pt;
+  }
+  .summary-date,
+  .summary-detail,
+  .summary-h3,
+  .summary-footer {
+    color: #333333;
+  }
+  .summary-list li {
+    padding-block: 4pt;
+    break-inside: avoid;
+  }
+}
