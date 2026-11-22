@@ -1,8 +1,10 @@
 import { useSyncExternalStore } from 'react'
 import type { MessageKey } from '../i18n'
 import { anchorLabel } from './anchors'
+import type { StrengthUnit } from '../storage/medications'
 import type { Dose } from './doses'
-import { amountText, strengthText } from './format'
+import { amountText } from './format'
+import { sayAmountAr, sayStrengthAr } from './spokenArabic'
 
 // F5: the dose read aloud with the browser's own voice (speechSynthesis). Spec: docs/specs/F5.md
 // No recording, no online service. Browsers allow automatic speech only after the first tap on the page.
@@ -43,15 +45,36 @@ export function stopSpeaking(): void {
 }
 
 /** What is read for a dose: name and strength, amount, and the moment of the day for anchored doses. */
-export function doseSpeech(t: T, dose: Dose, followUp = false): string {
+export function doseSpeech(t: T, lang: string, dose: Dose, followUp = false): string {
   const { med } = dose
-  const strength = strengthText(t, med.strengthValue, med.strengthUnit)
+  const ar = lang === 'ar'
+  // Arabic: said the way people say it ("حبة واحدة", "5 milligram"), not as printed ("1 حبة", "5 ملغ").
+  const strength =
+    med.strengthValue === null || med.strengthUnit === null
+      ? ''
+      : ar
+        ? sayStrengthAr(med.strengthValue, med.strengthUnit)
+        : sayStrengthEn(med.strengthValue, med.strengthUnit)
   const text = t('speak.dose', {
     name: strength ? `${med.name} ${strength}` : med.name,
-    amount: amountText(t, med.form, med.amount),
+    amount: ar ? sayAmountAr(med.form, med.amount) : amountText(t, med.form, med.amount),
     moment: dose.anchor ? t('speak.moment', { moment: anchorLabel(t, dose.anchor) }) : '',
   })
   return followUp ? `${t('speak.followUp')} ${text}` : text
+}
+
+const UNITS_EN: Record<StrengthUnit, string> = {
+  mg: 'milligrams',
+  mcg: 'micrograms',
+  g: 'grams',
+  ml: 'millilitres',
+  unit: 'units',
+  percent: 'percent',
+}
+
+/** "5 milligrams" (English voices may read "mg" letter by letter). */
+function sayStrengthEn(value: number, unit: StrengthUnit): string {
+  return `${value} ${UNITS_EN[unit]}`
 }
 
 // "Read reminders aloud" (per device, on by default). Same pattern as Demo speed in settings.ts.

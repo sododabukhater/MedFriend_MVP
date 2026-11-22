@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
+import { sayAmountAr, sayStrengthAr } from '../src/lib/spokenArabic'
 import { goToSettings, loginWithMeds, type MedRow } from './helpers'
 
 // Acceptance criteria: docs/specs/F5.md (voice dose readout).
@@ -53,7 +54,7 @@ test('1. The reminder is read aloud by itself, once, in English with an English 
   await page.clock.fastForward('00:15')
   await expect(banner(page)).toBeVisible()
   await expect.poll(() => spoken(page)).toEqual([
-    { text: 'Time for your medicine: Aspocid 81 mg, 1 tablet.', lang: 'en-US', voice: 'en-US' },
+    { text: 'Time for your medicine: Aspocid 81 milligrams, 1 tablet.', lang: 'en-US', voice: 'en-US' },
   ])
   // Still only once a few seconds later.
   await page.clock.fastForward('00:05')
@@ -69,7 +70,7 @@ test('2. In Arabic the readout is Arabic, with an Arabic voice and the moment of
   await page.clock.fastForward('01:00:15')
   await expect(banner(page)).toBeVisible()
   await expect.poll(async () => (await spoken(page))[0]).toEqual({
-    text: 'حان وقت دوائك: كونكور 5 ملغ، 1 حبة، مع الغداء.',
+    text: 'حان وقت دوائك: كونكور 5 milligram، حبة واحدة، مع الغداء.',
     lang: 'ar-SA',
     voice: 'ar-SA',
   })
@@ -84,8 +85,8 @@ test('3. 🔊 in the reminder reads it again; 🔊 on the Today top card reads t
   await expect.poll(async () => (await spoken(page)).length).toBe(1)
   await banner(page).getByRole('button', { name: 'Read aloud: Aspocid' }).click()
   expect((await spoken(page)).map((s) => s.text)).toEqual([
-    'Time for your medicine: Aspocid 81 mg, 1 tablet.',
-    'Time for your medicine: Aspocid 81 mg, 1 tablet.',
+    'Time for your medicine: Aspocid 81 milligrams, 1 tablet.',
+    'Time for your medicine: Aspocid 81 milligrams, 1 tablet.',
   ])
 
   await banner(page).getByRole('button', { name: 'I took it' }).click()
@@ -103,7 +104,7 @@ test('4. The follow-up reminder is read with the follow-up words', async ({ page
   await expect(banner(page)).toHaveAttribute('data-stage', 'followUp')
   await expect
     .poll(async () => (await spoken(page)).at(-1)!.text)
-    .toBe('Reminder: this dose is not recorded yet. Time for your medicine: Aspocid 81 mg, 1 tablet.')
+    .toBe('Reminder: this dose is not recorded yet. Time for your medicine: Aspocid 81 milligrams, 1 tablet.')
 })
 
 test('5. "Read reminders aloud" off: no automatic voice, 🔊 still works, the choice stays after reload', async ({ page }) => {
@@ -145,4 +146,25 @@ test('7. Answering the reminder stops the voice', async ({ page }) => {
   const before = await cancels(page)
   await banner(page).getByRole('button', { name: 'Skip this dose' }).click()
   expect(await cancels(page)).toBeGreaterThan(before)
+})
+
+test('8. Arabic amounts and units are said the way people say them', () => {
+  const cases: [Parameters<typeof sayAmountAr>[0], number, string][] = [
+    ['tablet', 1, 'حبة واحدة'],
+    ['tablet', 2, 'حبتان'],
+    ['tablet', 0.5, 'نصف حبة'],
+    ['tablet', 1.5, 'حبة ونصف'],
+    ['tablet', 2.5, 'حبتان ونصف'],
+    ['tablet', 3, 'ثلاث حبات'],
+    ['capsule', 10, 'عشر كبسولات'],
+    ['drops', 4, 'أربع نقاط'],
+    ['syrup', 5, 'خمسة ملّيلترات'],
+    ['syrup', 1, 'ملّيلتر واحد'],
+    ['syrup', 12.5, '12.5 ملّيلتر'],
+    ['injection', 12, '12 وحدة'],
+  ]
+  for (const [form, amount, said] of cases) expect(sayAmountAr(form, amount), String(amount) + ' ' + form).toBe(said)
+  expect(sayStrengthAr(5, 'mg')).toBe('5 milligram')
+  expect(sayStrengthAr(100, 'mcg')).toBe('100 microgram')
+  expect(sayStrengthAr(2, 'percent')).toBe('2 بالمئة')
 })

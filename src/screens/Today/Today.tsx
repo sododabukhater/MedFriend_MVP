@@ -130,7 +130,7 @@ function Segments({ taken, total }: { taken: number; total: number }) {
 }
 
 function HeroCard({ dose, busy, onAnswer }: { dose: Dose; busy: boolean; onAnswer: (action: DoseAction) => void }) {
-  const { t } = useI18n()
+  const { t, lang } = useI18n()
   const { med } = dose
   const strength = strengthText(t, med.strengthValue, med.strengthUnit)
   const part = t(`partIn.${dose.part}` as MessageKey)
@@ -175,7 +175,7 @@ function HeroCard({ dose, busy, onAnswer }: { dose: Dose; busy: boolean; onAnswe
           {t('dose.skip')}
         </button>
       </div>
-      <ReadAloudButton text={doseSpeech(t, dose)} name={med.name} className="btn-link btn-read--link" />
+      <ReadAloudButton text={doseSpeech(t, lang, dose)} name={med.name} className="btn-link btn-read--link" />
     </section>
   )
 }
