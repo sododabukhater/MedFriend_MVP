@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>My medicines</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.med{display:flex;flex-direction:column;gap:8px;padding:14px 16px;border-bottom:1px solid #E1E8E4;min-height:56px}
+.med:last-child{border-bottom:0}
+.mn{margin:0;font-size:20px;font-weight:600;line-height:1.3}
+.mn span{font-weight:400;color:#4A5A53}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:16px;font-weight:500;padding:2px 10px;border-radius:999px;font-variant-numeric:tabular-nums}
+.dawn{background:#FCEFCF;color:#5C4108}.sky{background:#DCEEF8;color:#123F5C}.dusk{background:#F8DFD2;color:#6B2E14}.night{background:#E2E1F3;color:#2A2860}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:14px;color:#4A5A53;min-height:56px;justify-content:center;text-decoration:none}
+.tab.on{color:#0A6B52;font-weight:600}
+</style>
+</helmet>
+<div style="width:390px;height:844px;box-sizing:border-box;background:#EEF3F0;font-family:'Readex Pro',sans-serif;color:#10231D;display:flex;flex-direction:column;overflow:hidden">
+<div style="flex:1;overflow:hidden;padding:20px 16px 12px;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;align-items:flex-start;justify-content:space-between">
+<div>
+<h1 style="margin:0;font-size:32px;font-weight:700;line-height:1.2">My medicines</h1>
+<p style="margin:2px 0 0;font-size:18px;color:#4A5A53">5 medicines</p>
+</div>
+<button style="min-height:48px;padding:0 16px;border-radius:999px;border:2px solid #0A6B52;background:#fff;color:#0A6B52;font:600 17px 'Readex Pro',sans-serif">العربية</button>
+</div>
+
+<div style="background:#fff;border-radius:20px;border:1px solid #E1E8E4;overflow:hidden">
+<div class="med"><p class="mn">Glucophage <span>500 mg</span></p><p style="margin:0;font-size:17px;color:#4A5A53">1 tablet, twice a day</p><div class="chips"><span class="chip dawn">08:00</span><span class="chip dusk">20:00</span></div></div>
+<div class="med"><p class="mn">Concor <span>5 mg</span></p><p style="margin:0;font-size:17px;color:#4A5A53">1 tablet, once a day</p><div class="chips"><span class="chip dawn">08:00</span></div></div>
+<div class="med"><p class="mn">Nexium <span>40 mg</span></p><p style="margin:0;font-size:17px;color:#4A5A53">1 capsule, once a day</p><div class="chips"><span class="chip dawn">08:00</span></div></div>
+<div class="med"><p class="mn">Aspocid <span>81 mg</span></p><p style="margin:0;font-size:17px;color:#4A5A53">1 tablet, once a day</p><div class="chips"><span class="chip sky">13:00</span></div></div>
+<div class="med"><p class="mn">Singulair <span>10 mg</span></p><p style="margin:0;font-size:17px;color:#4A5A53">1 tablet, once a day</p><div class="chips"><span class="chip night">23:30</span></div></div>
+</div>
+</div>
+<div style="padding:8px 16px 12px;background:#EEF3F0">
+<button style="width:100%;min-height:60px;border-radius:18px;border:0;background:#0A6B52;color:#fff;font:600 21px 'Readex Pro',sans-serif;display:flex;align-items:center;justify-content:center;gap:10px">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+Add a medicine</button>
+</div>
+<nav aria-label="Main" style="display:flex;background:#fff;border-top:1px solid #D5DED9;padding:4px 4px 10px">
+<a class="tab" href="Main.dc.html"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>Today</a>
+<a class="tab on" href="Medicines.dc.html"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="2.5" y="8" width="19" height="8" rx="4" transform="rotate(-35 12 12)"/><path d="m9.4 8.3 5.2 7.4"/></svg>Medicines</a>
+<a class="tab" href="Progress.dc.html"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 20V12M12 20V5M19 20v-9"/></svg>Progress</a>
+<a class="tab" href="Settings.dc.html"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>Settings</a>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

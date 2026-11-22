@@ -1,19 +1,50 @@
 # Handoff — current status (read this first)
 
-Last updated: **Fri 20 Nov 2026, late evening** (end of the second VS Code session).
+Last updated: **Sun 22 Nov 2026** (end of the third VS Code session).
 `CLAUDE.md` is the rulebook. This file is the current state of the work. Deadline: live and tested by
 **Wed 25 Nov**; **code freeze Tue 24 Nov evening**.
 
 ## ▶ Start here (new chat)
 1. Everything is committed and pushed to `main`; the live link is up to date. Working tree is clean.
 2. **Tier A is done** (F6, F2, F1, F8 + login, Settings, Progress). 102 Playwright tests pass.
-3. **Next step: the design revamp** (see "Plan" below). Before coding it:
-   - The owner asked to use the **"frontend design" skill**. It was NOT installed in the last session.
-     On 20 Nov (third session) the owner chose to **install it first** (`/plugin` → frontend-design, new chat).
-     Check the skills list: if it is there, load it. If it is still missing, tell the owner and ask again.
-   - Show the owner a mock-up of the new look and get approval before changing code (CLAUDE.md: plan first).
+3. **Next step: the design revamp. The mock-up is done and WAITING FOR THE OWNER'S APPROVAL.**
+   - Load the skill `frontend-design:frontend-design` (it is now installed) before building.
+   - Mock-up (6 phone screens, a claude.ai design canvas, private to the owner):
+     https://claude.ai/artifact/XwDLEQAjvRqnRnXAg7pwcj. Source copy in `docs/design-mockup/*.dc.html`
+     (reference only; not part of the app build).
+   - Ask the owner: approve, or what to change. Only after approval change app code (see "Design revamp" below).
+   - **Behind schedule** (it is Sun 22 Nov; the revamp was planned for Sat). Keep the revamp to ~4 h; if needed,
+     propose cutting F7 and F10 early (CLAUDE.md cut line).
 4. Then continue the plan one feature at a time: plan → owner approval → build → tests → commit → push →
    tell the owner exactly what to click.
+
+## Design revamp (mock-up shown 20–22 Nov, not yet approved)
+Design idea: the day's four parts each get one soft colour; that colour is the only bold element (it also
+prepares F3 prayer/meal anchors). Everything else is quiet: white, dark text, one green for actions.
+- **Colours:** page `#EEF3F0`, cards `#FFFFFF`, text `#10231D`, muted text `#4A5A53`, action green `#0A6B52`
+  (white text on it), lines `#E1E8E4`, "Missed" text `#9B1C1C`, focus ring keep `#F2A900`.
+  Day parts (background / text): morning `#FCEFCF`/`#5C4108`, noon `#DCEEF8`/`#123F5C`,
+  evening `#F8DFD2`/`#6B2E14`, night `#E2E1F3`/`#2A2860`.
+- **Font:** Readex Pro (Google Fonts, Arabic + Latin, weights 400/500/600/700) replaces Noto Sans Arabic.
+  Big tabular numbers for dose times (56–64px).
+- **Today:** top card = the dose due now (or next), tinted with its day-part colour: big time, name + strength,
+  amount, one big "I took it" button, small "Remind me later" / "Skip" under it. Then "4 of 7 taken" with a
+  7-segment bar. Then one white box per day part (coloured header with icon) holding compact rows:
+  time | name + amount | status ("✓ 08:12" green, "Missed" red, "Later"). No repeated Taken/Skip on every row:
+  tapping a row opens Taken / Skip / Undo for that dose (tests must be updated for this).
+- **Reminder:** a bottom panel over a dimmed screen (replaces the top banner), tinted by day part:
+  big time, medicine, "I took it", "Remind me in 15 minutes", "Skip this dose" (text link).
+- **My medicines:** one white list; each medicine: name + strength, "1 tablet, twice a day", time chips in
+  day-part colours. One big "Add a medicine" button fixed above the tab bar.
+- **Progress:** switch "Last 7 days / Last 30 days"; sentence "You took 40 of 48 doses this week" + 7 day bars
+  (Sat…Today); per-medicine rows with % and a thin bar; dose log behind a "See every dose" button.
+- **Settings:** Language switch (العربية / English); "For the demo": Demo speed switch + "Show the next reminder
+  now"; Account: email, Log out, **Reset all data** (red outline, needs a confirm step; deletes the user's
+  medications and dose logs); disclaimer line at the bottom.
+- **Tab bar:** line icons (sun, pill, bars, gear) instead of emoji. Language pill stays in screen headers.
+- **Login:** not drawn; same font, colours and buttons.
+- Avoid: ALL-CAPS labels (today's "MORNING"), coloured side borders on cards, emoji icons, middle-dot strings.
+- Arabic copy used in the mock-up follows `ar.json` wording (أخذتها، تخطّي، فاتت، ذكّرني بعد 15 دقيقة).
 
 ## About the owner
 - Industrial engineer / innovation background, **no coding experience**. Explain in plain words, short.

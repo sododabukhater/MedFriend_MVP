@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Reminder</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width:390px;height:844px;box-sizing:border-box;position:relative;background:#EEF3F0;font-family:'Readex Pro',sans-serif;color:#10231D;overflow:hidden">
+<div style="padding:20px 16px;opacity:.5" aria-hidden="true">
+<p style="margin:0;font-size:32px;font-weight:700">Today</p>
+<p style="margin:2px 0 16px;font-size:18px;color:#4A5A53">Friday 20 November</p>
+<div style="height:120px;border-radius:20px;background:#fff;margin-bottom:12px"></div>
+<div style="height:120px;border-radius:20px;background:#fff"></div>
+</div>
+<div style="position:absolute;inset:0;background:#10231D8C"></div>
+<section role="alertdialog" aria-labelledby="rt" style="position:absolute;inset-inline:0;bottom:0;background:#E2E1F3;border-radius:32px 32px 0 0;padding:28px 20px 32px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:8px;font-size:18px;font-weight:600;color:#2A2860">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>
+<span id="rt">Time for your night medicine</span>
+</div>
+<span style="font-size:64px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums">23:30</span>
+<div>
+<p style="margin:0;font-size:26px;font-weight:600;line-height:1.3">Singulair 10 mg</p>
+<p style="margin:0;font-size:20px;color:#3B3A55">1 tablet</p>
+</div>
+<button style="margin-top:6px;min-height:68px;border-radius:20px;border:0;background:#0A6B52;color:#fff;font:600 23px 'Readex Pro',sans-serif;display:flex;align-items:center;justify-content:center;gap:10px">
+<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+I took it</button>
+<button style="min-height:56px;border-radius:16px;border:2px solid #2A286055;background:#fff;color:#10231D;font:500 19px 'Readex Pro',sans-serif">Remind me in 15 minutes</button>
+<button style="min-height:48px;border:0;background:transparent;color:#2A2860;font:500 18px 'Readex Pro',sans-serif;text-decoration:underline">Skip this dose</button>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
