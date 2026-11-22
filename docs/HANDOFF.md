@@ -18,8 +18,8 @@ This file is the current state of the work. Deadline: live and tested by **Wed 2
    doses; Low at 7 days or less → yellow card on Today, Low badge on the card, yellow line in the reminder panel;
    "I got a new box" / "Correct the count" (asks the total) on the card.
    **Change times** (`docs/specs/TIMES.md`): see point 2b.
-   **250 Playwright tests (247 incl. retries-passed + 3 skipped by design)**: last full run 22 Nov night = 244 passed,
-   3 flaky (F5 voice tests, passed on retry), 3 skipped (~5.5 min). `retries: 1` in
+   **250 Playwright tests**: last full run 22 Nov night = 244 passed + 3 flaky (F5 voice tests, passed on retry)
+   + 3 skipped by design (~5.5 min). `retries: 1` in
    `playwright.config.ts` (owner approved 22 Nov), so Supabase network timeouts show as "flaky", not failed.
 2b. **Code review 22 Nov (owner asked; owner had said 20 Nov to skip reviews, so only on request):** 10 findings.
    9 fixed in `7af52a3`: stock line hidden until earlier doses load (retry every 5 s); "Set the box size" keeps a
@@ -62,6 +62,7 @@ This file is the current state of the work. Deadline: live and tested by **Wed 2
 | 5 | F5 Arabic voice dose readout | ~2 h | ✅ Sun | Browser `speechSynthesis`; "Voice not available" if no Arabic voice |
 | 6 | F10 Document vault (lab results / prescriptions, tag by date and type) | 3–4 h | ✅ Sun | `docs/specs/F10.md`; table + private bucket `documents` |
 | 7 | F7 Stock count + low-stock refill alert | 2–3 h | ✅ Sun | `docs/specs/F7.md`; 3 columns on `medications` |
+| 8 | Code-review fixes + Change times (owner asked) | ~4 h | ✅ Sun night | `docs/specs/TIMES.md` |
 | — | Tuesday: Arabic default + review pass, demo reset, freeze | | Tue | |
 
 ## About the owner
@@ -186,6 +187,7 @@ This file is the current state of the work. Deadline: live and tested by **Wed 2
 ## Testing
 - `npm test` = Playwright, headless, phone (Pixel 7) + laptop. ~5–6 min, ~231 tests + 3 skipped (run-once checks).
   Full runs often show 1–2 login timeouts (test server under load); re-run that file: `npx playwright test tests/F5.spec.ts`.
+- Next-day checks: `await page.clock.fastForward('24:00:00')` (the app reloads the day by itself; `tests/TIMES.spec.ts`).
 - Each test creates its own `@mailinator.com` account. Time-based tests use a fake clock (Nov 2026);
   `loginWithMeds()` (supports `anchors`) and `installEarlyClock()` (03:00 Amman, so no reminder panel gets in the way)
   in `tests/helpers.ts`. Tests can import pure files from `src/lib` (e.g. `tests/F3.spec.ts` imports `prayer.ts`).
@@ -220,7 +222,7 @@ This file is the current state of the work. Deadline: live and tested by **Wed 2
 ## Key decisions and rules
 1. English default while building; Arabic written for every string. Before freeze: `DEFAULT_LANG = 'ar'` + review.
    JSON can't hold `// REVIEW-AR`, so uncertain Arabic is listed under "REVIEW-AR" in each spec
-   (`DESIGN.md`, `F9.md`, `F3.md`, `F4.md`, `F5.md`, `F6.md`, `F7.md`, `F10.md`) and `src/data/drugs.ts`.
+   (`DESIGN.md`, `TIMES.md`, `F9.md`, `F3.md`, `F4.md`, `F5.md`, `F6.md`, `F7.md`, `F10.md`) and `src/data/drugs.ts`.
 2. Font Readex Pro. Colours: page `#EEF3F0`, action green `#0A6B52`, brand teal `#1A6B5A` (logo), day-part tints.
    No ESLint, no router, no UI framework. Logical CSS properties only (the summary logo uses `order` to stay top right).
 3. Dependencies unchanged: react, react-dom, vite, @vitejs/plugin-react, typescript, @types/react(-dom),
@@ -241,7 +243,8 @@ node scripts/seed-demo.mjs   # reset the demo account (Tuesday evening / Wednesd
 ## Gotchas
 - **The Bash tool halves backslashes** in inline scripts / heredocs (`\d` → `d`, `\\s` → `s`). For code with regexes,
   use the Edit / Write tools (or `String.raw` in a script file written with Write).
-- Some files use CRLF line endings; script replacements must handle `\r\n` (or use the Edit tool).
+- Some files use CRLF line endings; script replacements must handle `\r\n` (or use the Edit tool). A Node script fed
+  by a quoted heredoc (`node - <<'EOF'`) that turns `\r\n` into `\n`, replaces, then turns it back works well.
 - No Python on this machine; for image work use Node + the project's Playwright (`require(path to node_modules/@playwright/test)`).
 - Browsers cache the old version: after a deploy, hard refresh (Ctrl+Shift+R).
 - A browser tab logged in before account details changed keeps an old copy until the app reloads (fixed at start-up).
