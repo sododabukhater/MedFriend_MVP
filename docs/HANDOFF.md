@@ -1,29 +1,37 @@
 # Handoff — current status (read this first)
 
-Last updated: **Sun 22 Nov 2026, late evening** (seventh session: F7 stock count built). All planned features are built. `CLAUDE.md` is the rulebook. This file is the current state of the work. Deadline: live and
-tested by **Wed 25 Nov**; **code freeze Tue 24 Nov evening**.
+Last updated: **Sun 22 Nov 2026, late evening** (seventh session: F7 stock count built, then 2 owner follow-ups:
+several boxes, refill line in the reminder panel). **All planned features are built.** `CLAUDE.md` is the rulebook.
+This file is the current state of the work. Deadline: live and tested by **Wed 25 Nov**; **code freeze Tue 24 Nov evening**.
 
 ## ▶ Start here (new chat)
-1. Everything is committed and pushed to `main` (last feature commit: F7 stock count); the live link is up to date;
-   working tree clean.
+1. Everything is committed and pushed to `main` (last commit `14fc90f` F7 refill line in the reminder panel);
+   the live link is up to date; working tree clean.
 2. **Done:** Tier A (F6, F2, F1, F8 + login, Settings, Progress), **design revamp** (+ Reset all data),
    **F9** doctor summary (+ "My details" profile, A4 print with logo), **F3** prayer and meal anchors
    (+ "Prayer and Ramadan times" switch, off by default), **F4** own-pill photo (My medicines + optional step 5,
    shown in the reminder, on Today and on the card), **F5** voice readout (automatic + 🔊 button, app language,
    Settings switch; Arabic readout tuned with owner listening, see "F5 voice" below), **F10** document vault
    (Medicines | Documents switch in My medicines; photo or PDF, type, date, optional name; `docs/specs/F10.md`),
-   **F7** stock count (box set in Add medication step 5, counted down from taken doses, Low at 7 days or less,
-   refill card on Today; `docs/specs/F7.md`). **225 Playwright tests + 3 skipped by design.** `retries: 1` in `playwright.config.ts` (owner approved 22 Nov),
-   so Supabase login timeouts show as "flaky", not failed.
+   **F7** stock count (`docs/specs/F7.md`): Add medication step 5 "The box" asks tablets in one box, how many more
+   full boxes (− / +) and how many are left in the box in use (max one box; total shown); counted down from taken
+   doses; Low at 7 days or less → yellow card on Today, Low badge on the card, yellow line in the reminder panel;
+   "I got a new box" / "Correct the count" (asks the total) on the card.
+   **~231 Playwright tests + 3 skipped by design** (~5–6 min). `retries: 1` in `playwright.config.ts` (owner approved
+   22 Nov), so Supabase network timeouts show as "flaky", not failed. Last full run had one real failure (F1 test 6,
+   a test timing issue, fixed and passed 3× in a row); the full suite was not re-run after that fix + one CSS line —
+   **run `npm test` once at the start of the next session.**
 3. **Open questions for the owner:**
    - **F5 Edge check** of the last two fixes (name in English, strength number in Arabic) — owner said "sounds great"
      after the first; the number fix (`c5d679b`) is not yet confirmed by ear.
    - **Demo reset** done 22 Nov evening with the owner's OK (sample documents + fresh history). Run it again
      Tuesday evening / Wednesday morning as planned.
    - F10 feedback after the owner clicks through it (walkthrough video already sent).
-   - F7 feedback. Demo reset run again 22 Nov late evening (owner OK): all six demo medicines have a box, Concor
-     is low (5 left).
-4. **Next step: Tuesday tasks below** (all features done). Before that: owner feedback / fixes only.
+   - F7 feedback (3 videos sent: walkthrough, several boxes, low-stock warning). Demo reset run again 22 Nov late
+     evening (owner OK): all six demo medicines have a box, Concor is low (5 left).
+   - Offered, not chosen: a dot on the "My medicines" tab for low stock; a cap on "Correct the count".
+4. **Next step: Tuesday tasks below** (all features done). Before that: owner feedback / fixes only, each with
+   headless tests, commit, push and "what to click".
 5. New tables need `grant select, insert, update, delete … to authenticated` (forgot it once for F10).
 6. **Tuesday:** `DEFAULT_LANG = 'ar'` in `src/i18n/index.tsx`, Arabic review pass (all REVIEW-AR lists in the specs
    and `src/lib/spokenArabic.ts`), run `node scripts/seed-demo.mjs` (Tuesday evening or Wednesday morning), freeze.
@@ -77,6 +85,8 @@ tested by **Wed 25 Nov**; **code freeze Tue 24 Nov evening**.
 | `c5d679b` | F5 only the name is English; the strength number is said by the Arabic voice | `docs/specs/F5.md` | `tests/F5.spec.ts` 2, 2b |
 | `f64177b` | F10 Document vault (Medicines | Documents switch, photo/PDF, type, date, name; open, delete) | `docs/specs/F10.md` | `tests/F10.spec.ts` |
 | `2dabdaf` | F7 Stock count: box step in Add medication, card stock line + Low / Out of stock, new box, correct the count, Today refill card | `docs/specs/F7.md` | `tests/F7.spec.ts` |
+| `d285a21` | F7 several boxes: box size + more full boxes (− / +) + left in the box in use; Correct the count asks the total | `docs/specs/F7.md` | `tests/F7.spec.ts` 2b, 10 |
+| `14fc90f` | F7 refill line in the reminder panel (low / out); F1 test 6 waits for doses after reload | `docs/specs/F7.md` | `tests/F7.spec.ts` 11, 12 |
 
 ## How the app works now
 - **Login first** (email + password, Supabase Auth; "Confirm email" OFF). No welcome screen (owner, 20 Nov);
@@ -157,7 +167,7 @@ tested by **Wed 25 Nov**; **code freeze Tue 24 Nov evening**.
   (`medfriend-test-…@mailinator.com`) exist; delete only when the owner asks.
 
 ## Testing
-- `npm test` = Playwright, headless, phone (Pixel 7) + laptop. ~3.5 min, 180 tests + 3 skipped (run-once checks).
+- `npm test` = Playwright, headless, phone (Pixel 7) + laptop. ~5–6 min, ~231 tests + 3 skipped (run-once checks).
   Full runs often show 1–2 login timeouts (test server under load); re-run that file: `npx playwright test tests/F5.spec.ts`.
 - Each test creates its own `@mailinator.com` account. Time-based tests use a fake clock (Nov 2026);
   `loginWithMeds()` (supports `anchors`) and `installEarlyClock()` (03:00 Amman, so no reminder panel gets in the way)
@@ -174,6 +184,9 @@ tested by **Wed 25 Nov**; **code freeze Tue 24 Nov evening**.
 - **Video:** write a temporary `tests/zz-video.spec.ts` (viewport 412×860, `video: { mode: 'on' }`, a caption overlay
   injected with `page.evaluate`, `page.video().saveAs(...)` into the scratchpad), run with `--project=laptop`, delete the
   spec, open the `.webm` with `cmd //c start "" <path>`. Use a throwaway account (`loginWithMeds`), never the demo.
+  **Never leave `zz-*.spec.ts` in `tests/` while `npm test` runs** (the suite picks it up). To show a reminder popping
+  up, start the fake clock ~20 s before the dose (e.g. 07:59:40). Caption box at the top (`insetBlockStart`) keeps the
+  bottom panel visible. A quick look at one screen: a temporary `zz-shot.spec.ts` with `page.screenshot` + Read tool.
   Write the video spec with the **Write tool** (a long bash heredoc failed to parse). Videos have no sound: for F5 a
   fake `speechSynthesis` showed the spoken words in a yellow 🔊 bubble. Choose times so no other dose becomes due
   mid-video (a new medicine gets the suggested 08:00 time, which once popped a reminder).
