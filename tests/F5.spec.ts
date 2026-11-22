@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test'
-import { sayAmountAr, sayStrengthAr } from '../src/lib/spokenArabic'
+import { sayAmountAr, sayStrengthAr, spokenName } from '../src/lib/spokenArabic'
 import { goToSettings, loginWithMeds, type MedRow } from './helpers'
 
 // Acceptance criteria: docs/specs/F5.md (voice dose readout).
@@ -70,7 +70,8 @@ test('2. In Arabic the readout is Arabic, with an Arabic voice and the moment of
   await page.clock.fastForward('01:00:15')
   await expect(banner(page)).toBeVisible()
   await expect.poll(async () => (await spoken(page))[0]).toEqual({
-    text: 'حان وقت دوائك: كونكور 5 milligram، حبة واحدة، مع الغداء.',
+    // A name from the list is said in English; the amount carries its case endings.
+    text: 'حان وقت دوائك: Concor 5 milligram، حبّةٌ واحدةٌ، مع الغداء.',
     lang: 'ar-SA',
     voice: 'ar-SA',
   })
@@ -150,21 +151,27 @@ test('7. Answering the reminder stops the voice', async ({ page }) => {
 
 test('8. Arabic amounts and units are said the way people say them', () => {
   const cases: [Parameters<typeof sayAmountAr>[0], number, string][] = [
-    ['tablet', 1, 'حبة واحدة'],
-    ['tablet', 2, 'حبتان'],
-    ['tablet', 0.5, 'نصف حبة'],
-    ['tablet', 1.5, 'حبة ونصف'],
-    ['tablet', 2.5, 'حبتان ونصف'],
-    ['tablet', 3, 'ثلاث حبات'],
-    ['capsule', 10, 'عشر كبسولات'],
-    ['drops', 4, 'أربع نقاط'],
-    ['syrup', 5, 'خمسة ملّيلترات'],
-    ['syrup', 1, 'ملّيلتر واحد'],
-    ['syrup', 12.5, '12.5 ملّيلتر'],
-    ['injection', 12, '12 وحدة'],
+    ['tablet', 1, 'حبّةٌ واحدةٌ'],
+    ['tablet', 2, 'حبّتانِ'],
+    ['tablet', 0.5, 'نصفُ حبّةٍ'],
+    ['tablet', 1.5, 'حبّةٌ ونصفٌ'],
+    ['tablet', 2.5, 'حبّتانِ ونصفٌ'],
+    ['tablet', 3, 'ثلاثُ حبّاتٍ'],
+    ['tablet', 3.5, 'ثلاثُ حبّاتٍ ونصفٌ'],
+    ['capsule', 10, 'عشرُ كبسولاتٍ'],
+    ['drops', 4, 'أربعُ نقاطٍ'],
+    ['syrup', 5, 'خمسةُ ملّيلتراتٍ'],
+    ['syrup', 1, 'ملّيلترٌ واحدٌ'],
+    ['syrup', 12.5, '12.5 ملّيلتراً'],
+    ['injection', 12, '12 وحدةً'],
   ]
   for (const [form, amount, said] of cases) expect(sayAmountAr(form, amount), String(amount) + ' ' + form).toBe(said)
   expect(sayStrengthAr(5, 'mg')).toBe('5 milligram')
   expect(sayStrengthAr(100, 'mcg')).toBe('100 microgram')
   expect(sayStrengthAr(2, 'percent')).toBe('2 بالمئة')
+  // Names: from the list said in English; typed names unchanged.
+  expect(spokenName('كونكور')).toBe('Concor')
+  expect(spokenName('جلوكوفاج إكس آر')).toBe('Glucophage XR')
+  expect(spokenName('Concor')).toBe('Concor')
+  expect(spokenName('دواء الضغط')).toBe('دواء الضغط')
 })

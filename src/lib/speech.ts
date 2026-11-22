@@ -4,7 +4,7 @@ import { anchorLabel } from './anchors'
 import type { StrengthUnit } from '../storage/medications'
 import type { Dose } from './doses'
 import { amountText } from './format'
-import { sayAmountAr, sayStrengthAr } from './spokenArabic'
+import { sayAmountAr, sayStrengthAr, spokenName } from './spokenArabic'
 
 // F5: the dose read aloud with the browser's own voice (speechSynthesis). Spec: docs/specs/F5.md
 // No recording, no online service. Browsers allow automatic speech only after the first tap on the page.
@@ -56,7 +56,8 @@ export function doseSpeech(t: T, lang: string, dose: Dose, followUp = false): st
         ? sayStrengthAr(med.strengthValue, med.strengthUnit)
         : sayStrengthEn(med.strengthValue, med.strengthUnit)
   const text = t('speak.dose', {
-    name: strength ? `${med.name} ${strength}` : med.name,
+    // Names from the suggestion list are said in English ("Concor"), even when saved in Arabic letters.
+    name: strength ? `${spokenName(med.name)} ${strength}` : spokenName(med.name),
     amount: ar ? sayAmountAr(med.form, med.amount) : amountText(t, med.form, med.amount),
     moment: dose.anchor ? t('speak.moment', { moment: anchorLabel(t, dose.anchor) }) : '',
   })
