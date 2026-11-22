@@ -18,9 +18,9 @@ tested by **Wed 25 Nov**; **code freeze Tue 24 Nov evening**.
 3. **Open questions for the owner:**
    - **F5 Edge check** of the last two fixes (name in English, strength number in Arabic) — owner said "sounds great"
      after the first; the number fix (`c5d679b`) is not yet confirmed by ear.
-   - **Demo reset now?** `seed-demo.mjs` now also adds 2 sample documents. Offered to run it now (also refreshes the
-     stale 30-day history); otherwise run Tuesday evening as planned.
-   - F10 feedback after the owner clicks through it; offer a walkthrough video.
+   - **Demo reset** done 22 Nov evening with the owner's OK (sample documents + fresh history). Run it again
+     Tuesday evening / Wednesday morning as planned.
+   - F10 feedback after the owner clicks through it (walkthrough video already sent).
 4. **Next step: F7 — stock count + low-stock refill alert.** Explain in plain words first, 2–3 multiple-choice
    decisions, write `docs/specs/F7.md`, approval, build. Probably needs columns on `medications`: **ask before
    applying**. New tables need `grant select, insert, update, delete … to authenticated` (forgot it once for F10).
