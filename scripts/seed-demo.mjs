@@ -64,13 +64,14 @@ const samples = [
   ['Concor', 5, 'tablet', 1, ['08:00']],
   ['Lipitor', 20, 'tablet', 1, ['20:00']],
   ['Aspocid', 81, 'tablet', 1, ['13:00']],
-  ['Nexium', 40, 'capsule', 1, ['08:00']],
+  // F3: "before breakfast" = 30 min before the default breakfast (08:00), the same time every day.
+  ['Nexium', 40, 'capsule', 1, ['07:30'], ['breakfast:before']],
   // Late dose so "Show the next reminder now" (Settings) has a dose to remind until 23:30.
   // Once answered, tap Undo on Today to use it again.
   ['Singulair', 10, 'tablet', 1, ['23:30']],
-].map(([name, strengthMg, form, amount, times]) => ({
+].map(([name, strengthMg, form, amount, times, anchors]) => ({
   name, from_list: true, strength_value: strengthMg, strength_unit: 'mg', form, amount,
-  times_per_day: times.length, times, created_at: createdAt,
+  times_per_day: times.length, times, anchors: anchors ?? times.map(() => ''), created_at: createdAt,
 }))
 
 const { data: { user } } = await db.auth.getUser()
@@ -104,7 +105,15 @@ if (logIns.error) throw logIns.error
 console.log(`Demo medicines: ${ins.data.map((m) => m.name).join(', ')}`)
 console.log(`History: ${logs.length} answered doses over ${HISTORY_DAYS} days (from ${firstDay})`)
 // "My details" (F9): sample name and year of birth for the doctor summary.
-const profile = await db.auth.updateUser({ data: { full_name: DEMO_NAME, birth_year: 1968 } })
+// F3: prayer and Ramadan times on for the demo (off by default for new accounts); default meal times.
+const profile = await db.auth.updateUser({
+  data: {
+    full_name: DEMO_NAME,
+    birth_year: 1968,
+    prayer_times: true,
+    meal_times: { breakfast: '08:00', lunch: '14:00', dinner: '20:00' },
+  },
+})
 if (profile.error) throw profile.error
 
 await db.auth.signOut()

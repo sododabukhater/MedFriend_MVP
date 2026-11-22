@@ -7,9 +7,9 @@ Last updated: **Sun 22 Nov 2026** (design revamp built).
 ## ▶ Start here (new chat)
 1. Everything is committed and pushed to `main`; the live link is up to date. Working tree is clean.
 2. **Tier A is done** (F6, F2, F1, F8 + login, Settings, Progress) **and the design revamp is done**
-   (approved and built 22 Nov, incl. "Reset all data") **and F9 is done** (doctor summary + "My details" profile).
-   134 Playwright tests pass (2 run-once DB checks skipped on laptop). Note: the Bash tool halves backslashes in inline scripts; edit regexes with the Edit tool.
-3. **Next step: F3** (prayer and meal anchors, Amman prayer times). Write a short plan, get the owner's approval, build.
+   (approved and built 22 Nov, incl. "Reset all data") **F9 is done** (doctor summary + "My details" profile) **and F3 is done** (prayer and meal anchors).
+   145 Playwright tests pass (2 run-once DB checks skipped on laptop). Note: the Bash tool halves backslashes in inline scripts; edit regexes with the Edit tool.
+3. **Next step: F4** (own-pill photo card). Explain it to the owner first, then plan, approval, build.
    - **Behind schedule** (revamp was planned for Sat, done Sun). If behind on Monday evening, cut F7 then F10.
 4. Then continue the plan one feature at a time: plan → owner approval → build → tests → commit → push →
    tell the owner exactly what to click.
@@ -41,7 +41,7 @@ Order (each one: short plan → approval → build). Cut from the bottom if behi
 |---|---|---|---|---|
 | 1 | ✅ **Design revamp** of all screens + "Reset all data" in Settings | 4–5 h | Sat | Simplest, most user-friendly UI for 35–65; keep F11 rules (≥18px text, ≥48px buttons, high contrast, one main action) and RTL |
 | 2 | ✅ **F9** Arabic summary for doctors: printable page + WhatsApp share | 2–3 h | Sat | |
-| 3 | **F3** Prayer and meal anchors ("after Fajr", "with Iftar"), Amman prayer times | ~4 h | Sun | Calculate in-app (no dependency) or ask to add a library |
+| 3 | ✅ **F3** Prayer and meal anchors ("after Fajr", "with Iftar"), Amman prayer times | ~4 h | Sun | Calculate in-app (no dependency) or ask to add a library |
 | 4 | **F4** Own-pill photo card (photo on the medicine and in the reminder) | ~3 h | Sun | Photos in a private Supabase Storage bucket (owner-only RLS) |
 | 5 | **F5** Arabic voice dose readout | ~2 h | Mon | Browser `speechSynthesis`; show "Voice not available" if no Arabic voice |
 | 6 | **F10** Document vault (lab results / prescriptions, tag by date and type) | 3–4 h | Mon | Supabase Storage |
@@ -67,7 +67,8 @@ Decided 20 Nov (owner): **drop the welcome screen** (Start empty / Try demo data
 | `622a0d2` | F8 Progress tab: adherence % 7/30 days, dose log; 30 days of demo history | `docs/specs/F8.md` | `tests/F8.spec.ts` |
 | `d982e7d` | Plan: build all features (F4, F5 added) + UI revamp first | | |
 | `569647d` | Design revamp of all screens + Reset all data | `docs/specs/DESIGN.md` | `tests/DESIGN.spec.ts` |
-| (this commit) | F9 Summary for my doctor (print / WhatsApp) + My details (name, year of birth) | `docs/specs/F9.md` | `tests/F9.spec.ts` |
+| `cc62452` | F9 Summary for my doctor (print / WhatsApp) + My details (name, year of birth) | `docs/specs/F9.md` | `tests/F9.spec.ts` |
+| (this commit) | F3 Prayer and meal anchors + "Prayer and Ramadan times" switch (off by default) + meal times | `docs/specs/F3.md` | `tests/F3.spec.ts` |
 
 ## How the app works now
 - **Login first.** Email + password (Supabase Auth). "Confirm email" is OFF (sign-up logs in at once).

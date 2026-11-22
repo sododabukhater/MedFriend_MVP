@@ -78,7 +78,14 @@ export async function newApiUser() {
   return { db, userId: data.user!.id, session: data.session! }
 }
 
-export type MedRow = { name: string; times: string[]; createdAt?: string; strength?: [number, string] }
+export type MedRow = {
+  name: string
+  times: string[]
+  createdAt?: string
+  strength?: [number, string]
+  /** F3: one per dose ('' = clock time). */
+  anchors?: string[]
+}
 
 /** A new account with medicines added "in the past", then logged in on the page with a fake clock. */
 export async function loginWithMeds(page: Page, meds: MedRow[], fakeNow: Date) {
@@ -92,6 +99,7 @@ export async function loginWithMeds(page: Page, meds: MedRow[], fakeNow: Date) {
     created_at: m.createdAt ?? '2026-11-01T06:00:00Z',
     strength_value: m.strength?.[0] ?? null,
     strength_unit: m.strength?.[1] ?? null,
+    anchors: m.anchors ?? null,
   }))
   const { error } = await user.db.from('medications').insert(rows)
   expect(error).toBeNull()

@@ -164,7 +164,7 @@ test('5. Send on WhatsApp opens a wa.me link with the summary as text', async ({
     '*Medication summary*',
     'Patient: Sami Haddad',
     'Born 1968 (58 years old)',
-    '- Concor 5 mg: 1 tablet, once a day, at 08:00',
+    '- Concor 5 mg: 1 tablet, once a day: 08:00',
     'Last 7 days: 5 of 7 doses (71%)',
     'Last 30 days: 5 of 17 doses (29%)',
     '- Concor 5 mg: 29%',

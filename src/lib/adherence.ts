@@ -1,6 +1,7 @@
 import type { DoseLog } from '../storage/doseLogs'
 import { doseKey } from '../storage/doseLogs'
 import type { Medication } from '../storage/medications'
+import { DEFAULT_PREFS, doseTimesOn, type Prefs } from './anchors'
 import { statusOf } from './doses'
 import { addDays, ammanDate, ammanInstant, MISSED_AFTER_MIN } from './time'
 
@@ -36,6 +37,7 @@ export function countedDoses(
   now: Date,
   minute: number,
   days = HISTORY_DAYS,
+  prefs: Prefs = DEFAULT_PREFS,
 ): LoggedDose[] {
   const byKey = new Map(logs.map((l) => [doseKey(l.medicationId, l.scheduledAt), l]))
   const today = ammanDate(now)
@@ -44,7 +46,7 @@ export function countedDoses(
     const date = addDays(today, -i)
     for (const med of meds) {
       const createdAt = new Date(med.createdAt)
-      for (const time of med.times) {
+      for (const { time } of doseTimesOn(med, date, prefs)) {
         const scheduledAt = ammanInstant(date, time)
         if (scheduledAt < createdAt) continue
         const log = byKey.get(doseKey(med.id, scheduledAt)) ?? null

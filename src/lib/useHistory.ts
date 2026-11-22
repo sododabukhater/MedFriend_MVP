@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { listDoseLogs, type DoseLog } from '../storage/doseLogs'
 import type { Medication } from '../storage/medications'
 import { countedDoses, HISTORY_DAYS, type LoggedDose } from './adherence'
+import { usePrefs } from './prefs'
 import { minuteMs, useDemoSpeed } from './settings'
 import { addDays, ammanDate, ammanInstant, nextDate } from './time'
 
@@ -11,6 +12,7 @@ import { addDays, ammanDate, ammanInstant, nextDate } from './time'
  */
 export function useHistory(meds: Medication[]) {
   const minute = minuteMs(useDemoSpeed())
+  const prefs = usePrefs()
   const [now] = useState(() => new Date())
   const [logs, setLogs] = useState<DoseLog[] | null>(null)
   const [loadError, setLoadError] = useState(false)
@@ -29,6 +31,9 @@ export function useHistory(meds: Medication[]) {
 
   useEffect(load, [load])
 
-  const all: LoggedDose[] = useMemo(() => (logs ? countedDoses(meds, logs, now, minute) : []), [meds, logs, now, minute])
+  const all: LoggedDose[] = useMemo(
+    () => (logs ? countedDoses(meds, logs, now, minute, HISTORY_DAYS, prefs) : []),
+    [meds, logs, now, minute, prefs],
+  )
   return { now, ready: logs !== null, loadError, reload: load, all }
 }

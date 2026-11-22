@@ -1,6 +1,7 @@
 import type { Lang, MessageKey } from '../i18n'
 import type { Medication } from '../storage/medications'
 import { lastDays, SHORT_DAYS, stats, type LoggedDose, type Stats } from './adherence'
+import { anchorLabel } from './anchors'
 import { amountText, strengthText } from './format'
 import type { Profile } from './profile'
 import { ammanDate, longDate } from './time'
@@ -52,7 +53,8 @@ export function buildSummary(
       name: fullName(med),
       amount: amountText(t, med.form, med.amount),
       often: t(`often.${med.timesPerDay}` as MessageKey),
-      times: med.times.join(lang === 'ar' ? '، ' : ', '),
+      // F3: an anchored dose reads "After Fajr" instead of a clock time.
+      times: med.times.map((time, i) => (med.anchors[i] ? anchorLabel(t, med.anchors[i]) : time)).join(lang === 'ar' ? '، ' : ', '),
     })),
     periods: [
       { label: t('progress.last7'), stats: stats(lastDays(all, now, SHORT_DAYS)) },

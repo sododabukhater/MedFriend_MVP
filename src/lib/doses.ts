@@ -1,6 +1,7 @@
 import type { DoseLog } from '../storage/doseLogs'
 import { doseKey } from '../storage/doseLogs'
 import type { Medication } from '../storage/medications'
+import { DEFAULT_PREFS, doseTimesOn, type Anchor, type Prefs } from './anchors'
 import { ammanInstant, dayPart, MISSED_AFTER_MIN, type DayPart } from './time'
 
 // One scheduled dose and its status. Shared by F2 Today, F1 reminders (and later F8 adherence).
@@ -15,7 +16,9 @@ export type ShownStatus = 'upcoming' | 'due' | 'snoozed' | 'missed' | 'open' | '
 export type Dose = {
   key: string
   med: Medication
-  time: string // "08:00"
+  time: string // "08:00" (that day's time for an anchored dose)
+  /** F3: '' or e.g. "fajr", "breakfast:before". */
+  anchor: Anchor
   scheduledAt: Date
   /** When the reminder starts: the scheduled time, or "now" if triggered from Settings. */
   dueAt: Date
@@ -60,11 +63,12 @@ export function dosesForDate(
   now: Date,
   minute: number,
   triggered: Map<string, Date> = new Map(),
+  prefs: Prefs = DEFAULT_PREFS,
 ): Dose[] {
   const byKey = new Map(logs.map((l) => [doseKey(l.medicationId, l.scheduledAt), l]))
   const doses: Dose[] = []
   for (const med of meds) {
-    for (const time of med.times) {
+    for (const { time, anchor } of doseTimesOn(med, date, prefs)) {
       const scheduledAt = ammanInstant(date, time)
       const key = doseKey(med.id, scheduledAt)
       const log = byKey.get(key) ?? null
@@ -74,6 +78,7 @@ export function dosesForDate(
         key,
         med,
         time,
+        anchor,
         scheduledAt,
         dueAt,
         part: dayPart(time),

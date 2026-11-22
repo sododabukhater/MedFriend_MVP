@@ -2,7 +2,11 @@ import { useState } from 'react'
 import Autocomplete from '../../components/Autocomplete'
 import LanguageSwitch from '../../components/LanguageSwitch'
 import { useI18n, type MessageKey } from '../../i18n'
+import DoseTimeRow, { type TimeMode } from '../../components/DoseTimeRow'
+import { anchorLabel, anchorTime, type Anchor } from '../../lib/anchors'
 import { amountText, perDayText, strengthText } from '../../lib/format'
+import { usePrefs } from '../../lib/prefs'
+import { ammanDate } from '../../lib/time'
 import {
   addMedication,
   amountStep,
@@ -38,6 +42,14 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
   // Starts at 0 on purpose: the app never suggests a dose.
   const [amount, setAmount] = useState(0)
   const [times, setTimes] = useState<string[]>([])
+  // F3: each dose is a clock time or a moment in the day (anchor).
+  const [modes, setModes] = useState<TimeMode[]>([])
+  const [anchors, setAnchors] = useState<Anchor[]>([])
+  const prefs = usePrefs()
+  const today = ammanDate(new Date())
+  const isMoment = (i: number) => modes[i] === 'moment'
+  /** Today's time of each dose (anchored doses: worked out from the anchor). */
+  const doseTime = (i: number) => (isMoment(i) && anchors[i] ? anchorTime(anchors[i] as Exclude<Anchor, ''>, today, prefs) : times[i])
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(false)
 
@@ -55,7 +67,7 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
     1: name.trim().length > 0 && strengthProblem === null,
     2: form !== null,
     3: amount > 0,
-    4: times.length > 0 && times.every((time) => /^\d{2}:\d{2}$/.test(time)),
+    4: times.length > 0 && times.every((time, i) => (isMoment(i) ? anchors[i] !== '' : /^\d{2}:\d{2}$/.test(time))),
     5: true,
   }
 
@@ -78,7 +90,8 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
         form,
         amount,
         timesPerDay: times.length,
-        times,
+        times: times.map((_, i) => doseTime(i)),
+        anchors: times.map((_, i) => (isMoment(i) ? anchors[i] : '')),
       })
       onSaved(med)
     } catch (err) {
@@ -216,7 +229,11 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
                   type="button"
                   className="choice"
                   aria-pressed={times.length === n}
-                  onClick={() => setTimes(SUGGESTED_TIMES[n])}
+                  onClick={() => {
+                    setTimes(SUGGESTED_TIMES[n])
+                    setModes(Array<TimeMode>(n).fill('clock'))
+                    setAnchors(Array<Anchor>(n).fill(''))
+                  }}
                 >
                   {perDayText(t, n)}
                 </button>
@@ -227,18 +244,17 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
                 <p className="hint">{t('add.times.hint')}</p>
                 <div className="time-list">
                   {times.map((time, i) => (
-                    <label key={i} className="time-row">
-                      <span>{t('add.times.timeLabel', { n: i + 1 })}</span>
-                      <input
-                        className="time-input"
-                        type="time"
-                        required
-                        value={time}
-                        onChange={(e) =>
-                          setTimes((all) => all.map((old, j) => (j === i ? e.target.value : old)))
-                        }
-                      />
-                    </label>
+                    <DoseTimeRow
+                      key={i}
+                      n={i + 1}
+                      time={time}
+                      mode={modes[i] ?? 'clock'}
+                      anchor={anchors[i] ?? ''}
+                      todayTime={doseTime(i)}
+                      onTime={(v) => setTimes((all) => all.map((old, j) => (j === i ? v : old)))}
+                      onMode={(m) => setModes((all) => all.map((old, j) => (j === i ? m : old)))}
+                      onAnchor={(v) => setAnchors((all) => all.map((old, j) => (j === i ? v : old)))}
+                    />
                   ))}
                 </div>
               </>
@@ -264,7 +280,12 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
               <dd>{amountText(t, form, amount)}</dd>
               <dt>{t('add.review.times')}</dt>
               <dd>
-                {perDayText(t, times.length)}: <span dir="ltr">{[...times].sort().join(' · ')}</span>
+                {perDayText(t, times.length)}:{' '}
+                {times
+                  .map((_, i) => ({ i, at: doseTime(i) }))
+                  .sort((x, y) => x.at.localeCompare(y.at))
+                  .map(({ i, at }) => (isMoment(i) ? `${anchorLabel(t, anchors[i])} (${at})` : at))
+                  .join(', ')}
               </dd>
             </dl>
             {saveError && (

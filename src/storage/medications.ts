@@ -1,3 +1,4 @@
+import type { Anchor } from '../lib/anchors'
 import { supabase } from '../lib/supabase'
 
 // Supabase table `medications` (docs/specs/DB-supabase.md). RLS keeps each user's rows private.
@@ -21,6 +22,8 @@ export type Medication = {
   amount: number
   timesPerDay: number
   times: string[] // "08:00", sorted
+  /** F3: one per dose, same order as times; '' = clock time. Anchored doses get each day's own time. */
+  anchors: Anchor[]
   createdAt: string
 }
 
@@ -36,6 +39,7 @@ type Row = {
   amount: number | string
   times_per_day: number
   times: string[]
+  anchors: Anchor[] | null
   created_at: string
 }
 
@@ -50,6 +54,7 @@ function fromRow(r: Row): Medication {
     amount: Number(r.amount),
     timesPerDay: r.times_per_day,
     times: r.times,
+    anchors: r.anchors ?? r.times.map(() => ''),
     createdAt: r.created_at,
   }
 }
@@ -57,7 +62,7 @@ function fromRow(r: Row): Medication {
 export async function listMedications(): Promise<Medication[]> {
   const { data, error } = await supabase
     .from('medications')
-    .select('id, name, from_list, strength_value, strength_unit, form, amount, times_per_day, times, created_at')
+    .select('id, name, from_list, strength_value, strength_unit, form, amount, times_per_day, times, anchors, created_at')
     .order('created_at', { ascending: true })
   if (error) throw error
   return (data as Row[]).map(fromRow)
@@ -74,12 +79,18 @@ export async function addMedication(med: NewMedication): Promise<Medication> {
       form: med.form,
       amount: med.amount,
       times_per_day: med.timesPerDay,
-      times: [...med.times].sort(),
+      ...sortedDoses(med.times, med.anchors),
     })
-    .select('id, name, from_list, strength_value, strength_unit, form, amount, times_per_day, times, created_at')
+    .select('id, name, from_list, strength_value, strength_unit, form, amount, times_per_day, times, anchors, created_at')
     .single()
   if (error) throw error
   return fromRow(data as Row)
+}
+
+/** Times sorted, with each dose's anchor kept next to its time. */
+function sortedDoses(times: string[], anchors: Anchor[]) {
+  const pairs = times.map((time, i) => ({ time, anchor: anchors[i] ?? '' })).sort((a, b) => a.time.localeCompare(b.time))
+  return { times: pairs.map((p) => p.time), anchors: pairs.map((p) => p.anchor) }
 }
 
 export async function deleteMedication(id: string): Promise<void> {

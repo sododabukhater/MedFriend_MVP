@@ -1782,3 +1782,114 @@ button:disabled {
     break-inside: avoid;
   }
 }
+
+/* ---------- Prayer and meal anchors (F3) ---------- */
+.dose-time {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 12px 14px 14px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--card);
+  min-inline-size: 0;
+}
+
+.dose-time legend {
+  float: inline-start; /* keeps the legend inside the box */
+  inline-size: 100%;
+  margin: 0;
+}
+
+.anchor-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.anchor-group {
+  margin-block-start: 4px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.anchor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.anchor-grid--3,
+.segmented--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.anchor-grid .choice {
+  min-block-size: 52px;
+  font-size: 1.125rem;
+}
+
+.anchor-tag {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.dose-anchor {
+  display: block;
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: var(--green);
+}
+
+.prayer-today {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.prayer-list {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 4px;
+  margin: 0;
+  text-align: center;
+}
+
+.prayer-list dt {
+  font-size: 1.125rem;
+  color: var(--muted);
+}
+
+.prayer-list dd {
+  margin: 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.meal-form {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.meal-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.meal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 1.125rem;
+  color: var(--muted);
+}
+
+.meal-field .time-input {
+  padding-inline: 6px;
+  font-size: 1.125rem;
+}

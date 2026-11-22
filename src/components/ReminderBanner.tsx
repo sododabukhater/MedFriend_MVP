@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useI18n, type MessageKey } from '../i18n'
 import { alertPatient } from '../lib/alert'
+import { anchorLabel } from '../lib/anchors'
 import { SNOOZE_MIN, type Reminder } from '../lib/doses'
 import { amountText, strengthText } from '../lib/format'
 import { useDemoSpeed } from '../lib/settings'
@@ -75,6 +76,7 @@ export default function ReminderBanner({ reminders, busyKey, saveError, onAnswer
           <p className="big-time" dir="ltr">
             {dose.time}
           </p>
+          {dose.anchor && <p className="anchor-tag">{anchorLabel(t, dose.anchor)}</p>}
           <p className="sheet-name">
             {med.name}
             {strength && ` ${strength}`}

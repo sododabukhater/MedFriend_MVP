@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import ReminderBanner from './components/ReminderBanner'
 import TabBar, { type Tab } from './components/TabBar'
 import { useI18n, type MessageKey } from './i18n'
 import { useAuth } from './lib/useAuth'
+import { prefsOf } from './lib/anchors'
+import { PrefsProvider } from './lib/prefs'
 import { profileOf } from './lib/profile'
 import { useDoses } from './lib/useDoses'
 import AddMedication from './screens/AddMedication/AddMedication'
@@ -33,8 +35,12 @@ export default function App() {
   const [notice, setNotice] = useState<MessageKey | null>(null)
   const [error, setError] = useState<MessageKey | null>(null)
   const userId = auth.status === 'signedIn' ? auth.user.id : null
+  // F3: meal times and the prayer switch (saved with the account).
+  const user = auth.status === 'signedIn' ? auth.user : null
+  const prefsKey = JSON.stringify(prefsOf(user))
+  const prefs = useMemo(() => JSON.parse(prefsKey) as ReturnType<typeof prefsOf>, [prefsKey])
   // Today's doses and reminders (shared by the Today tab and the reminder banner).
-  const doses = useDoses(meds.status === 'ready' ? meds.meds : null, userId)
+  const doses = useDoses(meds.status === 'ready' ? meds.meds : null, userId, prefs)
 
   const load = useCallback(() => {
     setMeds({ status: 'loading' })
@@ -186,7 +192,7 @@ export default function App() {
   return (
     // data-auth lets tests wait until the login state is known.
     <div className="phone-frame" data-auth={auth.status}>
-      {content()}
+      <PrefsProvider prefs={prefs}>{content()}</PrefsProvider>
     </div>
   )
 }

@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { useI18n, type MessageKey } from '../i18n'
 import { amountText, strengthText } from '../lib/format'
-import { dayPart } from '../lib/time'
+import { anchorLabel, doseTimesOn } from '../lib/anchors'
+import { usePrefs } from '../lib/prefs'
+import { ammanDate, dayPart } from '../lib/time'
 import type { Medication } from '../storage/medications'
 
 type Props = {
@@ -12,6 +14,7 @@ type Props = {
 /** One medicine in "My medicines": name + strength, "1 tablet, twice a day", time chips. */
 export default function MedicationCard({ med, onDelete }: Props) {
   const { t } = useI18n()
+  const prefs = usePrefs()
   const [confirming, setConfirming] = useState(false)
   const [busy, setBusy] = useState(false)
 
@@ -51,11 +54,17 @@ export default function MedicationCard({ med, onDelete }: Props) {
         })}
       </p>
       <div className="chips">
-        {med.times.map((time, i) => (
-          <span key={i} className={`chip tint--${dayPart(time)}`} dir="ltr">
-            {time}
-          </span>
-        ))}
+        {doseTimesOn(med, ammanDate(new Date()), prefs).map(({ time, anchor }, i) =>
+          anchor ? (
+            <span key={i} className={`chip tint--${dayPart(time)}`}>
+              {anchorLabel(t, anchor)}
+            </span>
+          ) : (
+            <span key={i} className={`chip tint--${dayPart(time)}`} dir="ltr">
+              {time}
+            </span>
+          ),
+        )}
       </div>
 
       {confirming && (

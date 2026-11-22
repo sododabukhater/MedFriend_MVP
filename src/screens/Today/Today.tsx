@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { CheckIcon, PartIcon, PlusIcon } from '../../components/Icons'
+import { anchorLabel } from '../../lib/anchors'
 import ScreenHeader from '../../components/ScreenHeader'
 import { useI18n, type MessageKey } from '../../i18n'
 import type { Dose } from '../../lib/doses'
@@ -147,6 +148,7 @@ function HeroCard({ dose, busy, onAnswer }: { dose: Dose; busy: boolean; onAnswe
       <p className="big-time" dir="ltr">
         {dose.time}
       </p>
+      {dose.anchor && <p className="anchor-tag">{anchorLabel(t, dose.anchor)}</p>}
       <div>
         <p className="hero-name">
           {med.name}
@@ -197,6 +199,7 @@ function DoseRow({ dose, open, busy, onToggle, onAnswer }: RowProps) {
           {med.name}
           {strength && <span className="med-strength"> {strength}</span>}
           <span className="dose-amount">{amountText(t, med.form, med.amount)}</span>
+          {dose.anchor && <span className="dose-anchor">{anchorLabel(t, dose.anchor)}</span>}
         </span>
         <span className="dose-status">
           <StatusText dose={dose} />

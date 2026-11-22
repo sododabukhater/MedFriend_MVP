@@ -1,5 +1,7 @@
 import { useState } from 'react'
+import DaySettings from '../../components/DaySettings'
 import ProfileForm from '../../components/ProfileForm'
+import { usePrefs } from '../../lib/prefs'
 import ScreenHeader from '../../components/ScreenHeader'
 import { useI18n, type MessageKey } from '../../i18n'
 import { DEMO_ACCOUNT, logOut } from '../../lib/auth'
@@ -20,6 +22,7 @@ type Props = {
 export default function Settings({ email, profile, onTriggerNext, onReset }: Props) {
   const { t, lang, setLang } = useI18n()
   const demo = useDemoSpeed()
+  const prefs = usePrefs()
   const [message, setMessage] = useState<MessageKey | null>(null)
   const [confirming, setConfirming] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -48,6 +51,13 @@ export default function Settings({ email, profile, onTriggerNext, onReset }: Pro
           {t('profile.title')}
         </h2>
         <ProfileForm profile={profile} thisYear={new Date().getFullYear()} />
+      </section>
+
+      <section className="group" aria-labelledby="day-title">
+        <h2 id="day-title" className="group-title">
+          {t('settings.day.title')}
+        </h2>
+        <DaySettings prefs={prefs} />
       </section>
 
       <section className="group" aria-labelledby="lang-title">

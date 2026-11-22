@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { doseKey, listDoseLogs, markDose, undoDose, type DoseLog } from '../storage/doseLogs'
 import type { Medication } from '../storage/medications'
+import type { Prefs } from './anchors'
 import { activeReminders, dosesForDate, type Dose } from './doses'
 import { minuteMs, useDemoSpeed } from './settings'
 import { ammanDate, ammanInstant, nextDate } from './time'
@@ -18,7 +19,7 @@ function useNow() {
 }
 
 /** Today's doses, their answers and reminders. Used by Today (F2) and the reminder banner (F1). */
-export function useDoses(meds: Medication[] | null, userId: string | null) {
+export function useDoses(meds: Medication[] | null, userId: string | null, prefs: Prefs) {
   const demo = useDemoSpeed()
   const minute = minuteMs(demo)
   const now = useNow()
@@ -45,8 +46,8 @@ export function useDoses(meds: Medication[] | null, userId: string | null) {
   useEffect(load, [load])
 
   const doses: Dose[] = useMemo(
-    () => (meds && logs ? dosesForDate(meds, logs, date, now, minute, triggered) : []),
-    [meds, logs, date, now, minute, triggered],
+    () => (meds && logs ? dosesForDate(meds, logs, date, now, minute, triggered, prefs) : []),
+    [meds, logs, date, now, minute, triggered, prefs],
   )
   const reminders = useMemo(() => activeReminders(doses, now, minute), [doses, now, minute])
 

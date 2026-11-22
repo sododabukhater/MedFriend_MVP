@@ -129,7 +129,7 @@ test('6. Choosing 3 times shows 08:00, 14:00, 20:00, each editable', async ({ pa
 
   await next(page).click()
   await expect(page.getByRole('heading', { name: 'Check and save' })).toBeVisible()
-  await expect(page.locator('.review')).toContainText('08:00 · 13:30 · 20:00')
+  await expect(page.locator('.review')).toContainText('08:00, 13:30, 20:00')
   await page.getByRole('button', { name: 'Save medication' }).click()
   await expect(card(page, 'Glucophage').locator('.chip')).toHaveText(['08:00', '13:30', '20:00'])
 })
