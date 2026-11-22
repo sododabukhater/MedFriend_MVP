@@ -3,11 +3,13 @@ import { useI18n, type MessageKey } from '../i18n'
 import { amountText, strengthText } from '../lib/format'
 import { anchorLabel, doseTimesOn } from '../lib/anchors'
 import { usePrefs } from '../lib/prefs'
+import type { StockInfo } from '../lib/stock'
 import { ammanDate, dayPart } from '../lib/time'
 import type { Medication } from '../storage/medications'
 import { NotAnImageError } from '../storage/photos'
 import { CameraIcon } from './Icons'
 import PhotoPicker from './PhotoPicker'
+import StockArea from './StockArea'
 
 type Props = {
   med: Medication
@@ -15,10 +17,13 @@ type Props = {
   /** F4: save a new photo / remove the photo (they throw on failure). */
   onPhoto: (med: Medication, file: File) => Promise<void>
   onRemovePhoto: (med: Medication) => Promise<void>
+  /** F7: what is left (undefined = no box set), and saving a new box size / count (throws on failure). */
+  stock?: StockInfo
+  onStock: (med: Medication, packSize: number, count: number) => Promise<void>
 }
 
 /** One medicine in "My medicines": name + strength, "1 tablet, twice a day", time chips. */
-export default function MedicationCard({ med, onDelete, onPhoto, onRemovePhoto }: Props) {
+export default function MedicationCard({ med, onDelete, onPhoto, onRemovePhoto, stock, onStock }: Props) {
   const { t } = useI18n()
   const prefs = usePrefs()
   const [confirming, setConfirming] = useState(false)
@@ -90,6 +95,8 @@ export default function MedicationCard({ med, onDelete, onPhoto, onRemovePhoto }
           ),
         )}
       </div>
+
+      <StockArea med={med} info={stock} onStock={onStock} />
 
       <div className="med-photo-row">
         {med.photoUrl ? (

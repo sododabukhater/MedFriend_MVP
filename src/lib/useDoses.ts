@@ -84,7 +84,7 @@ export function useDoses(meds: Medication[] | null, userId: string | null, prefs
     return true
   }
 
-  return { now, date, doses, reminders, ready: logs !== null, loadError, saveError, busyKey, answer, reload: load, triggerNext }
+  return { now, date, logs, doses, reminders, ready: logs !== null, loadError, saveError, busyKey, answer, reload: load, triggerNext }
 }
 
 export type DosesApi = ReturnType<typeof useDoses>

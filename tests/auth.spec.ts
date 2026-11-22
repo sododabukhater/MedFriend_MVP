@@ -178,6 +178,7 @@ async function addOneMedicine(page: import('@playwright/test').Page, name: strin
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByRole('button', { name: 'Once a day' }).click()
   await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByRole('button', { name: 'Skip for now' }).click() // F7 box step
   await page.getByRole('button', { name: 'Skip for now' }).click() // F4 photo step
   await page.getByRole('button', { name: 'Save medication' }).click()
   await expect(page.getByRole('listitem', { name })).toBeVisible()

@@ -34,6 +34,18 @@ export async function listDoseLogs(from: Date, to: Date): Promise<DoseLog[]> {
   return (data as Row[]).map(fromRow)
 }
 
+/** F7: taken doses recorded since `since`, for doses scheduled before `before` (today's come live from useDoses). */
+export async function listTakenBefore(since: Date, before: Date): Promise<DoseLog[]> {
+  const { data, error } = await supabase
+    .from('dose_logs')
+    .select('medication_id, scheduled_at, status, recorded_at')
+    .eq('status', 'taken')
+    .gte('recorded_at', since.toISOString())
+    .lt('scheduled_at', before.toISOString())
+  if (error) throw error
+  return (data as Row[]).map(fromRow)
+}
+
 /** Records (or changes) the answer for one dose. */
 export async function markDose(medicationId: string, scheduledAt: Date, status: DoseStatus): Promise<DoseLog> {
   const { data, error } = await supabase

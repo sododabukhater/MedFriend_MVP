@@ -64,19 +64,22 @@ const firstDay = addDays(today, -HISTORY_DAYS)
 // Medicines "added" just before the history starts.
 const createdAt = ammanInstant(firstDay, '07:00').toISOString()
 
+// F7: [box size, left now]. Concor is low (5 days) so the refill warning shows straight away.
+const stockSetAt = new Date().toISOString()
 const samples = [
-  ['Glucophage', 500, 'tablet', 1, ['08:00', '20:00']],
-  ['Concor', 5, 'tablet', 1, ['08:00']],
-  ['Lipitor', 20, 'tablet', 1, ['20:00']],
-  ['Aspocid', 81, 'tablet', 1, ['13:00']],
+  ['Glucophage', 500, 'tablet', 1, ['08:00', '20:00'], null, [60, 40]],
+  ['Concor', 5, 'tablet', 1, ['08:00'], null, [28, 5]],
+  ['Lipitor', 20, 'tablet', 1, ['20:00'], null, [30, 22]],
+  ['Aspocid', 81, 'tablet', 1, ['13:00'], null, [30, 18]],
   // F3: "before breakfast" = 30 min before the default breakfast (08:00), the same time every day.
-  ['Nexium', 40, 'capsule', 1, ['07:30'], ['breakfast:before']],
+  ['Nexium', 40, 'capsule', 1, ['07:30'], ['breakfast:before'], [14, 9]],
   // Late dose so "Show the next reminder now" (Settings) has a dose to remind until 23:30.
   // Once answered, tap Undo on Today to use it again.
-  ['Singulair', 10, 'tablet', 1, ['23:30']],
-].map(([name, strengthMg, form, amount, times, anchors]) => ({
+  ['Singulair', 10, 'tablet', 1, ['23:30'], null, [28, 20]],
+].map(([name, strengthMg, form, amount, times, anchors, [pack, left]]) => ({
   name, from_list: true, strength_value: strengthMg, strength_unit: 'mg', form, amount,
   times_per_day: times.length, times, anchors: anchors ?? times.map(() => ''), created_at: createdAt,
+  pack_size: pack, stock_count: left, stock_set_at: stockSetAt,
 }))
 
 const { data: { user } } = await db.auth.getUser()

@@ -28,10 +28,17 @@ export type Medication = {
   /** F4: the patient's own photo (private Storage path) and a short-lived link to show it. */
   photoPath: string | null
   photoUrl: string | null
+  /** F7: units in one box and units left at stockSetAt (all three null = no stock count). */
+  packSize: number | null
+  stockCount: number | null
+  stockSetAt: Date | null
   createdAt: string
 }
 
-export type NewMedication = Omit<Medication, 'id' | 'createdAt' | 'photoPath' | 'photoUrl'>
+export type NewMedication = Omit<Medication, 'id' | 'createdAt' | 'photoPath' | 'photoUrl' | 'stockSetAt'>
+
+const COLUMNS =
+  'id, name, from_list, strength_value, strength_unit, form, amount, times_per_day, times, anchors, photo_path, pack_size, stock_count, stock_set_at, created_at'
 
 type Row = {
   id: string
@@ -45,6 +52,9 @@ type Row = {
   times: string[]
   anchors: Anchor[] | null
   photo_path: string | null
+  pack_size: number | string | null
+  stock_count: number | string | null
+  stock_set_at: string | null
   created_at: string
 }
 
@@ -62,6 +72,9 @@ function fromRow(r: Row, links = new Map<string, string>()): Medication {
     anchors: r.anchors ?? r.times.map(() => ''),
     photoPath: r.photo_path,
     photoUrl: r.photo_path ? (links.get(r.photo_path) ?? null) : null,
+    packSize: r.pack_size === null ? null : Number(r.pack_size),
+    stockCount: r.stock_count === null ? null : Number(r.stock_count),
+    stockSetAt: r.stock_set_at ? new Date(r.stock_set_at) : null,
     createdAt: r.created_at,
   }
 }
@@ -69,7 +82,7 @@ function fromRow(r: Row, links = new Map<string, string>()): Medication {
 export async function listMedications(): Promise<Medication[]> {
   const { data, error } = await supabase
     .from('medications')
-    .select('id, name, from_list, strength_value, strength_unit, form, amount, times_per_day, times, anchors, photo_path, created_at')
+    .select(COLUMNS)
     .order('created_at', { ascending: true })
   if (error) throw error
   const rows = data as Row[]
@@ -89,11 +102,32 @@ export async function addMedication(med: NewMedication): Promise<Medication> {
       amount: med.amount,
       times_per_day: med.timesPerDay,
       ...sortedDoses(med.times, med.anchors),
+      ...stockColumns(med.packSize, med.stockCount),
     })
-    .select('id, name, from_list, strength_value, strength_unit, form, amount, times_per_day, times, anchors, photo_path, created_at')
+    .select(COLUMNS)
     .single()
   if (error) throw error
   return fromRow(data as Row)
+}
+
+/** F7: the box and the count now; both or neither. The moment is the device clock (same clock as dose answers). */
+function stockColumns(packSize: number | null, count: number | null) {
+  if (packSize === null || count === null) return { pack_size: null, stock_count: null, stock_set_at: null }
+  return { pack_size: packSize, stock_count: count, stock_set_at: new Date().toISOString() }
+}
+
+/** F7: saves a new box size and count (Set the box size / I got a new box / Correct the count). */
+export async function setStock(id: string, packSize: number, count: number): Promise<Medication> {
+  const { data, error } = await supabase
+    .from('medications')
+    .update(stockColumns(packSize, count))
+    .eq('id', id)
+    .select(COLUMNS)
+    .single()
+  if (error) throw error
+  const row = data as Row
+  const links = await photoLinks(row.photo_path ? [row.photo_path] : [])
+  return fromRow(row, links)
 }
 
 /** Times sorted, with each dose's anchor kept next to its time. */

@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react'
 import Autocomplete from '../../components/Autocomplete'
 import { CameraIcon } from '../../components/Icons'
 import PhotoPicker from '../../components/PhotoPicker'
+import StockFields from '../../components/StockFields'
 import LanguageSwitch from '../../components/LanguageSwitch'
 import { useI18n, type MessageKey } from '../../i18n'
 import DoseTimeRow, { type TimeMode } from '../../components/DoseTimeRow'
 import { anchorLabel, anchorTime, type Anchor } from '../../lib/anchors'
 import { amountText, perDayText, strengthText } from '../../lib/format'
 import { usePrefs } from '../../lib/prefs'
+import { checkStock } from '../../lib/stock'
 import { ammanDate } from '../../lib/time'
 import {
   addMedication,
@@ -23,10 +25,10 @@ import {
 } from '../../storage/medications'
 import { NotAnImageError, savePhoto, shrinkPhoto } from '../../storage/photos'
 
-// F6-lite: 4 steps, one question per screen, an optional photo step (F4), then a review screen.
-// Specs: docs/specs/F6.md, docs/specs/F4.md
-type Step = 1 | 2 | 3 | 4 | 5 | 6 // 5 = photo (optional), 6 = review
-const STEPS = 5
+// F6-lite: 4 steps, one question per screen, an optional box step (F7), an optional photo step (F4), then a review.
+// Specs: docs/specs/F6.md, docs/specs/F7.md, docs/specs/F4.md
+type Step = 1 | 2 | 3 | 4 | 5 | 6 | 7 // 5 = box (F7, optional), 6 = photo (optional), 7 = review
+const STEPS = 6
 
 type Props = {
   /** photoFailed: the medicine was saved but its photo was not. */
@@ -76,6 +78,11 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
       setPhotoProblem(err instanceof NotAnImageError ? 'photo.notImage' : 'photo.failed')
     }
   }
+  // F7: the box. What is left starts equal to the box size (a new box) until the patient changes it.
+  const [packText, setPackText] = useState('')
+  const [leftText, setLeftText] = useState('')
+  const [leftTouched, setLeftTouched] = useState(false)
+  const stock = checkStock(packText, leftText, true)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(false)
 
@@ -94,13 +101,19 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
     2: form !== null,
     3: amount > 0,
     4: times.length > 0 && times.every((time, i) => (isMoment(i) ? anchors[i] !== '' : /^\d{2}:\d{2}$/.test(time))),
-    5: true,
+    5: stock.ok,
     6: true,
+    7: true,
   }
 
   function chooseForm(next: Form) {
-    // The unit changes with the form, so the amount is asked again.
-    if (next !== form) setAmount(0)
+    // The unit changes with the form, so the amount (and the box) is asked again.
+    if (next !== form) {
+      setAmount(0)
+      setPackText('')
+      setLeftText('')
+      setLeftTouched(false)
+    }
     setForm(next)
   }
 
@@ -119,6 +132,8 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
         timesPerDay: times.length,
         times: times.map((_, i) => doseTime(i)),
         anchors: times.map((_, i) => (isMoment(i) ? anchors[i] : '')),
+        packSize: stock.ok && !stock.empty ? stock.pack : null,
+        stockCount: stock.ok && !stock.empty ? stock.left : null,
       })
       if (!photo) return onSaved(med, false)
       try {
@@ -295,7 +310,28 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
           </>
         )}
 
-        {step === 5 && (
+        {step === 5 && form && (
+          <>
+            <h1 className="question">{t('stock.step.q')}</h1>
+            <p className="hint">{t('stock.step.hint')}</p>
+            <StockFields
+              form={form}
+              pack={packText}
+              left={leftText}
+              onPack={(v) => {
+                setPackText(v)
+                if (!leftTouched) setLeftText(v)
+              }}
+              onLeft={(v) => {
+                setLeftText(v)
+                setLeftTouched(true)
+              }}
+              problem={stock.ok ? null : stock.problem}
+            />
+          </>
+        )}
+
+        {step === 6 && (
           <>
             <h1 className="question">{t('photo.step.q')}</h1>
             <p className="hint">{t('photo.step.hint')}</p>
@@ -317,7 +353,7 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
           </>
         )}
 
-        {step === 6 && form && (
+        {step === 7 && form && (
           <>
             <h1 className="question">{t('add.review.title')}</h1>
             {preview && <img className="pill-photo pill-photo--card" src={preview} alt={t('photo.alt', { name: name.trim() })} />}
@@ -334,6 +370,12 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
               <dd>{t(`form.${form}` as MessageKey)}</dd>
               <dt>{t('add.review.amount')}</dt>
               <dd>{amountText(t, form, amount)}</dd>
+              {stock.ok && !stock.empty && (
+                <>
+                  <dt>{t('add.review.box')}</dt>
+                  <dd>{t('stock.review', { pack: amountText(t, form, stock.pack), left: stock.left })}</dd>
+                </>
+              )}
               <dt>{t('add.review.times')}</dt>
               <dd>
                 {perDayText(t, times.length)}:{' '}
@@ -371,7 +413,7 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
             disabled={!answered[step]}
             onClick={() => setStep((s) => (s + 1) as Step)}
           >
-            {step === 5 && !photo ? t('photo.skip') : t('add.next')}
+            {(step === 5 && stock.ok && stock.empty) || (step === 6 && !photo) ? t('photo.skip') : t('add.next')}
           </button>
         ) : (
           <button type="button" className="btn-primary" disabled={saving} onClick={save}>

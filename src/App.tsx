@@ -7,6 +7,7 @@ import { prefsOf } from './lib/anchors'
 import { PrefsProvider } from './lib/prefs'
 import { profileOf } from './lib/profile'
 import { useDoses } from './lib/useDoses'
+import { useStock } from './lib/useStock'
 import AddMedication from './screens/AddMedication/AddMedication'
 import {
   ForgotScreen,
@@ -20,7 +21,7 @@ import Progress from './screens/Progress/Progress'
 import Settings from './screens/Settings/Settings'
 import Summary from './screens/Summary/Summary'
 import Today from './screens/Today/Today'
-import { deleteAllMedications, deleteMedication, listMedications, type Medication } from './storage/medications'
+import { deleteAllMedications, deleteMedication, listMedications, setStock, type Medication } from './storage/medications'
 import { removePhoto, savePhoto } from './storage/photos'
 import { deleteAllDocuments } from './storage/documents'
 
@@ -44,6 +45,8 @@ export default function App() {
   const prefs = useMemo(() => JSON.parse(prefsKey) as ReturnType<typeof prefsOf>, [prefsKey])
   // Today's doses and reminders (shared by the Today tab and the reminder banner).
   const doses = useDoses(meds.status === 'ready' ? meds.meds : null, userId, prefs)
+  // F7: what is left of each medicine (counted from the taken doses).
+  const stock = useStock(meds.status === 'ready' ? meds.meds : null, doses.logs, doses.date)
 
   const load = useCallback(() => {
     setMeds({ status: 'loading' })
@@ -109,6 +112,11 @@ export default function App() {
     replaceMed({ ...med, photoPath: null, photoUrl: null })
   }
 
+  /** F7: Set the box size / I got a new box / Correct the count. */
+  async function handleStock(med: Medication, packSize: number, count: number) {
+    replaceMed(await setStock(med.id, packSize, count))
+  }
+
   function startAdding() {
     setNotice(null)
     setAdding(true)
@@ -134,7 +142,19 @@ export default function App() {
               </button>
             </div>
           )}
-          {meds.status === 'ready' && <Today api={doses} onAdd={startAdding} reminderOpen={doses.reminders.length > 0} />}
+          {meds.status === 'ready' && (
+            <Today
+              api={doses}
+              onAdd={startAdding}
+              reminderOpen={doses.reminders.length > 0}
+              meds={meds.meds}
+              stock={stock}
+              onOpenMeds={() => {
+                setMedsView('meds')
+                setTab('meds')
+              }}
+            />
+          )}
         </>
       )
     }
@@ -158,6 +178,8 @@ export default function App() {
         onDelete={handleDelete}
         onPhoto={handlePhoto}
         onRemovePhoto={handleRemovePhoto}
+        stock={stock}
+        onStock={handleStock}
         view={medsView}
         onView={setMedsView}
       />

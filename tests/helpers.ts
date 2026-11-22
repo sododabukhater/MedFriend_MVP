@@ -85,6 +85,10 @@ export type MedRow = {
   strength?: [number, string]
   /** F3: one per dose ('' = clock time). */
   anchors?: string[]
+  form?: string
+  amount?: number
+  /** F7: box size, count and when it was saved. */
+  stock?: { pack: number; count: number; setAt: string }
 }
 
 /** A new account with medicines added "in the past", then logged in on the page with a fake clock. */
@@ -92,8 +96,9 @@ export async function loginWithMeds(page: Page, meds: MedRow[], fakeNow: Date) {
   const user = await newApiUser()
   const rows = meds.map((m) => ({
     name: m.name,
-    form: 'tablet',
-    amount: 1,
+    form: m.form ?? 'tablet',
+    amount: m.amount ?? 1,
+    ...(m.stock ? { pack_size: m.stock.pack, stock_count: m.stock.count, stock_set_at: m.stock.setAt } : {}),
     times_per_day: m.times.length,
     times: m.times,
     created_at: m.createdAt ?? '2026-11-01T06:00:00Z',

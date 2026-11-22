@@ -9,6 +9,8 @@ import { amountText, strengthText } from '../../lib/format'
 import { ammanTime, DAY_PARTS, longDate } from '../../lib/time'
 import { doseSpeech } from '../../lib/speech'
 import type { DoseAction, DosesApi } from '../../lib/useDoses'
+import { daysText, type StockInfo } from '../../lib/stock'
+import type { Medication } from '../../storage/medications'
 
 // F2: today's doses. Top card = the dose due now (or next); then the count; then one box per part of the day.
 // Tapping a dose row opens Taken / Skip / Undo for that dose. Specs: docs/specs/F2.md, docs/specs/DESIGN.md
@@ -18,6 +20,10 @@ type Props = {
   onAdd: () => void
   /** The reminder panel is open and shows save errors itself. */
   reminderOpen: boolean
+  /** F7: low / out-of-stock medicines get a refill card; tapping it opens My medicines. */
+  meds: Medication[]
+  stock: Map<string, StockInfo>
+  onOpenMeds: () => void
 }
 
 /** The dose for the top card: due now, else snoozed, else the next upcoming one. */
@@ -29,7 +35,7 @@ function heroDose(doses: Dose[]): Dose | undefined {
   )
 }
 
-export default function Today({ api, onAdd, reminderOpen }: Props) {
+export default function Today({ api, onAdd, reminderOpen, meds, stock, onOpenMeds }: Props) {
   const { t, lang } = useI18n()
   const { now, doses, ready, loadError, saveError, busyKey, answer, reload } = api
   const [openKey, setOpenKey] = useState<string | null>(null)
@@ -71,6 +77,8 @@ export default function Today({ api, onAdd, reminderOpen }: Props) {
 
       {ready && hero && <HeroCard dose={hero} busy={busyKey === hero.key} onAnswer={(a) => act(hero, a)} />}
       {ready && doses.length > 0 && !hero && <p className="all-done">{t('hero.done')}</p>}
+
+      <RefillCards meds={meds} stock={stock} onOpen={onOpenMeds} />
 
       {doses.length > 0 && (
         <div className="today-count">
@@ -277,4 +285,30 @@ function StatusText({ dose }: { dose: Dose }) {
     default:
       return <>{t(`status.${dose.status}` as MessageKey)}</>
   }
+}
+
+/** F7: one yellow card per medicine that is low (7 days or less) or has run out. */
+function RefillCards({ meds, stock, onOpen }: { meds: Medication[]; stock: Map<string, StockInfo>; onOpen: () => void }) {
+  const { t } = useI18n()
+  const low = meds.flatMap((med) => {
+    const info = stock.get(med.id)
+    return info && info.level !== 'ok' ? [{ med, info }] : []
+  })
+  if (low.length === 0) return null
+  return (
+    <ul className="refill-list">
+      {low.map(({ med, info }) => (
+        <li key={med.id}>
+          <button type="button" className={`refill refill--${info.level}`} data-testid="refill" onClick={onOpen}>
+            <strong>
+              {info.level === 'out'
+                ? t('stock.today.out', { name: med.name })
+                : t('stock.today.low', { name: med.name, days: daysText(t, info.days) })}
+            </strong>
+            <span>{t('stock.today.action')}</span>
+          </button>
+        </li>
+      ))}
+    </ul>
+  )
 }

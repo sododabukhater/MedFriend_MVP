@@ -2,6 +2,7 @@ import { PlusIcon } from '../../components/Icons'
 import MedicationCard from '../../components/MedicationCard'
 import ScreenHeader from '../../components/ScreenHeader'
 import { useI18n, type MessageKey } from '../../i18n'
+import type { StockInfo } from '../../lib/stock'
 import type { Medication } from '../../storage/medications'
 import Documents from '../Documents/Documents'
 
@@ -20,11 +21,13 @@ type Props = {
   onDelete: (med: Medication) => Promise<void>
   onPhoto: (med: Medication, file: File) => Promise<void>
   onRemovePhoto: (med: Medication) => Promise<void>
+  stock: Map<string, StockInfo> // F7
+  onStock: (med: Medication, packSize: number, count: number) => Promise<void>
   view: MedsView
   onView: (view: MedsView) => void
 }
 
-export default function Medicines({ meds, loadError, error, notice, onRetry, onAdd, onDelete, onPhoto, onRemovePhoto, view, onView }: Props) {
+export default function Medicines({ meds, loadError, error, notice, onRetry, onAdd, onDelete, onPhoto, onRemovePhoto, stock, onStock, view, onView }: Props) {
   const { t } = useI18n()
   const switcher = (
     <div className="segmented" role="group" aria-label={t('meds.view.label')}>
@@ -64,7 +67,15 @@ export default function Medicines({ meds, loadError, error, notice, onRetry, onA
         {meds && meds.length > 0 && (
           <ul className="med-list box">
             {meds.map((med) => (
-              <MedicationCard key={med.id} med={med} onDelete={onDelete} onPhoto={onPhoto} onRemovePhoto={onRemovePhoto} />
+              <MedicationCard
+                key={med.id}
+                med={med}
+                onDelete={onDelete}
+                onPhoto={onPhoto}
+                onRemovePhoto={onRemovePhoto}
+                stock={stock.get(med.id)}
+                onStock={onStock}
+              />
             ))}
           </ul>
         )}

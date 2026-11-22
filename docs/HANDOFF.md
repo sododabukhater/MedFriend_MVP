@@ -1,19 +1,19 @@
 # Handoff — current status (read this first)
 
-Last updated: **Sun 22 Nov 2026, evening** (sixth session: F5 Edge voice fixed with the owner, F10 document vault
-built). `CLAUDE.md` is the rulebook. This file is the current state of the work. Deadline: live and
+Last updated: **Sun 22 Nov 2026, late evening** (seventh session: F7 stock count built). All planned features are built. `CLAUDE.md` is the rulebook. This file is the current state of the work. Deadline: live and
 tested by **Wed 25 Nov**; **code freeze Tue 24 Nov evening**.
 
 ## ▶ Start here (new chat)
-1. Everything is committed and pushed to `main` (last feature commit `f64177b` F10); the live link is up to date;
+1. Everything is committed and pushed to `main` (last feature commit: F7 stock count); the live link is up to date;
    working tree clean.
 2. **Done:** Tier A (F6, F2, F1, F8 + login, Settings, Progress), **design revamp** (+ Reset all data),
    **F9** doctor summary (+ "My details" profile, A4 print with logo), **F3** prayer and meal anchors
    (+ "Prayer and Ramadan times" switch, off by default), **F4** own-pill photo (My medicines + optional step 5,
    shown in the reminder, on Today and on the card), **F5** voice readout (automatic + 🔊 button, app language,
    Settings switch; Arabic readout tuned with owner listening, see "F5 voice" below), **F10** document vault
-   (Medicines | Documents switch in My medicines; photo or PDF, type, date, optional name; `docs/specs/F10.md`).
-   **202 Playwright tests + 3 skipped by design.** `retries: 1` in `playwright.config.ts` (owner approved 22 Nov),
+   (Medicines | Documents switch in My medicines; photo or PDF, type, date, optional name; `docs/specs/F10.md`),
+   **F7** stock count (box set in Add medication step 5, counted down from taken doses, Low at 7 days or less,
+   refill card on Today; `docs/specs/F7.md`). **225 Playwright tests + 3 skipped by design.** `retries: 1` in `playwright.config.ts` (owner approved 22 Nov),
    so Supabase login timeouts show as "flaky", not failed.
 3. **Open questions for the owner:**
    - **F5 Edge check** of the last two fixes (name in English, strength number in Arabic) — owner said "sounds great"
@@ -21,10 +21,10 @@ tested by **Wed 25 Nov**; **code freeze Tue 24 Nov evening**.
    - **Demo reset** done 22 Nov evening with the owner's OK (sample documents + fresh history). Run it again
      Tuesday evening / Wednesday morning as planned.
    - F10 feedback after the owner clicks through it (walkthrough video already sent).
-4. **Next step: F7 — stock count + low-stock refill alert.** Explain in plain words first, 2–3 multiple-choice
-   decisions, write `docs/specs/F7.md`, approval, build. Probably needs columns on `medications`: **ask before
-   applying**. New tables need `grant select, insert, update, delete … to authenticated` (forgot it once for F10).
-5. Cut line: if behind on **Monday evening**, drop F7.
+   - F7 feedback. **Demo account has no boxes yet**: `seed-demo.mjs` now adds them (Concor low, 5 left), but it was
+     not run after F7 (it resets the shared demo history; ask first). Until then demo cards show "Set the box size".
+4. **Next step: Tuesday tasks below** (all features done). Before that: owner feedback / fixes only.
+5. New tables need `grant select, insert, update, delete … to authenticated` (forgot it once for F10).
 6. **Tuesday:** `DEFAULT_LANG = 'ar'` in `src/i18n/index.tsx`, Arabic review pass (all REVIEW-AR lists in the specs
    and `src/lib/spokenArabic.ts`), run `node scripts/seed-demo.mjs` (Tuesday evening or Wednesday morning), freeze.
 
@@ -37,7 +37,7 @@ tested by **Wed 25 Nov**; **code freeze Tue 24 Nov evening**.
 | 4 | F4 Own-pill photo card (photo on the medicine and in the reminder) | ~3 h | ✅ Sun | `docs/specs/F4.md`; private bucket `pill-photos` |
 | 5 | F5 Arabic voice dose readout | ~2 h | ✅ Sun | Browser `speechSynthesis`; "Voice not available" if no Arabic voice |
 | 6 | F10 Document vault (lab results / prescriptions, tag by date and type) | 3–4 h | ✅ Sun | `docs/specs/F10.md`; table + private bucket `documents` |
-| 7 | **F7** Stock count + low-stock refill alert | 2–3 h | **next** (Mon) | First to cut |
+| 7 | F7 Stock count + low-stock refill alert | 2–3 h | ✅ Sun | `docs/specs/F7.md`; 3 columns on `medications` |
 | — | Tuesday: Arabic default + review pass, demo reset, freeze | | Tue | |
 
 ## About the owner
@@ -76,6 +76,7 @@ tested by **Wed 25 Nov**; **code freeze Tue 24 Nov evening**.
 | `5e3d09c` | F5 Edge: parts spoken one at a time; English voice of the same kind (online Natural) as the Arabic one | `docs/specs/F5.md` | `tests/F5.spec.ts` 2d, 2e |
 | `c5d679b` | F5 only the name is English; the strength number is said by the Arabic voice | `docs/specs/F5.md` | `tests/F5.spec.ts` 2, 2b |
 | `f64177b` | F10 Document vault (Medicines | Documents switch, photo/PDF, type, date, name; open, delete) | `docs/specs/F10.md` | `tests/F10.spec.ts` |
+| (F7 commit) | F7 Stock count: box step in Add medication, card stock line + Low / Out of stock, new box, correct the count, Today refill card | `docs/specs/F7.md` | `tests/F7.spec.ts` |
 
 ## How the app works now
 - **Login first** (email + password, Supabase Auth; "Confirm email" OFF). No welcome screen (owner, 20 Nov);
@@ -92,7 +93,8 @@ tested by **Wed 25 Nov**; **code freeze Tue 24 Nov evening**.
   - **Reminder:** bottom panel over a dimmed screen; blocks the app until answered (I took it / Remind me in 15 minutes /
     Skip this dose); names the moment for anchored doses.
   - **My medicines:** list with coloured time chips ("08:00" or "After Fajr"); photo area (Add a photo / Change /
-    Remove); fixed "Add a medicine". Add medication has 5 steps (step 5 = optional photo, "Skip for now").
+    Remove); stock line "40 tablets left · about 20 days" with I got a new box / Correct the count (F7); fixed
+    "Add a medicine". Add medication has 6 steps (5 = optional box, 6 = optional photo, both "Skip for now").
   - **Progress:** 7 / 30 days switch, sentence with %, day bars, per-medicine %, "Summary for my doctor", "See every dose".
   - **Summary for my doctor (F9):** document with logo top right; asks for the name on the page if none saved;
     "Print or save as PDF" (one A4 page, own margins, no browser header) and "Send on WhatsApp" (`wa.me` text).
@@ -125,6 +127,9 @@ tested by **Wed 25 Nov**; **code freeze Tue 24 Nov evening**.
   - Owner listens on the **laptop in Edge** (Edge has online natural Arabic voices). This Windows laptop has only
     English voices installed (David, Mark, Zira), so **Chrome** on it shows "Voice not available" in Arabic.
     Phones normally have an Arabic voice.
+- **F7 stock:** `medications.pack_size`, `stock_count`, `stock_set_at`. Left = stock_count − amount × taken doses
+  recorded after stock_set_at (nothing subtracted in the DB, so Undo just works). Low = 7 days or less; Today shows a
+  yellow refill card per low / out medicine (tap → My medicines).
 - **Account metadata** (Supabase Auth `user_metadata`, no tables): `full_name`, `birth_year`, `prayer_times`, `meal_times`.
 
 ## Code map
@@ -156,8 +161,9 @@ tested by **Wed 25 Nov**; **code freeze Tue 24 Nov evening**.
 - Each test creates its own `@mailinator.com` account. Time-based tests use a fake clock (Nov 2026);
   `loginWithMeds()` (supports `anchors`) and `installEarlyClock()` (03:00 Amman, so no reminder panel gets in the way)
   in `tests/helpers.ts`. Tests can import pure files from `src/lib` (e.g. `tests/F3.spec.ts` imports `prayer.ts`).
-- Spec files: `DESIGN`, `F1`, `F2`, `F3`, `F4`, `F5`, `F6`, `F8`, `F9`, `F10`, `auth`, `home`, `DB-supabase`.
-- Tests that walk through Add medication must tap "Skip for now" (step 5) before the review screen.
+- Spec files: `DESIGN`, `F1`, `F2`, `F3`, `F4`, `F5`, `F6`, `F7`, `F8`, `F9`, `F10`, `auth`, `home`, `DB-supabase`.
+- Tests that walk through Add medication must tap "Skip for now" twice (box step 5, photo step 6) before the review.
+  `loginWithMeds` takes `form`, `amount` and `stock: { pack, count, setAt }`.
 - Test images are drawn in the page (canvas) — no image files; no `@types/node`, so tests reach `Buffer` via `globalThis`.
 - F5 tests replace `window.speechSynthesis` with a recorder (`addInitScript` in `tests/F5.spec.ts`); each spoken part
   is recorded as `{ text, lang, voice }`. Pure helpers (`spokenArabic.ts`) are tested directly (test 8).
@@ -182,7 +188,7 @@ tested by **Wed 25 Nov**; **code freeze Tue 24 Nov evening**.
 ## Key decisions and rules
 1. English default while building; Arabic written for every string. Before freeze: `DEFAULT_LANG = 'ar'` + review.
    JSON can't hold `// REVIEW-AR`, so uncertain Arabic is listed under "REVIEW-AR" in each spec
-   (`DESIGN.md`, `F9.md`, `F3.md`, `F4.md`, `F5.md`, `F6.md`) and `src/data/drugs.ts`.
+   (`DESIGN.md`, `F9.md`, `F3.md`, `F4.md`, `F5.md`, `F6.md`, `F7.md`, `F10.md`) and `src/data/drugs.ts`.
 2. Font Readex Pro. Colours: page `#EEF3F0`, action green `#0A6B52`, brand teal `#1A6B5A` (logo), day-part tints.
    No ESLint, no router, no UI framework. Logical CSS properties only (the summary logo uses `order` to stay top right).
 3. Dependencies unchanged: react, react-dom, vite, @vitejs/plugin-react, typescript, @types/react(-dom),

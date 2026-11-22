@@ -111,7 +111,8 @@ test('3. Add medication: step 5 takes a photo; it shows on the review and on the
   await page.getByRole('button', { name: 'Once a day' }).click()
   await page.getByRole('button', { name: 'Next' }).click()
 
-  await expect(page.getByText('Step 5 of 5')).toBeVisible()
+  await page.getByRole('button', { name: 'Skip for now' }).click() // F7 box step
+  await expect(page.getByText('Step 6 of 6')).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Take a photo of your pill or box' })).toBeVisible()
   // Without a photo the main button skips; with one it says Next.
   await expect(page.getByRole('button', { name: 'Skip for now' })).toBeVisible()
@@ -143,6 +144,7 @@ test('3b. Add medication: a chosen photo can be removed again, then the medicine
   await page.getByRole('button', { name: 'Next' }).click()
   await page.getByRole('button', { name: 'Once a day' }).click()
   await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByRole('button', { name: 'Skip for now' }).click() // F7 box step
   const chooser = page.waitForEvent('filechooser')
   await page.getByRole('button', { name: 'Take or choose a photo' }).click()
   await (await chooser).setFiles(png(await makeImage(page, 200, 200)))

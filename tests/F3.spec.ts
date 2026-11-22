@@ -83,6 +83,7 @@ test('3. With the switch on: add "after Fajr" and "before breakfast"; Today, My 
   await doseBox(page, 2).getByRole('button', { name: 'Before', exact: true }).click()
   await expect(page.getByTestId('anchor-2')).toHaveText('Before breakfast: today at 07:30')
   await page.getByRole('button', { name: 'Next' }).click()
+  await page.getByRole('button', { name: 'Skip for now' }).click() // F7 box step
   await page.getByRole('button', { name: 'Skip for now' }).click() // F4 photo step
   await expect(page.locator('.review')).toContainText('After Fajr (05:58), Before breakfast (07:30)')
   await page.getByRole('button', { name: 'Save medication' }).click()
