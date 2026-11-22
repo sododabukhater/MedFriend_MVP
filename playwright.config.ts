@@ -9,6 +9,8 @@ Object.assign(process.env, loadEnv('development', process.cwd(), 'VITE_'))
 export default defineConfig({
   testDir: './tests',
   fullyParallel: true,
+  // One retry: the Supabase test server sometimes times out a login under load (owner approved, 22 Nov).
+  retries: 1,
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
     baseURL: 'http://localhost:5173',

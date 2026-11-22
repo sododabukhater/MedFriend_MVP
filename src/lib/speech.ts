@@ -17,11 +17,20 @@ const synth = (): SpeechSynthesis | null =>
 // Some browsers load their voice list a moment after the page; asking once starts the loading.
 synth()?.getVoices()
 
-/** The best voice for a language ('ar' / 'en'): a local one first. Undefined when the device lists voices but none fits. */
-function voiceFor(lang: string): SpeechSynthesisVoice | null | undefined {
+/**
+ * The best voice for a language ('ar' / 'en'): a local one first. Undefined when the device lists voices but none fits.
+ * `like` = the voice of the rest of the sentence: a second-language voice of the same kind (Edge's online "Natural"
+ * voices vs. the built-in ones) is chosen first, because Edge does not switch reliably between the two kinds.
+ */
+function voiceFor(lang: string, like?: SpeechSynthesisVoice | null): SpeechSynthesisVoice | null | undefined {
   const voices = synth()?.getVoices() ?? []
   if (voices.length === 0) return null // list not loaded yet: let the browser choose by language
   const fitting = voices.filter((v) => v.lang.toLowerCase().replace('_', '-').startsWith(lang))
+  if (like) {
+    const sameKind = fitting.filter((v) => v.localService === like.localService)
+    const natural = sameKind.find((v) => /natural/i.test(v.name))
+    if (natural || sameKind[0]) return natural ?? sameKind[0]
+  }
   return fitting.find((v) => v.localService) ?? fitting[0]
 }
 
@@ -40,20 +49,42 @@ export function speak(parts: SpeechPart[], appLang: string): boolean {
   const main = voiceFor(appLang)
   if (main === undefined) return false
   s.cancel() // a new readout replaces the previous one
-  for (const part of parts) {
-    const own = part.lang === appLang ? main : voiceFor(part.lang)
+  const run = ++readout
+  const utterances = parts.map((part) => {
+    const own = part.lang === appLang ? main : voiceFor(part.lang, main)
     // No voice for this part's language: the app-language voice says it as well as it can.
     const voice = own === undefined ? main : own
     const u = new SpeechSynthesisUtterance(part.text)
     u.lang = voice?.lang ?? (own === undefined ? DEFAULT_LANG_TAG[appLang as 'ar' | 'en'] : DEFAULT_LANG_TAG[part.lang])
     if (voice) u.voice = voice
     u.rate = 0.9 // a little slower than normal, easier to follow
+    return u
+  })
+  // One part at a time: the next starts when the previous has ended (Edge mixes up voices in a queue).
+  const next = (i: number) => {
+    if (run !== readout || i >= utterances.length) return
+    const u = utterances[i]
+    let done = false
+    const go = () => {
+      if (done) return
+      done = true
+      clearTimeout(guard)
+      next(i + 1)
+    }
+    // Safety net if the browser never reports the end of a part.
+    const guard = setTimeout(go, 4000 + u.text.length * 150)
+    u.onend = go
+    u.onerror = go
     s.speak(u)
   }
+  next(0)
   return true
 }
 
+let readout = 0 // a newer readout (or Stop) ends the chain of an older one
+
 export function stopSpeaking(): void {
+  readout++
   synth()?.cancel()
 }
 

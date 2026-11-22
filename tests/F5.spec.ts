@@ -7,18 +7,37 @@ import { goToSettings, loginWithMeds, type MedRow } from './helpers'
 const FAKE_NOW = new Date('2026-11-18T09:59:50Z')
 
 type Spoken = { text: string; lang: string; voice: string | null }
+/** A voice as the browser lists it; a plain language tag = one built-in voice "Voice <lang>". */
+type FakeVoice = string | { lang: string; name: string; localService: boolean }
 
-async function start(page: Page, meds: MedRow[], opts: { voices?: string[] } = {}) {
+async function start(page: Page, meds: MedRow[], opts: { voices?: FakeVoice[]; holdEnd?: boolean } = {}) {
   await page.addInitScript(
-    ({ voices }) => {
-      const w = window as unknown as { spoken: unknown[]; cancels: number }
+    ({ voices, holdEnd }) => {
+      const w = window as unknown as {
+        spoken: unknown[]
+        voiceNames: string[]
+        cancels: number
+        endPart: () => void
+      }
       w.spoken = []
+      w.voiceNames = []
       w.cancels = 0
-      const list = voices.map((l) => ({ lang: l, name: `Voice ${l}`, localService: true, default: false, voiceURI: l }))
+      const list = voices.map((v) => {
+        const voice = typeof v === 'string' ? { lang: v, name: `Voice ${v}`, localService: true } : v
+        return { ...voice, default: false, voiceURI: voice.name }
+      })
+      type U = { text: string; lang: string; voice: { lang: string; name: string } | null; onend?: () => void }
+      let current: U | null = null
+      // Like a real browser, each part reports its end; `holdEnd` waits for the test to call endPart().
+      w.endPart = () => current?.onend?.()
       const fake = {
         getVoices: () => list,
-        speak: (u: { text: string; lang: string; voice: { lang: string } | null }) =>
-          w.spoken.push({ text: u.text, lang: u.lang, voice: u.voice ? u.voice.lang : null }),
+        speak: (u: U) => {
+          w.spoken.push({ text: u.text, lang: u.lang, voice: u.voice ? u.voice.lang : null })
+          w.voiceNames.push(u.voice ? u.voice.name : '')
+          current = u
+          if (!holdEnd) Promise.resolve().then(() => u.onend?.())
+        },
         cancel: () => {
           w.cancels++
         },
@@ -39,7 +58,7 @@ async function start(page: Page, meds: MedRow[], opts: { voices?: string[] } = {
         }
       }
     },
-    { voices: opts.voices ?? ['en-US', 'ar-SA'] },
+    { voices: opts.voices ?? ['en-US', 'ar-SA'], holdEnd: opts.holdEnd ?? false },
   )
   await loginWithMeds(page, meds, FAKE_NOW)
 }
@@ -91,6 +110,40 @@ test('2b. Arabic, device without an English voice: the Arabic voice says the who
     { text: 'Glucophage 850 milligrams', lang: 'ar-SA', voice: 'ar-SA' },
     { text: 'حبّةٌ واحدةٌ.', lang: 'ar-SA', voice: 'ar-SA' },
   ])
+})
+
+test('2d. Edge: the English name is said by an online Natural English voice, like the online Arabic voice', async ({ page }) => {
+  // Edge on Windows: built-in English voices + online "Natural" voices; Arabic only online.
+  const voices: FakeVoice[] = [
+    { lang: 'en-US', name: 'Microsoft David - English (United States)', localService: true },
+    { lang: 'en-US', name: 'Microsoft Ava Online (Natural) - English (United States)', localService: false },
+    { lang: 'ar-SA', name: 'Microsoft Hamed Online (Natural) - Arabic (Saudi Arabia)', localService: false },
+  ]
+  await start(page, [{ name: 'جلوكوفاج', times: ['13:00'], strength: [850, 'mg'] }], { voices })
+  await page.getByRole('button', { name: 'تغيير اللغة إلى العربية' }).click()
+  await page.clock.fastForward('00:15')
+  await expect(banner(page)).toBeVisible()
+  await expect.poll(() => spoken(page)).toHaveLength(3)
+  expect((await spoken(page))[1].text).toBe('Glucophage 850 milligrams')
+  expect(await page.evaluate(() => (window as unknown as { voiceNames: string[] }).voiceNames)).toEqual([
+    'Microsoft Hamed Online (Natural) - Arabic (Saudi Arabia)',
+    'Microsoft Ava Online (Natural) - English (United States)',
+    'Microsoft Hamed Online (Natural) - Arabic (Saudi Arabia)',
+  ])
+})
+
+test('2e. The parts are spoken one after another: the next starts only when the previous has ended', async ({ page }) => {
+  await start(page, [{ name: 'Glucophage', times: ['13:00'], strength: [850, 'mg'] }], { holdEnd: true })
+  await page.getByRole('button', { name: 'تغيير اللغة إلى العربية' }).click()
+  await page.clock.fastForward('00:15')
+  await expect(banner(page)).toBeVisible()
+  await expect.poll(() => spoken(page)).toHaveLength(1)
+  const endPart = () => page.evaluate(() => (window as unknown as { endPart: () => void }).endPart())
+  await endPart()
+  await expect.poll(() => spoken(page)).toHaveLength(2)
+  expect((await spoken(page))[1]).toEqual({ text: 'Glucophage 850 milligrams', lang: 'en-US', voice: 'en-US' })
+  await endPart()
+  await expect.poll(() => spoken(page)).toHaveLength(3)
 })
 
 test('2c. Arabic, a name typed in Arabic stays in the Arabic sentence (one part)', async ({ page }) => {
