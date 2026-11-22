@@ -1,33 +1,30 @@
 # Handoff — current status (read this first)
 
-Last updated: **Sun 22 Nov 2026, ~15:00** (end of the fifth session: F4 and F5 built; F5 Arabic voice tuned with the
-owner by listening). `CLAUDE.md` is the rulebook. This file is the current state of the work. Deadline: live and
+Last updated: **Sun 22 Nov 2026, evening** (sixth session: F5 Edge voice fixed with the owner, F10 document vault
+built). `CLAUDE.md` is the rulebook. This file is the current state of the work. Deadline: live and
 tested by **Wed 25 Nov**; **code freeze Tue 24 Nov evening**.
 
 ## ▶ Start here (new chat)
-1. Everything is committed and pushed to `main` (last feature commit `9fb9bc2`); the live link is up to date;
+1. Everything is committed and pushed to `main` (last feature commit `f64177b` F10); the live link is up to date;
    working tree clean.
 2. **Done:** Tier A (F6, F2, F1, F8 + login, Settings, Progress), **design revamp** (+ Reset all data),
    **F9** doctor summary (+ "My details" profile, A4 print with logo), **F3** prayer and meal anchors
    (+ "Prayer and Ramadan times" switch, off by default), **F4** own-pill photo (My medicines + optional step 5,
    shown in the reminder, on Today and on the card), **F5** voice readout (automatic + 🔊 button, app language,
-   Settings switch; Arabic readout tuned in three rounds of owner listening, see "F5 voice" below).
-   **180 Playwright tests + 3 skipped by design.** All pass per file; a full `npm test` run usually shows 1–2 failures
-   that are **login timeouts at the Supabase test server** (stuck on the login screen, "heading Today not found"),
-   never app failures. Re-run the failing file to confirm.
-3. **Open questions for the owner (ask at the start of the new chat, multiple choice):**
-   - **F5 listening check:** after the last fix (English voice says the medicine name), did it sound right? Possible
-     follow-ups the owner may ask for: pause around the name too long; «حبتان» vs Jordanian «حبتين»; drop the
-     case endings and use the pause form («حبّة واحدة») if the voice still says them wrongly; mg as «ملّيغرام» instead
-     of the English word (only used now when the medicine name is typed in Arabic).
-   - **Test retries:** offered to set `retries: 1` in `playwright.config.ts` so the login timeouts stop showing as
-     failures. Owner has not answered yet. Recommended: yes.
-4. **Next step: F10 — document vault** (lab results / prescriptions, tag by date and type). Explain it to the owner
-   in plain words first (what the patient sees, what it does not do, time, then 2–3 multiple-choice decisions with a
-   recommended option), then write `docs/specs/F10.md`, get approval, build, test, commit, push, tell the owner what
-   to click, offer a walkthrough video. Needs a private Storage bucket like F4 (copy the `pill-photos` migration and
-   policies): **ask before applying**.
-5. Then F7 (stock). Cut line: if behind on **Monday evening**, drop F7 first, then F10.
+   Settings switch; Arabic readout tuned with owner listening, see "F5 voice" below), **F10** document vault
+   (Medicines | Documents switch in My medicines; photo or PDF, type, date, optional name; `docs/specs/F10.md`).
+   **202 Playwright tests + 3 skipped by design.** `retries: 1` in `playwright.config.ts` (owner approved 22 Nov),
+   so Supabase login timeouts show as "flaky", not failed.
+3. **Open questions for the owner:**
+   - **F5 Edge check** of the last two fixes (name in English, strength number in Arabic) — owner said "sounds great"
+     after the first; the number fix (`c5d679b`) is not yet confirmed by ear.
+   - **Demo reset now?** `seed-demo.mjs` now also adds 2 sample documents. Offered to run it now (also refreshes the
+     stale 30-day history); otherwise run Tuesday evening as planned.
+   - F10 feedback after the owner clicks through it; offer a walkthrough video.
+4. **Next step: F7 — stock count + low-stock refill alert.** Explain in plain words first, 2–3 multiple-choice
+   decisions, write `docs/specs/F7.md`, approval, build. Probably needs columns on `medications`: **ask before
+   applying**. New tables need `grant select, insert, update, delete … to authenticated` (forgot it once for F10).
+5. Cut line: if behind on **Monday evening**, drop F7.
 6. **Tuesday:** `DEFAULT_LANG = 'ar'` in `src/i18n/index.tsx`, Arabic review pass (all REVIEW-AR lists in the specs
    and `src/lib/spokenArabic.ts`), run `node scripts/seed-demo.mjs` (Tuesday evening or Wednesday morning), freeze.
 
@@ -39,8 +36,8 @@ tested by **Wed 25 Nov**; **code freeze Tue 24 Nov evening**.
 | 3 | F3 Prayer and meal anchors, Amman prayer times | ~5 h | ✅ Sun | `docs/specs/F3.md` |
 | 4 | F4 Own-pill photo card (photo on the medicine and in the reminder) | ~3 h | ✅ Sun | `docs/specs/F4.md`; private bucket `pill-photos` |
 | 5 | F5 Arabic voice dose readout | ~2 h | ✅ Sun | Browser `speechSynthesis`; "Voice not available" if no Arabic voice |
-| 6 | **F10** Document vault (lab results / prescriptions, tag by date and type) | 3–4 h | **next** (Sun/Mon) | Supabase Storage |
-| 7 | F7 Stock count + low-stock refill alert | 2–3 h | Mon/Tue | First to cut |
+| 6 | F10 Document vault (lab results / prescriptions, tag by date and type) | 3–4 h | ✅ Sun | `docs/specs/F10.md`; table + private bucket `documents` |
+| 7 | **F7** Stock count + low-stock refill alert | 2–3 h | **next** (Mon) | First to cut |
 | — | Tuesday: Arabic default + review pass, demo reset, freeze | | Tue | |
 
 ## About the owner
@@ -76,6 +73,9 @@ tested by **Wed 25 Nov**; **code freeze Tue 24 Nov evening**.
 | `df6685c` | F5 Arabic spoken amounts (حبة واحدة, not واحد حبة) + units as English words | `docs/specs/F5.md` | `tests/F5.spec.ts` 8 |
 | `007569d` | F5 names from the list said in English; full case endings (حبّةٌ واحدةٌ) | `docs/specs/F5.md` | `tests/F5.spec.ts` 2, 8 |
 | `9fb9bc2` | F5 English name said by the English voice inside the Arabic readout | `docs/specs/F5.md` | `tests/F5.spec.ts` 2, 2b, 2c |
+| `5e3d09c` | F5 Edge: parts spoken one at a time; English voice of the same kind (online Natural) as the Arabic one | `docs/specs/F5.md` | `tests/F5.spec.ts` 2d, 2e |
+| `c5d679b` | F5 only the name is English; the strength number is said by the Arabic voice | `docs/specs/F5.md` | `tests/F5.spec.ts` 2, 2b |
+| `f64177b` | F10 Document vault (Medicines | Documents switch, photo/PDF, type, date, name; open, delete) | `docs/specs/F10.md` | `tests/F10.spec.ts` |
 
 ## How the app works now
 - **Login first** (email + password, Supabase Auth; "Confirm email" OFF). No welcome screen (owner, 20 Nov);
@@ -113,7 +113,9 @@ tested by **Wed 25 Nov**; **code freeze Tue 24 Nov evening**.
   chime (only after the first tap: browser rule), and on 🔊 (reminder panel + Today top card). "Read reminders aloud"
   is per device (localStorage `medfriend.readAloud`, on by default). Rate 0.9.
   - **Arabic readout is spoken in parts** (`SpeechPart[]` from `doseSpeech` in `src/lib/speech.ts`):
-    Arabic voice «حان وقت دوائك:» → **English voice** "Glucophage 850 milligrams" → Arabic voice «حبّةٌ واحدةٌ، مع الغداء.»
+    Arabic voice «حان وقت دوائك:» → **English voice** "Glucophage" → Arabic voice «850 milligram، حبّةٌ واحدةٌ، مع الغداء.»
+    Parts are spoken one after another (next on `onend`, safety timer); in Edge the English voice is an online
+    "Natural" one like the Arabic voice (Edge mixed up local + online voices in one queue).
     Names from the suggestion list are said by their English box name even when saved in Arabic (`spokenName`).
     A name typed in Arabic stays in one Arabic sentence (strength then as "5 milligram"). No English voice on the
     device → the Arabic voice says every part.
@@ -133,8 +135,8 @@ tested by **Wed 25 Nov**; **code freeze Tue 24 Nov evening**.
   `summary.ts` (F9 data + WhatsApp text), `prayer.ts` (F3 prayer times), `anchors.ts` (F3 anchors, meal / prayer prefs),
   `prefs.tsx` (prefs context).
 - `src/storage/`: `medications.ts` (incl. `anchors`, `photoPath`/`photoUrl`, `deleteAllMedications`), `doseLogs.ts`,
-  `photos.ts` (F4).
-- `src/screens/`: `Auth/`, `AddMedication/`, `Today/`, `Medicines/`, `Progress/`, `Summary/`, `Settings/`.
+  `photos.ts` (F4), `documents.ts` (F10).
+- `src/screens/`: `Documents/` (F10, shown inside My medicines), `Auth/`, `AddMedication/`, `Today/`, `Medicines/`, `Progress/`, `Summary/`, `Settings/`.
 - `src/components/`: `TabBar`, `ReminderBanner` (bottom panel), `MedicationCard`, `Autocomplete`, `LanguageSwitch`,
   `ScreenHeader`, `Icons`, `Logo` (brand mark), `ProfileForm`, `DoseTimeRow` (F3 picker), `DaySettings` (F3 settings), `PhotoPicker` (F4), `ReadAloudButton` (F5).
 - `src/i18n/en.json`, `ar.json`: all text, same keys. `src/index.css`: all styles, tokens at the top, print styles in F9.
@@ -154,7 +156,7 @@ tested by **Wed 25 Nov**; **code freeze Tue 24 Nov evening**.
 - Each test creates its own `@mailinator.com` account. Time-based tests use a fake clock (Nov 2026);
   `loginWithMeds()` (supports `anchors`) and `installEarlyClock()` (03:00 Amman, so no reminder panel gets in the way)
   in `tests/helpers.ts`. Tests can import pure files from `src/lib` (e.g. `tests/F3.spec.ts` imports `prayer.ts`).
-- Spec files: `DESIGN`, `F1`, `F2`, `F3`, `F4`, `F5`, `F6`, `F8`, `F9`, `auth`, `home`, `DB-supabase`.
+- Spec files: `DESIGN`, `F1`, `F2`, `F3`, `F4`, `F5`, `F6`, `F8`, `F9`, `F10`, `auth`, `home`, `DB-supabase`.
 - Tests that walk through Add medication must tap "Skip for now" (step 5) before the review screen.
 - Test images are drawn in the page (canvas) — no image files; no `@types/node`, so tests reach `Buffer` via `globalThis`.
 - F5 tests replace `window.speechSynthesis` with a recorder (`addInitScript` in `tests/F5.spec.ts`); each spoken part
