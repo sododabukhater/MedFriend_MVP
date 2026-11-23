@@ -41,3 +41,12 @@ because a lot of medications change their timing through the patient's monitorin
 
 ## Out of scope
 Changing the name, strength, form or amount of a saved medicine (delete and add again still erases its history).
+
+## Code review 23 Nov (focused: everything since 7af52a3; owner chose "fix all 5")
+1. Same times in another order (08:00, 20:00 → 20:00, 08:00) is no change: "Save new times" stays off. Test 5.
+2. Change times shows a moment's time for **tomorrow** ("After breakfast: tomorrow at 07:30"), when the new times
+   start, using the current meal times. Test 6.
+3. "Save meal times" with nothing changed says "No change: your meal times are the same as before." Test 7.
+4. `index.html` starts as `<html dir="rtl" lang="ar">` with the Arabic title (Arabic is the default). `home.spec.ts`.
+5. A `past_schedules` entry whose `until` is not a YYYY-MM-DD date is ignored. Test 8.
+REVIEW-AR: غداً الساعة {time} · لم يتغيّر شيء: مواعيد وجباتك كما كانت.

@@ -62,3 +62,9 @@ test('Buttons are big enough to tap (min 48px) on login and home', async ({ page
   await signUpInUI(page)
   await check()
 })
+
+test('The page itself is Arabic, right to left, before the app starts (link previews, screen readers)', async ({ request }) => {
+  const html = await (await request.get('/')).text()
+  expect(html).toContain('<html dir="rtl" lang="ar">')
+  expect(html).toContain('<title>صديقك الطبي</title>')
+})

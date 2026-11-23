@@ -3,7 +3,8 @@ import LanguageSwitch from '../../components/LanguageSwitch'
 import TimesPicker, { timesFromSchedule, timesInfo, type TimesValue } from '../../components/TimesPicker'
 import { useI18n } from '../../i18n'
 import { usePrefs } from '../../lib/prefs'
-import { ammanDate } from '../../lib/time'
+import type { Schedule } from '../../lib/anchors'
+import { addDays, ammanDate } from '../../lib/time'
 import { updateTimes, type Medication } from '../../storage/medications'
 
 // Change times (owner, 22 Nov): the doctor changes the timing, the patient changes it here without losing history.
@@ -15,6 +16,11 @@ type Props = {
   onCancel: () => void
 }
 
+/** One text per set of doses, whatever their order. */
+function doseKey(s: Schedule): string {
+  return JSON.stringify(s.times.map((time, i) => `${time} ${s.anchors[i] ?? ''}`).sort())
+}
+
 export default function ChangeTimes({ med, onSaved, onCancel }: Props) {
   const { t } = useI18n()
   const prefs = usePrefs()
@@ -22,10 +28,12 @@ export default function ChangeTimes({ med, onSaved, onCancel }: Props) {
   const [value, setValue] = useState<TimesValue>(() => timesFromSchedule(med))
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(false)
-  // Clock times shown for anchored doses use the current meal times (the ones that apply from tomorrow).
-  const timing = timesInfo(value, today, { ...prefs, pastMeals: [] })
+  // The new times start tomorrow, so anchored doses show tomorrow's clock time with the current meal times.
+  const tomorrow = addDays(today, 1)
+  const timing = timesInfo(value, tomorrow, { ...prefs, pastMeals: [] })
+  // Same doses in another order (08:00, 20:00 vs 20:00, 08:00) is no change.
   const unchanged =
-    JSON.stringify(timing.schedule) === JSON.stringify(timesInfo(timesFromSchedule(med), today, { ...prefs, pastMeals: [] }).schedule)
+    doseKey(timing.schedule) === doseKey(timesInfo(timesFromSchedule(med), tomorrow, { ...prefs, pastMeals: [] }).schedule)
 
   async function save() {
     setSaving(true)
@@ -51,7 +59,7 @@ export default function ChangeTimes({ med, onSaved, onCancel }: Props) {
       <section className="wizard-body">
         <h1 className="question">{t('times.title', { name: med.name })}</h1>
         <p className="notice">{t('times.hint')}</p>
-        <TimesPicker value={value} onChange={setValue} info={timing} />
+        <TimesPicker value={value} onChange={setValue} info={timing} tomorrow />
         {saveError && (
           <div className="alert" role="alert">
             <p>{t('db.saveFailed')}</p>

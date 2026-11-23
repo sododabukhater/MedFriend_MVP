@@ -68,7 +68,7 @@ function pastFrom(value: unknown): PastSchedule[] {
     .filter(
       (p): p is PastSchedule =>
         typeof p === 'object' && p !== null &&
-        typeof p.until === 'string' &&
+        typeof p.until === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(p.until) &&
         Array.isArray(p.times) && p.times.every((t: unknown) => typeof t === 'string') &&
         Array.isArray(p.anchors) && p.anchors.length === p.times.length &&
         p.anchors.every((a: unknown) => ALL_ANCHORS.includes(a as Anchor)),

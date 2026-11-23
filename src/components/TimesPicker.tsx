@@ -41,9 +41,11 @@ type Props = {
   value: TimesValue
   onChange: (update: (old: TimesValue) => TimesValue) => void
   info: ReturnType<typeof timesInfo>
+  /** Change times: the times shown for moments are tomorrow's (when the new times start). */
+  tomorrow?: boolean
 }
 
-export default function TimesPicker({ value, onChange, info }: Props) {
+export default function TimesPicker({ value, onChange, info, tomorrow = false }: Props) {
   const { t } = useI18n()
   const { times, modes, anchors } = value
   const setAt = <K extends keyof TimesValue>(key: K, i: number, v: TimesValue[K][number]) =>
@@ -82,6 +84,7 @@ export default function TimesPicker({ value, onChange, info }: Props) {
                 mode={modes[i] ?? 'clock'}
                 anchor={anchors[i] ?? ''}
                 todayTime={info.doseTime(i)}
+                tomorrow={tomorrow}
                 onTime={(v) => setAt('times', i, v)}
                 onMode={(m) => setAt('modes', i, m)}
                 onAnchor={(v) => setAt('anchors', i, v)}

@@ -186,7 +186,7 @@ Also to check (not in this table):
 | `times.saved` | New times saved. They start tomorrow. | تم حفظ المواعيد الجديدة. تبدأ من الغد. | |
 | `times.tomorrow` | New times start tomorrow. | تبدأ المواعيد الجديدة من الغد. | |
 
-## Add a medicine (steps, forms, units, strength, times) (98)
+## Add a medicine (steps, forms, units, strength, times) (99)
 
 | Key | English | العربية | Fix |
 |---|---|---|---|
@@ -284,6 +284,7 @@ Also to check (not in this table):
 | `add.times.relation` | Before, with or after the meal | قبل الوجبة أو معها أو بعدها | |
 | `add.times.pick` | Choose a moment. | اختر وقتاً. | |
 | `add.times.chosen` | {anchor}: today at {time} | {anchor}: اليوم الساعة {time} | |
+| `add.times.chosenTomorrow` | {anchor}: tomorrow at {time} | {anchor}: غداً الساعة {time} | |
 | `add.times.prayerOff` | Prayer and Ramadan times are off. You can turn them on in Settings. | أوقات الصلاة ورمضان متوقفة. يمكنك تشغيلها من الإعدادات. | |
 | `add.times.same` | Two doses are at the same time ({time}). Please choose different times. | جرعتان في الوقت نفسه ({time}). يُرجى اختيار أوقات مختلفة. | |
 | `add.review.photo` | Photo | الصورة | |
@@ -428,7 +429,7 @@ Also to check (not in this table):
 | `summary.col.taken` | Doses taken | الجرعات المأخوذة | |
 | `summary.ofDoses` | {n} of {total} doses | {n} من {total} جرعة | |
 
-## Settings (30)
+## Settings (31)
 
 | Key | English | العربية | Fix |
 |---|---|---|---|
@@ -459,6 +460,7 @@ Also to check (not in this table):
 | `settings.meals.title` | My meal times | مواعيد وجباتي | |
 | `settings.meals.save` | Save meal times | احفظ مواعيد الوجبات | |
 | `settings.meals.saved` | Meal times saved. The new times start tomorrow; today stays as it was. | تم حفظ مواعيد الوجبات. تبدأ المواعيد الجديدة من الغد، ويبقى اليوم كما هو. | |
+| `settings.meals.unchanged` | No change: your meal times are the same as before. | لم يتغيّر شيء: مواعيد وجباتك كما كانت. | |
 | `settings.reminders.title` | Reminders | التذكيرات | |
 | `settings.readAloud` | Read reminders aloud | اقرأ التذكيرات بصوت عالٍ | |
 | `settings.readAloud.short` | The phone says each reminder out loud (this device). | يقرأ الهاتف كل تذكير بصوت مسموع (على هذا الجهاز). | |

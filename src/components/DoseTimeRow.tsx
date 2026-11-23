@@ -14,12 +14,14 @@ type Props = {
   anchor: Anchor
   /** Today's time of this dose (for an anchor: worked out for today). */
   todayTime: string
+  /** Say "tomorrow at" instead of "today at" (Change times). */
+  tomorrow?: boolean
   onTime: (time: string) => void
   onMode: (mode: TimeMode) => void
   onAnchor: (anchor: Anchor) => void
 }
 
-export default function DoseTimeRow({ n, time, mode, anchor, todayTime, onTime, onMode, onAnchor }: Props) {
+export default function DoseTimeRow({ n, time, mode, anchor, todayTime, tomorrow = false, onTime, onMode, onAnchor }: Props) {
   const { t } = useI18n()
   const prefs = usePrefs()
   const meal = MEALS.find((m) => anchor.startsWith(`${m}:`)) as Meal | undefined
@@ -93,7 +95,7 @@ export default function DoseTimeRow({ n, time, mode, anchor, todayTime, onTime, 
 
           {anchor ? (
             <p className="notice" data-testid={`anchor-${n}`}>
-              {t('add.times.chosen', { anchor: anchorLabel(t, anchor), time: todayTime })}
+              {t(tomorrow ? 'add.times.chosenTomorrow' : 'add.times.chosen', { anchor: anchorLabel(t, anchor), time: todayTime })}
             </p>
           ) : (
             <p className="hint">{t('add.times.pick')}</p>

@@ -134,3 +134,49 @@ test('4. Arabic: Change times shows in Arabic, right to left', async ({ page }) 
   const size = await page.getByRole('button', { name: 'احفظ المواعيد الجديدة' }).evaluate((el) => el.getBoundingClientRect().height)
   expect(size).toBeGreaterThanOrEqual(48)
 })
+
+// Code review 23 Nov (owner asked for a focused review of Change times).
+test('5. The same times in another order are no change: Save stays off', async ({ page }) => {
+  await loginWithMeds(page, [{ name: 'Glucophage', times: ['08:00', '20:00'], createdAt: '2026-11-15T06:00:00Z' }], FAKE_NOW)
+  await goToMeds(page)
+  await page.getByRole('button', { name: 'Change times for Glucophage' }).click()
+  await page.getByLabel('Time of dose 1').fill('20:00')
+  await page.getByLabel('Time of dose 2').fill('08:00')
+  await expect(page.getByRole('alert')).toHaveCount(0)
+  await expect(save(page)).toBeDisabled()
+  await page.getByLabel('Time of dose 2').fill('09:00')
+  await expect(save(page)).toBeEnabled()
+})
+
+test('6. Change times shows the time a moment will have TOMORROW (when the new times start)', async ({ page }) => {
+  await setUp(page, 'Nexium', '08:30', 'breakfast:after')
+  // Breakfast moves to 07:00 today: today keeps 08:30, tomorrow "after breakfast" = 07:30.
+  await goToSettings(page)
+  await page.getByLabel('Breakfast').fill('07:00')
+  await page.getByRole('button', { name: 'Save meal times' }).click()
+  await expect(page.getByText('Meal times saved. The new times start tomorrow; today stays as it was.')).toBeVisible()
+  await goToMeds(page)
+  await page.getByRole('button', { name: 'Change times for Nexium' }).click()
+  await expect(page.getByTestId('anchor-1')).toHaveText('After breakfast: tomorrow at 07:30')
+  await expect(save(page)).toBeDisabled()
+})
+
+test('7. Saving meal times without a change says so (not "start tomorrow")', async ({ page }) => {
+  await setUp(page, 'Concor', '08:00')
+  await goToSettings(page)
+  await page.getByRole('button', { name: 'Save meal times' }).click()
+  await expect(page.getByText('No change: your meal times are the same as before.')).toBeVisible()
+  await expect(page.getByText('The new times start tomorrow', { exact: false })).toHaveCount(0)
+})
+
+test('8. A badly written end date in the times history is ignored (the current times are used)', async ({ page }) => {
+  const user = await setUp(page, 'Concor', '08:00')
+  const { error } = await user.db
+    .from('medications')
+    .update({ past_schedules: [{ until: '9999', times: ['06:00'], anchors: [''] }] })
+    .eq('name', 'Concor')
+  expect(error).toBeNull()
+  await page.reload()
+  await expect(dose(page, '08:00 Concor')).toHaveAttribute('data-status', 'taken')
+  await expect(dose(page, '06:00 Concor')).toHaveCount(0)
+})

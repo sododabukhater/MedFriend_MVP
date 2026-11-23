@@ -36,7 +36,7 @@ export default function DaySettings({ prefs }: { prefs: Prefs }) {
   function saveMeals(e: FormEvent) {
     e.preventDefault()
     // New meal times start tomorrow: today and earlier days keep theirs (docs/specs/TIMES.md).
-    if (JSON.stringify(meals) === JSON.stringify(prefs.meals)) return setMessage({ key: 'settings.meals.saved', ok: true })
+    if (JSON.stringify(meals) === JSON.stringify(prefs.meals)) return setMessage({ key: 'settings.meals.unchanged', ok: true })
     run(mealChange(prefs, meals, ammanDate(new Date())), 'settings.meals.saved')
   }
 

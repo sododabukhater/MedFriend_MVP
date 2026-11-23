@@ -10,7 +10,8 @@ This file is the current state of the work. Deadline: live and tested by **Wed 2
    (`storageState` in `playwright.config.ts`; `home.spec.ts` first-visit test overrides it). `docs/AR-REVIEW.md` =
    all Arabic strings beside the English, grouped by screen (regenerate it after string changes: a small Node script
    reading both JSON files). Then **Arabic amounts** fix and **name + strength order** fix (both in F6.md "Fix 23 Nov"; found by a headless
-   look at the live link in Arabic). 253 passed + 3 skipped.
+   look at the live link in Arabic). Then a **focused code review** (owner asked; since `7af52a3`): 5 small findings,
+   all fixed (TIMES.md "Code review 23 Nov"). 259 passed + 3 skipped (F5 voice tests sometimes flaky, pass on retry).
    **Next:** owner reviews Arabic **in the app** on the live link (chosen) and sends corrections; apply them, each
    with tests. Still to do: demo reset (`node scripts/seed-demo.mjs`) Tuesday evening / Wednesday morning, then freeze.
 1. Everything is committed and pushed to `main` (last feature commit `b2fe451` Change times, then this handoff);
