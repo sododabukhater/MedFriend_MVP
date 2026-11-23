@@ -3,7 +3,26 @@ import { openLoggedOut, signUpInUI } from './helpers'
 
 // Basics that apply to every screen (F11 simple mode, F12 language). Each test is a fresh browser.
 
-test('First visit opens the login screen in English (build phase)', async ({ page }) => {
+test.describe('First visit (nothing saved on the device)', () => {
+  test.use({ storageState: { cookies: [], origins: [] } })
+
+  test('opens the login screen in Arabic, right to left; English is remembered once chosen', async ({ page }) => {
+    await openLoggedOut(page)
+    const html = page.locator('html')
+    await expect(html).toHaveAttribute('dir', 'rtl')
+    await expect(html).toHaveAttribute('lang', 'ar')
+    await expect(page.getByRole('heading', { name: 'تسجيل الدخول' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'استخدم الحساب التجريبي' })).toBeVisible()
+
+    await page.getByRole('button', { name: 'Switch language to English' }).click()
+    await expect(html).toHaveAttribute('dir', 'ltr')
+    await expect(page.getByRole('heading', { name: 'Log in' })).toBeVisible()
+    await page.reload()
+    await expect(html).toHaveAttribute('dir', 'ltr')
+  })
+})
+
+test('Once English is chosen, the login screen opens in English', async ({ page }) => {
   await openLoggedOut(page)
   await expect(page.locator('html')).toHaveAttribute('dir', 'ltr')
   await expect(page.getByText('Med Friend', { exact: true })).toBeVisible()

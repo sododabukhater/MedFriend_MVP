@@ -16,6 +16,12 @@ export default defineConfig({
     baseURL: 'http://localhost:5173',
     headless: true,
     locale: 'en-US',
+    // The app opens in Arabic on a first visit; tests are written in English, so each test browser
+    // starts with English saved (as if the patient had chosen it). Tests of the default override this.
+    storageState: {
+      cookies: [],
+      origins: [{ origin: 'http://localhost:5173', localStorage: [{ name: 'medfriend.lang', value: 'en' }] }],
+    },
     timezoneId: 'Asia/Amman',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',

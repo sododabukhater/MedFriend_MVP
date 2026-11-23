@@ -2,9 +2,8 @@ import { createContext, useCallback, useContext, useState, type ReactNode } from
 import ar from './ar.json'
 import en from './en.json'
 
-// Build phase: English is the working/default language; Arabic is kept in sync.
-// Before code freeze, change DEFAULT_LANG to 'ar'.
-export const DEFAULT_LANG: Lang = 'en'
+// Arabic is the default (first visit). English is the secondary toggle; the choice is saved per device.
+export const DEFAULT_LANG: Lang = 'ar'
 
 export type Lang = 'ar' | 'en'
 export type MessageKey = keyof typeof en
