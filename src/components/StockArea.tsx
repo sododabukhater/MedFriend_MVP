@@ -15,7 +15,7 @@ type Mode = 'view' | 'newBox' | 'edit'
 
 /** F7 on the medicine card: "90 tablets left · about 45 days", Low / Out of stock, new box, correct the count. */
 export default function StockArea({ med, info, onStock }: Props) {
-  const { t } = useI18n()
+  const { t, lang } = useI18n()
   const [mode, setMode] = useState<Mode>('view')
   const [pack, setPack] = useState('')
   const [left, setLeft] = useState('')
@@ -53,7 +53,7 @@ export default function StockArea({ med, info, onStock }: Props) {
   // The medicine has a count, but the earlier doses are still loading: show nothing rather than a wrong number.
   if (!info && med.stockSetAt !== null && med.stockCount !== null && med.packSize !== null) return null
 
-  const boxText = med.packSize !== null ? amountText(t, med.form, med.packSize) : ''
+  const boxText = med.packSize !== null ? amountText(t, med.form, med.packSize, lang) : ''
 
   return (
     <div className="stock" data-testid="stock">
@@ -65,7 +65,7 @@ export default function StockArea({ med, info, onStock }: Props) {
           <span>
             {info.level === 'out'
               ? t('stock.lineOut')
-              : t('stock.line', { left: amountText(t, med.form, info.left), days: daysText(t, info.days) })}
+              : t('stock.line', { left: amountText(t, med.form, info.left, lang), days: daysText(t, info.days) })}
           </span>
         </p>
       )}

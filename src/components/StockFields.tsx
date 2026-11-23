@@ -19,7 +19,7 @@ type Props = {
 
 /** F7: the box questions (unit follows the form). */
 export default function StockFields({ form, pack, left, onPack, onLeft, problem, extra }: Props) {
-  const { t } = useI18n()
+  const { t, lang } = useI18n()
   const unit = t(`unit.${form}.other` as MessageKey)
   return (
     <div className="stock-fields">
@@ -57,7 +57,7 @@ export default function StockFields({ form, pack, left, onPack, onLeft, problem,
       <CountField label={t(extra ? 'stock.left.q' : 'stock.total.q')} unit={unit} value={left} onChange={onLeft} />
       {extra && extra.total !== null && extra.boxes > 0 && (
         <p className="stock-total" role="status">
-          {t('stock.totalLine', { n: amountText(t, form, extra.total) })}
+          {t('stock.totalLine', { n: amountText(t, form, extra.total, lang) })}
         </p>
       )}
       {problem && (

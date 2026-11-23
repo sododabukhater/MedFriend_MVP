@@ -38,7 +38,7 @@ type Props = {
 const MAX_AMOUNT = 100
 
 export default function AddMedication({ onSaved, onCancel }: Props) {
-  const { t } = useI18n()
+  const { t, lang } = useI18n()
   const [step, setStep] = useState<Step>(1)
   const [name, setName] = useState('')
   const [fromList, setFromList] = useState(false)
@@ -250,7 +250,7 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
                 −
               </button>
               <output className="stepper-value" aria-live="polite" data-testid="amount">
-                {amountText(t, form, amount)}
+                {amountText(t, form, amount, lang)}
               </output>
               <button
                 type="button"
@@ -332,11 +332,11 @@ export default function AddMedication({ onSaved, onCancel }: Props) {
               <dt>{t('add.review.form')}</dt>
               <dd>{t(`form.${form}` as MessageKey)}</dd>
               <dt>{t('add.review.amount')}</dt>
-              <dd>{amountText(t, form, amount)}</dd>
+              <dd>{amountText(t, form, amount, lang)}</dd>
               {stock.ok && !stock.empty && (
                 <>
                   <dt>{t('add.review.box')}</dt>
-                  <dd>{t('stock.review', { pack: amountText(t, form, stock.pack), left: stock.left })}</dd>
+                  <dd>{t('stock.review', { pack: amountText(t, form, stock.pack, lang), left: stock.left })}</dd>
                 </>
               )}
               <dt>{t('add.review.times')}</dt>

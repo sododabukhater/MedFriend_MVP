@@ -7,8 +7,8 @@ How to review: read the Arabic column; write corrections in the "Fix" column, or
 Also to check (not in this table):
 - **Medicine names list** (Arabic spellings of ~50 drugs): `src/data/drugs.ts` — best checked by a pharmacist.
 - **Spoken Arabic** (what the voice says, with full vowels): `src/lib/spokenArabic.ts`.
-- **Known:** on screen, amounts use one unit word for every number («2 حبة», «بقي 10 حبة») instead of
-  «حبتان» / «10 حبات».
+- **Amounts** are built from the `unit.*` words by number (fixed 23 Nov): «حبة واحدة»، «حبتان»، «3 حبات»،
+  «11 حبة»، «نصف حبة»، «حبة ونصف»; check the `.two` and `.few` words.
 
 
 ## Login, sign-up, demo account (43)
@@ -186,7 +186,7 @@ Also to check (not in this table):
 | `times.saved` | New times saved. They start tomorrow. | تم حفظ المواعيد الجديدة. تبدأ من الغد. | |
 | `times.tomorrow` | New times start tomorrow. | تبدأ المواعيد الجديدة من الغد. | |
 
-## Add a medicine (steps, forms, units, strength, times) (82)
+## Add a medicine (steps, forms, units, strength, times) (98)
 
 | Key | English | العربية | Fix |
 |---|---|---|---|
@@ -216,20 +216,36 @@ Also to check (not in this table):
 | `add.amount.more` | More | أكثر | |
 | `unit.tablet.one` | tablet | حبة | |
 | `unit.tablet.other` | tablets | حبة | |
+| `unit.tablet.two` | 2 tablets | حبتان | |
+| `unit.tablet.few` | tablets | حبات | |
 | `unit.capsule.one` | capsule | كبسولة | |
 | `unit.capsule.other` | capsules | كبسولة | |
+| `unit.capsule.two` | 2 capsules | كبسولتان | |
+| `unit.capsule.few` | capsules | كبسولات | |
 | `unit.syrup.one` | ml | مل | |
 | `unit.syrup.other` | ml | مل | |
+| `unit.syrup.two` | 2 ml | 2 مل | |
+| `unit.syrup.few` | ml | مل | |
 | `unit.injection.one` | unit | وحدة | |
 | `unit.injection.other` | units | وحدة | |
+| `unit.injection.two` | 2 units | وحدتان | |
+| `unit.injection.few` | units | وحدات | |
 | `unit.inhaler.one` | puff | بخّة | |
 | `unit.inhaler.other` | puffs | بخّة | |
+| `unit.inhaler.two` | 2 puffs | بخّتان | |
+| `unit.inhaler.few` | puffs | بخّات | |
 | `unit.drops.one` | drop | نقطة | |
 | `unit.drops.other` | drops | نقطة | |
+| `unit.drops.two` | 2 drops | نقطتان | |
+| `unit.drops.few` | drops | نقاط | |
 | `unit.cream.one` | application | دهنة | |
 | `unit.cream.other` | applications | دهنة | |
+| `unit.cream.two` | 2 applications | دهنتان | |
+| `unit.cream.few` | applications | دهنات | |
 | `unit.other.one` | dose | جرعة | |
 | `unit.other.other` | doses | جرعة | |
+| `unit.other.two` | 2 doses | جرعتان | |
+| `unit.other.few` | doses | جرعات | |
 | `add.times.q` | How many times a day? | كم مرة في اليوم؟ | |
 | `add.times.hint` | Change a time if you need to. | يمكنك تغيير أي موعد. | |
 | `add.times.timeLabel` | Time of dose {n} | موعد الجرعة {n} | |
@@ -464,3 +480,11 @@ Also to check (not in this table):
 |---|---|---|---|
 | `tab.label` | Main sections | الأقسام الرئيسية | |
 | `tab.today` | Today | اليوم | |
+
+## Other (3)
+
+| Key | English | العربية | Fix |
+|---|---|---|---|
+| `amount.oneWord` | one | واحدة | |
+| `amount.half` | half a {unit} | نصف {unit} | |
+| `amount.andHalf` | {amount} and a half | {amount} ونصف | |

@@ -1,5 +1,9 @@
 import { expect, test, type Page } from '@playwright/test'
 import { goToMeds, signUpInUI } from './helpers'
+import ar from '../src/i18n/ar.json' with { type: 'json' }
+import en from '../src/i18n/en.json' with { type: 'json' }
+import { amountText } from '../src/lib/format'
+import type { Form } from '../src/storage/medications'
 
 // Acceptance criteria: docs/specs/F6.md. Each test signs up a brand-new, empty account.
 
@@ -346,7 +350,7 @@ test('11. Works in Arabic; text ≥ 18px and buttons ≥ 48px on every step', as
 
   await page.getByRole('button', { name: 'أكثر' }).click()
   await page.getByRole('button', { name: 'أكثر' }).click()
-  await expect(page.getByTestId('amount')).toHaveText('1 حبة')
+  await expect(page.getByTestId('amount')).toHaveText('حبة واحدة')
   await checkSizes()
   await page.getByRole('button', { name: 'التالي' }).click()
 
@@ -369,7 +373,7 @@ test('11. Works in Arabic; text ≥ 18px and buttons ≥ 48px on every step', as
   await page.getByRole('button', { name: 'حفظ الدواء' }).click()
 
   await expect(page.getByRole('status')).toHaveText('تم حفظ الدواء')
-  await expect(card(page, 'جلوكوفاج')).toContainText('1 حبة، مرتين يومياً')
+  await expect(card(page, 'جلوكوفاج')).toContainText('حبة واحدة، مرتين يومياً')
   await checkSizes()
 })
 
@@ -393,4 +397,29 @@ test('6b. Two doses at the same time are not allowed', async ({ page }) => {
   await page.getByLabel('Time of dose 2').fill('21:00')
   await expect(page.getByRole('alert')).toHaveCount(0)
   await expect(next(page)).toBeEnabled()
+})
+
+test('12. Arabic amounts follow the number (pure); English is unchanged', () => {
+  const words = { ...en, ...ar } as Record<string, string>
+  const tAr = (key: string, vars?: Record<string, string | number>) =>
+    (words[key] ?? key).replace(/\{(\w+)\}/g, (m, k: string) => (vars && k in vars ? String(vars[k]) : m))
+  const say = (form: Form, n: number) => amountText(tAr as never, form, n, 'ar')
+  expect(say('tablet', 1)).toBe('حبة واحدة')
+  expect(say('tablet', 2)).toBe('حبتان')
+  expect(say('tablet', 3)).toBe('3 حبات')
+  expect(say('tablet', 10)).toBe('10 حبات')
+  expect(say('tablet', 11)).toBe('11 حبة')
+  expect(say('tablet', 40)).toBe('40 حبة')
+  expect(say('tablet', 0.5)).toBe('نصف حبة')
+  expect(say('tablet', 1.5)).toBe('حبة ونصف')
+  expect(say('tablet', 2.5)).toBe('حبتان ونصف')
+  expect(say('capsule', 3)).toBe('3 كبسولات')
+  expect(say('drops', 2)).toBe('نقطتان')
+  expect(say('drops', 5)).toBe('5 نقاط')
+  expect(say('inhaler', 1)).toBe('بخّة واحدة')
+  expect(say('syrup', 1)).toBe('1 مل')
+  expect(say('syrup', 5)).toBe('5 مل')
+  const tEn = (key: string) => (en as Record<string, string>)[key] ?? key
+  expect(amountText(tEn as never, 'tablet', 1, 'en')).toBe('1 tablet')
+  expect(amountText(tEn as never, 'tablet', 2, 'en')).toBe('2 tablets')
 })

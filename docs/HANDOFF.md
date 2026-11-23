@@ -1,10 +1,17 @@
 # Handoff — current status (read this first)
 
-Last updated: **Mon 23 Nov 2026, just after midnight** (end of eighth session: code review of all of `src` (owner
-asked), all 10 findings fixed; the 10th became **Change times**, `docs/specs/TIMES.md`). **All planned features are built.** `CLAUDE.md` is the rulebook.
+Last updated: **Mon 23 Nov 2026, ninth session** (Change times video shown; **Arabic is now the default**;
+Arabic amounts follow the number; `docs/AR-REVIEW.md` lists every Arabic string for the owner's review). **All planned features are built.** `CLAUDE.md` is the rulebook.
 This file is the current state of the work. Deadline: live and tested by **Wed 25 Nov**; **code freeze Tue 24 Nov evening**.
 
 ## ▶ Start here (new chat)
+0. **23 Nov (ninth session):** owner watched the Change times video. "Change amount": owner said **no** (leave out).
+   `ec6d7ba` **Arabic is the default** (`DEFAULT_LANG = 'ar'`); test browsers start with English saved
+   (`storageState` in `playwright.config.ts`; `home.spec.ts` first-visit test overrides it). `docs/AR-REVIEW.md` =
+   all Arabic strings beside the English, grouped by screen (regenerate it after string changes: a small Node script
+   reading both JSON files). Then **Arabic amounts** fix (F6.md "Fix 23 Nov"). 251 passed + 3 skipped.
+   **Next:** owner reviews Arabic **in the app** on the live link (chosen) and sends corrections; apply them, each
+   with tests. Still to do: demo reset (`node scripts/seed-demo.mjs`) Tuesday evening / Wednesday morning, then freeze.
 1. Everything is committed and pushed to `main` (last feature commit `b2fe451` Change times, then this handoff);
    the live link is up to date; working tree clean.
 2. **Done:** Tier A (F6, F2, F1, F8 + login, Settings, Progress), **design revamp** (+ Reset all data),
@@ -49,7 +56,7 @@ This file is the current state of the work. Deadline: live and tested by **Wed 2
    (they could start Monday to give the owner more time for the Arabic review). Before that: owner feedback / fixes only, each with
    headless tests, commit, push and "what to click".
 5. New tables need `grant select, insert, update, delete … to authenticated` (forgot it once for F10).
-6. **Tuesday:** `DEFAULT_LANG = 'ar'` in `src/i18n/index.tsx`, Arabic review pass (all REVIEW-AR lists in the specs
+6. **Tuesday:** ~~`DEFAULT_LANG = 'ar'`~~ (done 23 Nov), Arabic review pass (all REVIEW-AR lists in the specs
    and `src/lib/spokenArabic.ts`), run `node scripts/seed-demo.mjs` (Tuesday evening or Wednesday morning), freeze.
 
 ## Plan (decided by the owner on 20 Nov: build everything)

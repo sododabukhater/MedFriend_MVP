@@ -166,7 +166,7 @@ function HeroCard({ dose, busy, onAnswer }: { dose: Dose; busy: boolean; onAnswe
             {med.name}
             {strength && ` ${strength}`}
           </p>
-          <p className="hero-amount">{amountText(t, med.form, med.amount)}</p>
+          <p className="hero-amount">{amountText(t, med.form, med.amount, lang)}</p>
         </div>
       </div>
       <button type="button" className="btn-primary btn-take-big" disabled={busy} onClick={() => onAnswer('taken')}>
@@ -197,7 +197,7 @@ type RowProps = {
 }
 
 function DoseRow({ dose, open, busy, onToggle, onAnswer }: RowProps) {
-  const { t } = useI18n()
+  const { t, lang } = useI18n()
   const { med, time, status } = dose
   const answered = status === 'taken' || status === 'skipped'
   const strength = strengthText(t, med.strengthValue, med.strengthUnit)
@@ -215,7 +215,7 @@ function DoseRow({ dose, open, busy, onToggle, onAnswer }: RowProps) {
         <span className="dose-name">
           {med.name}
           {strength && <span className="med-strength"> {strength}</span>}
-          <span className="dose-amount">{amountText(t, med.form, med.amount)}</span>
+          <span className="dose-amount">{amountText(t, med.form, med.amount, lang)}</span>
           {dose.anchor && <span className="dose-anchor">{anchorLabel(t, dose.anchor)}</span>}
         </span>
         <span className="dose-status">

@@ -101,7 +101,7 @@ export default function ReminderBanner({ reminders, busyKey, saveError, onAnswer
             {med.name}
             {strength && ` ${strength}`}
           </p>
-          <p className="sheet-amount">{amountText(t, med.form, med.amount)}</p>
+          <p className="sheet-amount">{amountText(t, med.form, med.amount, lang)}</p>
         </div>
         {supply && supply.level !== 'ok' && (
           <p className={`refill refill--${supply.level} sheet-refill`} data-testid="reminder-refill">

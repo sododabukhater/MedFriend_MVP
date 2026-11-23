@@ -51,7 +51,7 @@ export function buildSummary(
     date: longDate(now, lang),
     meds: meds.map((med) => ({
       name: fullName(med),
-      amount: amountText(t, med.form, med.amount),
+      amount: amountText(t, med.form, med.amount, lang),
       often: t(`often.${med.timesPerDay}` as MessageKey),
       // F3: an anchored dose reads "After Fajr" instead of a clock time.
       times: med.times.map((time, i) => (med.anchors[i] ? anchorLabel(t, med.anchors[i]) : time)).join(lang === 'ar' ? '، ' : ', '),

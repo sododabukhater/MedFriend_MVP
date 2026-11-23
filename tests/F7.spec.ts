@@ -199,7 +199,7 @@ test('9. Arabic: the stock line and the refill card show in Arabic, right to lef
   await expect(page.getByTestId('refill')).toContainText('حان وقت شراء علبة جديدة.')
   await page.getByRole('navigation').getByRole('button', { name: 'أدويتي' }).click()
   await expect(stockOf(page, 'Concor')).toContainText('قليل')
-  await expect(stockOf(page, 'Concor')).toContainText('بقي 10 حبة · يكفي نحو 5 أيام')
+  await expect(stockOf(page, 'Concor')).toContainText('بقي 10 حبات · يكفي نحو 5 أيام')
 })
 
 test('10. Counting rules (pure): days, levels and the box checks', () => {

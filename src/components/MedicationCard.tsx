@@ -26,7 +26,7 @@ type Props = {
 
 /** One medicine in "My medicines": name + strength, "1 tablet, twice a day", time chips. */
 export default function MedicationCard({ med, onDelete, onPhoto, onRemovePhoto, stock, onStock, onChangeTimes }: Props) {
-  const { t } = useI18n()
+  const { t, lang } = useI18n()
   const prefs = usePrefs()
   const [confirming, setConfirming] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -80,7 +80,7 @@ export default function MedicationCard({ med, onDelete, onPhoto, onRemovePhoto, 
       </div>
       <p className="med-detail">
         {t('med.detail', {
-          amount: amountText(t, med.form, med.amount),
+          amount: amountText(t, med.form, med.amount, lang),
           often: t(`often.${med.timesPerDay}` as MessageKey),
         })}
       </p>
