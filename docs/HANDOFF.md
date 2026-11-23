@@ -12,6 +12,11 @@ This file is the current state of the work. Deadline: live and tested by **Wed 2
    reading both JSON files). Then **Arabic amounts** fix and **name + strength order** fix (both in F6.md "Fix 23 Nov"; found by a headless
    look at the live link in Arabic). Then a **focused code review** (owner asked; since `7af52a3`): 5 small findings,
    all fixed (TIMES.md "Code review 23 Nov"). 259 passed + 3 skipped (F5 voice tests sometimes flaky, pass on retry).
+   **Demo reset done 23 Nov ~23:40** (owner asked; history 24 Oct – 22 Nov). Re-run Wednesday morning if the professor
+   looks later (days after the reset count as Missed). **User guide for the professor** published as a private
+   claude.ai page (owner shares it): https://claude.ai/artifact/4ZTQkH8wHJuMatrK2BKZXJ — 13 English videos + screenshots,
+   app in English. Re-record: copy `scripts/record-guide.spec.ts.txt` to `tests/zz-guide.spec.ts` (set `OUT`), run
+   `--project=laptop --workers=4`, delete it again, republish the page (source HTML was in the scratchpad).
    **Next:** owner reviews Arabic **in the app** on the live link (chosen) and sends corrections; apply them, each
    with tests. Still to do: demo reset (`node scripts/seed-demo.mjs`) Tuesday evening / Wednesday morning, then freeze.
 1. Everything is committed and pushed to `main` (last feature commit `b2fe451` Change times, then this handoff);
