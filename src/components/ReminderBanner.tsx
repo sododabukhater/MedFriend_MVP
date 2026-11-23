@@ -99,7 +99,7 @@ export default function ReminderBanner({ reminders, busyKey, saveError, onAnswer
           )}
           <p className="sheet-name">
             {med.name}
-            {strength && ` ${strength}`}
+            {strength && <> <bdi>{strength}</bdi></>}
           </p>
           <p className="sheet-amount">{amountText(t, med.form, med.amount, lang)}</p>
         </div>

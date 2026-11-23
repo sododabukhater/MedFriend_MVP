@@ -1,8 +1,8 @@
 import { expect, test, type Page } from '@playwright/test'
-import { goToMeds, signUpInUI } from './helpers'
+import { goToMeds, loginWithMeds, signUpInUI } from './helpers'
 import ar from '../src/i18n/ar.json' with { type: 'json' }
 import en from '../src/i18n/en.json' with { type: 'json' }
-import { amountText } from '../src/lib/format'
+import { amountText, nameWithStrength } from '../src/lib/format'
 import type { Form } from '../src/storage/medications'
 
 // Acceptance criteria: docs/specs/F6.md. Each test signs up a brand-new, empty account.
@@ -422,4 +422,32 @@ test('12. Arabic amounts follow the number (pure); English is unchanged', () => 
   const tEn = (key: string) => (en as Record<string, string>)[key] ?? key
   expect(amountText(tEn as never, 'tablet', 1, 'en')).toBe('1 tablet')
   expect(amountText(tEn as never, 'tablet', 2, 'en')).toBe('2 tablets')
+})
+
+test('13. Arabic: the strength stays with its unit after an English name (Glucophage 500 ملغ)', async ({ page }) => {
+  // 07:00 in Amman: the 08:00 dose is the next one (top card), no reminder panel yet.
+  await loginWithMeds(page, [{ name: 'Glucophage', times: ['08:00'], strength: [500, 'mg'] }], new Date('2026-11-18T04:00:00Z'))
+  await page.getByRole('button', { name: 'تغيير اللغة إلى العربية' }).click()
+  await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
+
+  // Right to left: the name is read first (on the right), then «500 ملغ» to its left, all in one piece.
+  const strengthLeftOfName = (bdi: ReturnType<Page['locator']>) =>
+    bdi.evaluate((el) => {
+      const nameNode = [...el.parentElement!.childNodes].find((n) => n.nodeType === 3 && n.textContent!.trim())!
+      const range = document.createRange()
+      range.selectNodeContents(nameNode)
+      const name = range.getBoundingClientRect()
+      const strength = el.getBoundingClientRect()
+      return strength.right <= name.left + 1 && el.textContent!.trim() === '500 ملغ'
+    })
+  await expect(page.locator('.hero-name bdi')).toBeVisible()
+  expect(await strengthLeftOfName(page.locator('.hero-name bdi'))).toBe(true)
+  expect(await strengthLeftOfName(page.locator('.dose-name bdi').first())).toBe(true)
+  await page.getByRole('navigation').getByRole('button', { name: 'أدويتي' }).click()
+  expect(await strengthLeftOfName(page.locator('.med-name bdi'))).toBe(true)
+
+  // Plain text (Progress bars, doctor summary, WhatsApp): invisible isolate marks in Arabic only.
+  expect(nameWithStrength('Glucophage', '500 ملغ', 'ar')).toBe('Glucophage \u2068500 ملغ\u2069')
+  expect(nameWithStrength('Glucophage', '500 mg', 'en')).toBe('Glucophage 500 mg')
+  expect(nameWithStrength('Glucophage', '', 'ar')).toBe('Glucophage')
 })

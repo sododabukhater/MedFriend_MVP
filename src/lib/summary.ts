@@ -2,7 +2,7 @@ import type { Lang, MessageKey } from '../i18n'
 import type { Medication } from '../storage/medications'
 import { lastDays, SHORT_DAYS, stats, type LoggedDose, type Stats } from './adherence'
 import { anchorLabel } from './anchors'
-import { amountText, strengthText } from './format'
+import { amountText, nameWithStrength, strengthText } from './format'
 import type { Profile } from './profile'
 import { ammanDate, longDate } from './time'
 
@@ -40,7 +40,7 @@ export function buildSummary(
   const thisYear = Number(ammanDate(now).slice(0, 4))
   const fullName = (med: Medication) => {
     const strength = strengthText(t, med.strengthValue, med.strengthUnit)
-    return strength ? `${med.name} ${strength}` : med.name
+    return nameWithStrength(med.name, strength, lang)
   }
   return {
     name: profile.name,

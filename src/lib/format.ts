@@ -28,6 +28,15 @@ export function perDayText(t: T, timesPerDay: number): string {
   return t(`perDay.${timesPerDay}` as MessageKey)
 }
 
+/**
+ * "Glucophage 500 mg". In Arabic the strength is wrapped in invisible direction marks (first-strong isolate), so
+ * right-to-left text keeps «500 ملغ» together after an English name, not «500 Glucophage ملغ» (23 Nov).
+ */
+export function nameWithStrength(name: string, strength: string, lang: Lang): string {
+  if (!strength) return name
+  return lang === 'ar' ? `${name} \u2068${strength}\u2069` : `${name} ${strength}`
+}
+
 /** "500 mg" / "500 ملغ". Empty when no strength was entered. */
 export function strengthText(t: T, value: number | null, unit: StrengthUnit | null): string {
   if (value === null || unit === null) return ''

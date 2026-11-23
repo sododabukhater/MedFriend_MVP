@@ -64,7 +64,10 @@ export default function MedicationCard({ med, onDelete, onPhoto, onRemovePhoto, 
         <h3 className="med-name">
           {med.name}
           {med.strengthValue !== null && (
-            <span className="med-strength"> {strengthText(t, med.strengthValue, med.strengthUnit)}</span>
+            <>
+              {' '}
+              <bdi className="med-strength">{strengthText(t, med.strengthValue, med.strengthUnit)}</bdi>
+            </>
           )}
         </h3>
         {!confirming && (

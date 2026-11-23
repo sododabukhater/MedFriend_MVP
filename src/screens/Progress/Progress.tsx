@@ -2,7 +2,7 @@ import { useState } from 'react'
 import ScreenHeader from '../../components/ScreenHeader'
 import { useI18n } from '../../i18n'
 import { HISTORY_DAYS, lastDays, SHORT_DAYS, stats, type LoggedDose, type Stats } from '../../lib/adherence'
-import { strengthText } from '../../lib/format'
+import { nameWithStrength, strengthText } from '../../lib/format'
 import { addDays, ammanDate, ammanTime, longDateOf } from '../../lib/time'
 import { useHistory } from '../../lib/useHistory'
 import type { Medication } from '../../storage/medications'
@@ -92,7 +92,7 @@ export default function Progress({ meds, onSummary }: { meds: Medication[]; onSu
                 const strength = strengthText(t, med.strengthValue, med.strengthUnit)
                 return (
                   <li key={med.id} className="pm" aria-label={med.name} data-testid={`med-${med.name}`}>
-                    <MedBar name={strength ? `${med.name} ${strength}` : med.name} s={s} />
+                    <MedBar name={nameWithStrength(med.name, strength, lang)} s={s} />
                     {s.taken > 0 && <p className="pm-detail">{t('progress.onTime', { n: s.onTime, total: s.taken })}</p>}
                   </li>
                 )

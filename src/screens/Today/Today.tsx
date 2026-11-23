@@ -164,7 +164,7 @@ function HeroCard({ dose, busy, onAnswer }: { dose: Dose; busy: boolean; onAnswe
         <div>
           <p className="hero-name">
             {med.name}
-            {strength && ` ${strength}`}
+            {strength && <> <bdi>{strength}</bdi></>}
           </p>
           <p className="hero-amount">{amountText(t, med.form, med.amount, lang)}</p>
         </div>
@@ -214,7 +214,7 @@ function DoseRow({ dose, open, busy, onToggle, onAnswer }: RowProps) {
         </span>
         <span className="dose-name">
           {med.name}
-          {strength && <span className="med-strength"> {strength}</span>}
+          {strength && <> <bdi className="med-strength">{strength}</bdi></>}
           <span className="dose-amount">{amountText(t, med.form, med.amount, lang)}</span>
           {dose.anchor && <span className="dose-anchor">{anchorLabel(t, dose.anchor)}</span>}
         </span>
